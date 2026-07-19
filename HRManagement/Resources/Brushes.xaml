@@ -2,21 +2,75 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    
+    <!-- ========= Brand ========= -->
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#2E5BFF"/>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1B49FF"/>
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="#4F83FF"/>
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+    <LinearGradientBrush x:Key="SidebarBackgroundBrush"
+                         StartPoint="0,0"
+                         EndPoint="0,1">
+        <GradientStop Color="#4F83FF" Offset="0"/>
+        <GradientStop Color="#2E5BFF" Offset="0.45"/>
+        <GradientStop Color="#1B49FF" Offset="1"/>
+    </LinearGradientBrush>
 
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <!-- ========= Accent ========= -->
 
-    <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource PrimaryTextColor}"/>
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource SecondaryTextColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#FF9F1A"/>
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="#E58A00"/>
 
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+    <!-- ========= Background ========= -->
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F4F7FE"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F0F3FA"/>
+
+    <!-- ========= Borders ========= -->
+
+    <SolidColorBrush x:Key="BorderBrush" Color="#E9EDF7"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="#E2E8F5"/>
+
+    <!-- ========= Text ========= -->
+
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#2B3674"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A3AED0"/>
+    <SolidColorBrush x:Key="HintTextBrush" Color="#B9C3E1"/>
+
+    <SolidColorBrush x:Key="WhiteBrush" Color="#FFFFFF"/>
+
+    <!-- ========= Sidebar ========= -->
+
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#FFFFFF"/>
+
+    <SolidColorBrush x:Key="SidebarHoverBrush"
+                     Color="#14FFFFFF"/>
+
+    <SolidColorBrush x:Key="SidebarPressedBrush"
+                     Color="#20FFFFFF"/>
+
+    <SolidColorBrush x:Key="SidebarSelectedBrush"
+                     Color="#18FFFFFF"/>
+
+    <!-- ========= Status ========= -->
+
+    <SolidColorBrush x:Key="SuccessBrush" Color="#05CD99"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFB547"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#EE5D50"/>
+
+    <!-- ========= DataGrid ========= -->
+
+    <SolidColorBrush x:Key="TableHeaderBrush" Color="#F4F7FE"/>
+    <SolidColorBrush x:Key="RowHoverBrush" Color="#F7F9FF"/>
+    <SolidColorBrush x:Key="RowSelectedBrush" Color="#E9F0FF"/>
+
+    <!-- ========= Buttons ========= -->
+
+    <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#2E5BFF"/>
+    <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="#1A46E5"/>
+
+    <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#FF9F1A"/>
+    <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#E58A00"/>
 
 </ResourceDictionary>

@@ -1,0 +1,163 @@
+﻿<Window x:Class="HRManagement.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:HRManagement.Controls"
+        xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+        mc:Ignorable="d"
+        Title="HR Management"
+        Width="900"
+        Height="560"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        AllowsTransparency="True">
+
+    <Border CornerRadius="12"
+            Background="{StaticResource SidebarBackgroundBrush}"
+            MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+        <Grid>
+
+            <!-- Top Buttons -->
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,12,12,0">
+
+                <Button Style="{StaticResource WindowCircleButtonStyle}"
+                        Margin="0,0,8,0"
+                        Click="Minimize_Click">
+
+                    <fa:IconBlock Icon="WindowMinimize"
+                                  Width="12"
+                                  Height="12"
+                                  Foreground="{StaticResource WhiteBrush}" />
+
+                </Button>
+
+                <Button Style="{StaticResource CloseButtonStyle}"
+                        Click="Close_Click">
+
+                    <fa:IconBlock Icon="Xmark"
+                                  Width="12"
+                                  Height="12"
+                                  Foreground="{StaticResource WhiteBrush}" />
+
+                </Button>
+
+            </StackPanel>
+
+            <!-- Login Card -->
+
+            <Border Width="380"
+                    Padding="35"
+                    CornerRadius="15"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+                <StackPanel>
+
+                    <!-- Logo -->
+
+                    <Border Width="90"
+                            Height="90"
+                            CornerRadius="45"
+                            Background="{StaticResource PrimaryBrush}"
+                            HorizontalAlignment="Center">
+
+                        <fa:IconBlock Icon="Users"
+                                      Width="42"
+                                      Height="42"
+                                      Foreground="{StaticResource WhiteBrush}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+
+                    </Border>
+
+                    <TextBlock Text="HR MANAGEMENT"
+                               Margin="0,18,0,4"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource PrimaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Human Resource Management System"
+                               Margin="0,0,0,28"
+                               FontSize="13"
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+
+                    <!-- Username -->
+
+                    <TextBlock Text="Username"
+                               Margin="0,0,0,6"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                    <Border Height="42"
+                            Margin="0,0,0,18"
+                            Background="{StaticResource InputBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <fa:IconBlock Grid.Column="0"
+                                          Icon="User"
+                                          Width="15"
+                                          Height="15"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Foreground="{StaticResource SecondaryTextBrush}"/>
+
+                            <TextBox Grid.Column="1"
+                                     Margin="0,0,10,0"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     VerticalContentAlignment="Center"
+                                     Foreground="{StaticResource PrimaryTextBrush}"
+                                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- Password -->
+
+                    <TextBlock Text="Password"
+                               Margin="0,0,0,6"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                    <controls:BindablePasswordBox
+                        Margin="0,0,0,28"
+                        Password="{Binding Password, Mode=TwoWay}"/>
+
+                    <!-- Login -->
+
+                    <Button Content="LOGIN"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding LoginCommand}"
+                            Width="180"
+                            HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+    </Border>
+
+</Window>

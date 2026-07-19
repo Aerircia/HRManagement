@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,14 +11,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HRManagement
+namespace HRManagement.Views.Pages
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for ManageRequestsView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ManageRequestsView : UserControl
     {
-        public MainWindow()
+        public ManageRequestsView()
         {
             InitializeComponent();
         }

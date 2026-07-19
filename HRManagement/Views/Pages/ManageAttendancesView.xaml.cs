@@ -8,16 +8,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HRManagement.Views.Windows
+namespace HRManagement.Views.Pages
 {
     /// <summary>
-    /// Interaction logic for LoginWindow.xaml
+    /// Interaction logic for ManageAttendancesView.xaml
     /// </summary>
-    public partial class LoginWindow : Window
+    public partial class ManageAttendancesView : UserControl
     {
-        public LoginWindow()
+        public ManageAttendancesView()
         {
             InitializeComponent();
         }

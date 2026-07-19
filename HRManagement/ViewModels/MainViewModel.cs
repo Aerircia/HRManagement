@@ -1,37 +1,34 @@
-﻿using System.Windows.Input;
+﻿using System.ComponentModel;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
-using HRManagement.ViewModels.Pages;
 
 namespace HRManagement.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    private object? _currentView;
+    private readonly INavigationService _navigationService;
 
-    public object? CurrentView
+    public PageViewModel? CurrentPage =>
+        _navigationService.CurrentView as PageViewModel;
+
+    public string WindowTitle =>
+        CurrentPage?.Title ?? "HR Management";
+
+    public MainViewModel(INavigationService navigationService)
     {
-        get => _currentView;
-        set => SetProperty(ref _currentView, value);
+        _navigationService = navigationService;
+
+        _navigationService.PropertyChanged += NavigationChanged;
+
+        _navigationService.Navigate<DashboardViewModel>();
     }
 
-    public ICommand ShowDashboardCommand { get; }
-
-    public ICommand ShowProfileCommand { get; }
-
-    public MainViewModel()
+    private void NavigationChanged(object? sender, PropertyChangedEventArgs e)
     {
-        CurrentView = new DashboardViewModel();
-
-
-        ShowDashboardCommand = new RelayCommand(_ =>
+        if (e.PropertyName == nameof(INavigationService.CurrentView))
         {
-            CurrentView = new DashboardViewModel();
-        });
-
-
-        ShowProfileCommand = new RelayCommand(_ =>
-        {
-            CurrentView = new ProfileViewModel();
-        });
+            OnPropertyChanged(nameof(CurrentPage));
+            OnPropertyChanged(nameof(WindowTitle));
+        }
     }
 }

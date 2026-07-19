@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.ProfileView"
+﻿<UserControl x:Class="HRManagement.Views.Pages.ManageProfilesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -8,7 +8,7 @@
 
     <Grid>
 
-        <TextBlock Text="Profile"
+        <TextBlock Text="Manage Profiles"
                    FontSize="30"
                    FontWeight="Bold"
                    Margin="30"

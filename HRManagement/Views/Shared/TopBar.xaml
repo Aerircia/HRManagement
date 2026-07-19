@@ -1,0 +1,120 @@
+﻿<UserControl x:Class="HRManagement.Views.Shared.TopBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+             mc:Ignorable="d">
+
+    <Border Background="{StaticResource CardBackgroundBrush}">
+
+        <Grid Margin="20,0">
+
+            <Grid.ColumnDefinitions>
+
+                <!-- User -->
+                <ColumnDefinition Width="Auto"/>
+
+                <!-- Spacer -->
+                <ColumnDefinition Width="*"/>
+
+                <!-- Notification -->
+                <ColumnDefinition Width="Auto"/>
+
+                <!-- Support -->
+                <ColumnDefinition Width="Auto"/>
+
+                <!-- Logout -->
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+            <!-- ================= User ================= -->
+
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+
+                <Grid Width="42"
+                      Height="42">
+
+                    <Ellipse Fill="#E9EEF8"/>
+
+                    <Image Source="{Binding Avatar}"
+                           Stretch="UniformToFill">
+
+                        <Image.Clip>
+
+                            <EllipseGeometry
+                                Center="21,21"
+                                RadiusX="21"
+                                RadiusY="21"/>
+
+                        </Image.Clip>
+
+                    </Image>
+
+                </Grid>
+
+                <StackPanel Margin="12,0,0,0"
+                            VerticalAlignment="Center">
+
+                    <TextBlock
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource PrimaryTextBrush}"
+                        Text="{Binding Username}" />
+
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{StaticResource SecondaryTextBrush}"
+                        Text="{Binding Role}" />
+
+                </StackPanel>
+
+            </StackPanel>
+
+            <!-- ================= Notification ================= -->
+
+            <Button Grid.Column="2"
+                    Margin="0,0,8,0"
+                    Style="{StaticResource TopBarIconButtonStyle}">
+
+                <fa:IconBlock Icon="Bell"
+                  Width="16"
+                  Height="16"
+                  Foreground="{StaticResource SecondaryTextBrush}"/>
+
+            </Button>
+
+            <!-- ================= Support ================= -->
+
+            <Button Grid.Column="3"
+                    Margin="0,0,8,0"
+                    Style="{StaticResource TopBarIconButtonStyle}">
+
+                <fa:IconBlock Icon="CircleQuestion"
+                      Width="16"
+                      Height="16"
+                      Foreground="{StaticResource SecondaryTextBrush}" />
+
+            </Button>
+
+            <!-- ================= Logout ================= -->
+
+            <Button Grid.Column="4"
+                    Style="{StaticResource TopBarIconButtonStyle}"
+                    Command="{Binding LogoutCommand}">
+
+                <fa:IconBlock Icon="RightFromBracket"
+                      Width="16"
+                      Height="16"
+                      Foreground="{StaticResource SecondaryTextBrush}" />
+
+            </Button>
+
+        </Grid>
+
+    </Border>
+
+</UserControl>

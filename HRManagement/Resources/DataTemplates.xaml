@@ -1,0 +1,60 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+    xmlns:vm="clr-namespace:HRManagement.ViewModels"
+    xmlns:views="clr-namespace:HRManagement.Views.Pages">
+
+    <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+        <views:DashboardView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:AttendanceViewModel}">
+        <views:AttendanceView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ContractViewModel}">
+        <views:ContractView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:EmployeeEvaluationViewModel}">
+        <views:EmployeeEvaluationView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:LogsViewModel}">
+        <views:LogsView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ManageAttendancesViewModel}">
+        <views:ManageAttendancesView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ManageProfilesViewModel}">
+        <views:ManageProfilesView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ManageRequestsViewModel}">
+        <views:ManageRequestsView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ManageSalariesViewModel}">
+        <views:ManageSalariesView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ProfileViewModel}">
+        <views:ProfileView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:RequestsViewModel}">
+        <views:RequestsView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SalaryViewModel}">
+        <views:SalaryView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+        <views:SettingsView/>
+    </DataTemplate>
+
+</ResourceDictionary>
