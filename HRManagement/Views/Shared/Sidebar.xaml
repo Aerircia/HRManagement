@@ -180,7 +180,7 @@
                     <!-- Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding ManageProfilesCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:ManageProfilesViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -203,7 +203,7 @@
                     <!-- Requests Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding ManageRequestsCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:ManageRequestsViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -226,7 +226,7 @@
                     <!-- Attendance Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding ManageAttendancesCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:ManageAttendancesViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -252,7 +252,7 @@
                     <!-- HR -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding ManageSalariesCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:ManageSalariesViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -275,7 +275,7 @@
                     <!-- Evaluation -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding EmployeeEvaluationCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:EmployeeEvaluationViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -298,7 +298,7 @@
                     <!-- Logs -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding LogsCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:LogsViewModel}">
 
                         <StackPanel Orientation="Horizontal"
@@ -322,7 +322,7 @@
 
                     <!-- Setting -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
-                            Command="{Binding SettingsCommand}"
+                            Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:SettingsViewModel}">
 
                         <StackPanel Orientation="Horizontal"
