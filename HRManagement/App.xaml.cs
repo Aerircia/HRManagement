@@ -1,4 +1,6 @@
-﻿using HRManagement.Services;
+﻿using HRManagement.Data;
+using HRManagement.Repositories;
+using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.ViewModels;
 using HRManagement.Views;
@@ -29,10 +31,22 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
+        // Data
+        services.AddSingleton<DatabaseContext>();
+
         // Services
-        services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton<SessionManager>();
+
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        services.AddSingleton<IAuthorizationService, AuthorizationService>();
+
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
+
+        // Repositories
+        services.AddSingleton<AccountRepository>();
+        services.AddSingleton<EmployeeRepository>();
+        services.AddSingleton<RoleRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

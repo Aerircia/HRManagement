@@ -63,12 +63,12 @@
                         FontSize="14"
                         FontWeight="SemiBold"
                         Foreground="{StaticResource PrimaryTextBrush}"
-                        Text="{Binding Username}" />
+                        Text="{Binding UserName}" />
 
                     <TextBlock
                         FontSize="12"
                         Foreground="{StaticResource SecondaryTextBrush}"
-                        Text="{Binding Role}" />
+                        Text="{Binding RoleName}" />
 
                 </StackPanel>
 

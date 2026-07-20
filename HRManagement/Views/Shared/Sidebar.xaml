@@ -37,7 +37,7 @@
             <!-- Menu -->
 
             <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Hidden"
                           HorizontalScrollBarVisibility="Disabled">
 
                 <StackPanel Margin="15">
@@ -247,11 +247,11 @@
                     </Button>
 
                     <Separator Margin="0,18"
-                               Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"/>
+                               Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"/>
 
                     <!-- HR -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
-                            Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:ManageSalariesViewModel}">
 
@@ -274,7 +274,7 @@
 
                     <!-- Evaluation -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
-                            Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:EmployeeEvaluationViewModel}">
 
@@ -297,7 +297,7 @@
 
                     <!-- Logs -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
-                            Visibility="{Binding IsHR,Converter={StaticResource BoolToVisibility}}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Type vm:LogsViewModel}">
 

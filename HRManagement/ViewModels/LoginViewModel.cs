@@ -6,9 +6,18 @@ namespace HRManagement.ViewModels;
 
 public class LoginViewModel : ViewModelBase
 {
-    private readonly ISessionService _sessionService;
-    private readonly INavigationService _navigationService;
+    private readonly IAuthenticationService _authenticationService;
     private readonly IWindowService _windowService;
+
+    public LoginViewModel(
+        IAuthenticationService authenticationService,
+        IWindowService windowService)
+    {
+        _authenticationService = authenticationService;
+        _windowService = windowService;
+
+        LoginCommand = new RelayCommand(Login);
+    }
 
     private string _username = string.Empty;
     public string Username
@@ -24,23 +33,28 @@ public class LoginViewModel : ViewModelBase
         set => SetProperty(ref _password, value);
     }
 
-    public ICommand LoginCommand { get; }
-
-    public LoginViewModel(
-        ISessionService sessionService,
-        INavigationService navigationService,
-        IWindowService windowService)
+    private string _errorMessage = string.Empty;
+    public string ErrorMessage
     {
-        _sessionService = sessionService;
-        _navigationService = navigationService;
-        _windowService = windowService;
-
-        LoginCommand = new RelayCommand(_ => Login());
+        get => _errorMessage;
+        set => SetProperty(ref _errorMessage, value);
     }
 
-    private void Login()
+    public ICommand LoginCommand { get; }
+
+    private void Login(object? parameter)
     {
-        // Temporary until AuthenticationService exists
+        ErrorMessage = string.Empty;
+
+        var user = _authenticationService.Login(
+            Username.Trim(),
+            Password);
+
+        if (user == null)
+        {
+            ErrorMessage = "Invalid username or password.";
+            return;
+        }
 
         _windowService.ShowMainWindow();
     }

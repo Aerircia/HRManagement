@@ -1,11 +1,14 @@
-﻿public interface IWindowService
+﻿namespace HRManagement.Services.Interfaces
 {
-    void ShowMainWindow();
-    void ShowLoginWindow();
+    public interface IWindowService
+    {
+        void ShowMainWindow();
+        void ShowLoginWindow();
 
-    void Minimize();
+        void Minimize();
 
-    void MaximizeRestore();
+        void MaximizeRestore();
 
-    void CloseCurrentWindow();
+        void CloseCurrentWindow();
+    }
 }

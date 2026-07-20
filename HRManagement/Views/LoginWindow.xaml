@@ -152,6 +152,11 @@
                             Width="180"
                             HorizontalAlignment="Center"/>
 
+                    <TextBlock
+                            Text="{Binding ErrorMessage}"
+                            Foreground="{StaticResource DangerBrush}"
+                            Margin="0,8,0,0"/>
+
                 </StackPanel>
 
             </Border>

@@ -4,9 +4,9 @@ using HRManagement.Utilities;
 
 namespace HRManagement.Services;
 
-public class NavigationService : ViewModelBase, INavigationService
+public class NavigationService(IServiceProvider serviceProvider) : ViewModelBase, INavigationService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     private ViewModelBase? _currentView;
 
@@ -14,11 +14,6 @@ public class NavigationService : ViewModelBase, INavigationService
     {
         get => _currentView;
         private set => SetProperty(ref _currentView, value);
-    }
-
-    public NavigationService(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
     }
 
     public void Navigate<TViewModel>()

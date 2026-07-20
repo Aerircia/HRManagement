@@ -1,7 +1,5 @@
-﻿using System.ComponentModel;
-using System.Windows.Media;
-using System.Windows.Input;
-using HRManagement.Models;
+﻿using System.Windows.Input;
+using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 
@@ -9,77 +7,37 @@ namespace HRManagement.ViewModels;
 
 public class TopBarViewModel : ViewModelBase
 {
-    private readonly ISessionService _sessionService;
+    private readonly SessionManager _sessionManager;
+    private readonly IAuthenticationService _authenticationService;
     private readonly IWindowService _windowService;
 
-    private string _username = "Guest";
-    public string Username
+    public TopBarViewModel(
+        SessionManager sessionManager,
+        IAuthenticationService authenticationService,
+        IWindowService windowService)
     {
-        get => _username;
-        set => SetProperty(ref _username, value);
+        _sessionManager = sessionManager;
+        _authenticationService = authenticationService;
+        _windowService = windowService;
+
+        LogoutCommand = new RelayCommand(Logout);
     }
 
-    private string _role = string.Empty;
-    public string Role
-    {
-        get => _role;
-        set => SetProperty(ref _role, value);
-    }
+    public string UserName =>
+        _sessionManager.CurrentUser?.Employee.FullName ?? "";
 
-    // Will later come from the database
-    private ImageSource? _avatar;
-    public ImageSource? Avatar
-    {
-        get => _avatar;
-        set => SetProperty(ref _avatar, value);
-    }
+    public string RoleName =>
+        _sessionManager.CurrentUser?.Role.RoleName ?? "";
+
+    public string? Avatar =>
+        _sessionManager.CurrentUser?.Employee.Avatar;
 
     public ICommand LogoutCommand { get; }
 
-    public TopBarViewModel(
-        ISessionService sessionService,
-        IWindowService windowService)
+    private void Logout(object? parameter)
     {
-        _sessionService = sessionService;
-        _windowService = windowService;
+        _authenticationService.Logout();
 
-        LogoutCommand = new RelayCommand(_ => Logout());
-
-        UpdateUserInfo();
-
-        _sessionService.PropertyChanged += SessionChanged;
-    }
-
-    private void SessionChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(ISessionService.CurrentAccount))
-        {
-            UpdateUserInfo();
-        }
-    }
-
-    private void UpdateUserInfo()
-    {
-        var account = _sessionService.CurrentAccount;
-
-        if (account == null)
-        {
-            Username = "Guest";
-            Role = string.Empty;
-            Avatar = null;
-            return;
-        }
-
-        Username = account.Username;
-        Role = ((UserRole)account.RoleID).ToString();
-
-        // TODO: Load avatar from database
-        Avatar = null;
-    }
-
-    private void Logout()
-    {
-        _sessionService.Logout();
         _windowService.ShowLoginWindow();
     }
 }

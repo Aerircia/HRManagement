@@ -2,7 +2,7 @@
 
 namespace HRManagement.ViewModels;
 
-public class ManageProfilesViewModel : ViewModelBase
+public class ManageProfilesViewModel : PageViewModel
 {
-    public virtual string Title => "Manage Profiles";
+    public override string Title => "Manage Profiles";
 }

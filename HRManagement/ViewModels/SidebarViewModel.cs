@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using HRManagement.Models;
+﻿using System;
+using System.Windows.Input;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 
@@ -8,31 +8,19 @@ namespace HRManagement.ViewModels;
 public class SidebarViewModel : ViewModelBase
 {
     private readonly INavigationService _navigationService;
-    private readonly ISessionService _sessionService;
-
-    public ICommand NavigateCommand { get; }
-
-    public bool IsManager =>
-        (_sessionService.CurrentAccount?.RoleID ?? 1) >= (int)UserRole.Manager;
-
-    public bool IsHR =>
-        (_sessionService.CurrentAccount?.RoleID ?? 1) >= (int)UserRole.HR;
+    private readonly IAuthorizationService _authorizationService;
 
     public SidebarViewModel(
         INavigationService navigationService,
-        ISessionService sessionService)
+        IAuthorizationService authorizationService)
     {
         _navigationService = navigationService;
-        _sessionService = sessionService;
+        _authorizationService = authorizationService;
 
         NavigateCommand = new RelayCommand(Navigate);
-
-        _sessionService.PropertyChanged += (_, __) =>
-        {
-            OnPropertyChanged(nameof(IsManager));
-            OnPropertyChanged(nameof(IsHR));
-        };
     }
+
+    public ICommand NavigateCommand { get; }
 
     private void Navigate(object? parameter)
     {
@@ -41,4 +29,13 @@ public class SidebarViewModel : ViewModelBase
             _navigationService.Navigate(viewModelType);
         }
     }
+
+    #region Authorization
+
+    public bool IsAdmin => _authorizationService.IsAdmin;
+
+    public bool IsManager => _authorizationService.IsManager;
+
+    public bool IsEmployee => _authorizationService.IsEmployee;
+    #endregion
 }
