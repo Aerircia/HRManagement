@@ -1,3 +1,7 @@
 <Solution>
   <Project Path="HRManagement/HRManagement.csproj" />
+  <Project Path="HRManagementDB/HRManagementDB.sqlproj" Id="2ebf00fe-d2e5-47a0-8b05-29282058f4d5">
+    <Build />
+    <Deploy />
+  </Project>
 </Solution>
