@@ -5,6 +5,8 @@
     [Content]     NVARCHAR (MAX) NULL,
     [SubmitDate]  DATETIME2 (7)  NOT NULL,
     [Status]      NVARCHAR (50)  NOT NULL,
+    [StartDate]   DATETIME2 (7)  NULL,
+    [EndDate]     DATETIME2 (7)  NULL,
     PRIMARY KEY CLUSTERED ([Request_ID] ASC),
     CONSTRAINT [FK_Request_Employee] FOREIGN KEY ([Employee_ID]) REFERENCES [dbo].[Employee] ([EmployeeID])
 );

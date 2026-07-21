@@ -44,7 +44,10 @@ SET IDENTITY_INSERT [dbo].[Attendance] OFF
 GO
 SET IDENTITY_INSERT [dbo].[RequestForm] ON 
 
-INSERT [dbo].[RequestForm] ([Request_ID], [Employee_ID], [RequestType], [Content], [SubmitDate], [Status]) VALUES (1, 2, N'Leave', N'Annual leave for 2 days.', CAST(N'2026-07-20T18:32:01.4300000' AS DateTime2), N'Pending')
+INSERT [dbo].[RequestForm] ([Request_ID], [Employee_ID], [RequestType], [Content], [SubmitDate], [Status], [StartDate], [EndDate]) VALUES (4, 3, N'Day Off', N'Reason: test 1', CAST(N'2026-07-21T23:00:12.6600000' AS DateTime2), N'Pending', CAST(N'2026-07-26T00:00:00.0000000' AS DateTime2), CAST(N'2026-07-30T00:00:00.0000000' AS DateTime2))
+INSERT [dbo].[RequestForm] ([Request_ID], [Employee_ID], [RequestType], [Content], [SubmitDate], [Status], [StartDate], [EndDate]) VALUES (5, 3, N'Resignation', N'Reason: Im done', CAST(N'2026-07-21T23:00:19.2466667' AS DateTime2), N'Pending', NULL, CAST(N'2026-07-31T00:00:00.0000000' AS DateTime2))
+INSERT [dbo].[RequestForm] ([Request_ID], [Employee_ID], [RequestType], [Content], [SubmitDate], [Status], [StartDate], [EndDate]) VALUES (6, 3, N'Other', N'Subject: test 3
+Description: wii', CAST(N'2026-07-21T23:00:27.3566667' AS DateTime2), N'Pending', NULL, NULL)
 SET IDENTITY_INSERT [dbo].[RequestForm] OFF
 GO
 SET IDENTITY_INSERT [dbo].[EmployeeEvaluation] ON 
