@@ -39,6 +39,7 @@ public partial class App : Application
 
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IAuthorizationService, AuthorizationService>();
+        services.AddSingleton<IRequestService, RequestService>();
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
@@ -47,6 +48,7 @@ public partial class App : Application
         services.AddSingleton<AccountRepository>();
         services.AddSingleton<EmployeeRepository>();
         services.AddSingleton<RoleRepository>();
+        services.AddSingleton<RequestFormRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

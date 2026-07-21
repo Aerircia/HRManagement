@@ -4,15 +4,318 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              Background="Transparent">
 
-    <Grid>
+    <Grid Margin="30">
 
-        <TextBlock Text="Manage Requests"
-                   FontSize="30"
-                   FontWeight="Bold"
-                   Margin="30"
-                   Foreground="{StaticResource PrimaryTextBrush}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Manage Requests"
+                       FontSize="30"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            <Button Grid.Column="1"
+                    Style="{StaticResource TopBarIconButtonStyle}"
+                    Command="{Binding RefreshCommand}">
+
+                <fa:IconBlock Icon="Redo" Width="16" Height="16" Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            </Button>
+
+        </Grid>
+
+        <!-- Stat cards -->
+
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,20">
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="#EEF2FF">
+                        <fa:IconBlock Icon="Inbox" Width="18" Height="18" Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Total" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="#FFF6E5">
+                        <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Pending" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding PendingCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="#E3FBF3">
+                        <fa:IconBlock Icon="Check" Width="18" Height="18" Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Approved" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding ApprovedCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="#FDEBEA">
+                        <fa:IconBlock Icon="Xmark" Width="18" Height="18" Foreground="{StaticResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Rejected" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding RejectedCount}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- Search + status filter -->
+
+        <Grid Grid.Row="2" Margin="0,0,0,16">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{StaticResource InputBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    MaxWidth="320"
+                    HorizontalAlignment="Left">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <fa:IconBlock Grid.Column="0"
+                                  Icon="MagnifyingGlass"
+                                  Width="14"
+                                  Height="14"
+                                  Margin="12,0,0,0"
+                                  Foreground="{StaticResource SecondaryTextBrush}"
+                                  VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Column="1"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Padding="10,10"
+                             Foreground="{StaticResource PrimaryTextBrush}"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                </Grid>
+
+            </Border>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+
+                <Button Style="{StaticResource FilterChipStyle}" Content="All" Tag="All"
+                        Command="{Binding SetStatusFilterCommand}" CommandParameter="All"/>
+
+                <Button Style="{StaticResource FilterChipStyle}" Content="Pending" Tag="Pending"
+                        Command="{Binding SetStatusFilterCommand}" CommandParameter="Pending"/>
+
+                <Button Style="{StaticResource FilterChipStyle}" Content="Approved" Tag="Approved"
+                        Command="{Binding SetStatusFilterCommand}" CommandParameter="Approved"/>
+
+                <Button Style="{StaticResource FilterChipStyle}" Content="Rejected" Tag="Rejected"
+                        Command="{Binding SetStatusFilterCommand}" CommandParameter="Rejected"/>
+
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Table -->
+
+        <Border Grid.Row="3"
+                Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="15">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Table header -->
+
+                <Grid Grid.Row="0" Background="{StaticResource TableHeaderBrush}" Height="46">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1.3*"/>
+                        <ColumnDefinition Width="1.8*"/>
+                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Employee" Style="{StaticResource TableHeaderTextStyle}"/>
+                    <TextBlock Grid.Column="1" Text="Type" Style="{StaticResource TableHeaderTextStyle}"/>
+                    <TextBlock Grid.Column="2" Text="Date" Style="{StaticResource TableHeaderTextStyle}"/>
+                    <TextBlock Grid.Column="3" Text="Submitted" Style="{StaticResource TableHeaderTextStyle}"/>
+                    <TextBlock Grid.Column="4" Text="Status" Style="{StaticResource TableHeaderTextStyle}"/>
+                    <TextBlock Grid.Column="5" Text="Actions" Style="{StaticResource TableHeaderTextStyle}" HorizontalAlignment="Center" Margin="0"/>
+
+                </Grid>
+
+                <!-- Rows -->
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                    <ItemsControl ItemsSource="{Binding Requests}">
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+
+                                <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+
+                                    <Grid Height="60">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="1.3*"/>
+                                            <ColumnDefinition Width="1.8*"/>
+                                            <ColumnDefinition Width="1.2*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding EmployeeName}"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                                   Margin="20,0,10,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding RequestType}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                                        <TextBlock Grid.Column="2"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource PrimaryTextBrush}">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource RequestDateRangeConverter}">
+                                                    <Binding Path="RequestType"/>
+                                                    <Binding Path="StartDate"/>
+                                                    <Binding Path="EndDate"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding SubmitDate, StringFormat='MMM dd, yyyy'}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource SecondaryTextBrush}"/>
+
+                                        <Grid Grid.Column="4" HorizontalAlignment="Left">
+
+                                            <Border Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"
+                                                    Opacity="0.15"
+                                                    CornerRadius="10"
+                                                    Height="26"
+                                                    Width="86"/>
+
+                                            <TextBlock Text="{Binding Status}"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="12"
+                                                       Width="86"
+                                                       TextAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+                                        </Grid>
+
+                                        <StackPanel Grid.Column="5"
+                                                    Orientation="Horizontal"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+
+                                            <Button Style="{StaticResource ApproveIconButtonStyle}"
+                                                    Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <fa:IconBlock Icon="Check" Width="14" Height="14" Foreground="{StaticResource WhiteBrush}"/>
+                                            </Button>
+
+                                            <Button Style="{StaticResource RejectIconButtonStyle}"
+                                                    Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Margin="8,0,0,0">
+                                                <fa:IconBlock Icon="Xmark" Width="14" Height="14" Foreground="{StaticResource WhiteBrush}"/>
+                                            </Button>
+
+                                        </StackPanel>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </ScrollViewer>
+
+                <TextBlock Grid.Row="1"
+                           Text="No requests found."
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,40,0,0"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}"/>
+
+            </Grid>
+
+        </Border>
 
     </Grid>
 

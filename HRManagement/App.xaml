@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:HRManagement.ViewModels"
              xmlns:views="clr-namespace:HRManagement.Views.Pages"
+             xmlns:converters="clr-namespace:HRManagement.Converters"
              xmlns:local="clr-namespace:HRManagement">
     <Application.Resources>
         
@@ -12,9 +13,12 @@
 
             <ResourceDictionary.MergedDictionaries>
 
+                <ResourceDictionary Source="Resources/Converters.xaml"/>
                 <ResourceDictionary Source="/Resources/Brushes.xaml"/>
                 <ResourceDictionary Source="/Resources/ButtonStyles.xaml"/>
                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
+                <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
+                <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
 
