@@ -47,6 +47,7 @@ public partial class App : Application
         services.AddSingleton<AccountRepository>();
         services.AddSingleton<EmployeeRepository>();
         services.AddSingleton<RoleRepository>();
+        services.AddSingleton<AttendanceRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

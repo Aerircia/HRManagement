@@ -7,14 +7,127 @@
              mc:Ignorable="d"
              Background="Transparent">
 
-    <Grid>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Attendance"
-                   FontSize="30"
-                   FontWeight="Bold"
-                   Margin="30"
-                   Foreground="{StaticResource PrimaryTextBrush}"/>
+        <!-- Header -->
+        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,10">
+            <TextBlock Text="Attendance" FontSize="30" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
+        </StackPanel>
+
+        <!-- Left: Calendar -->
+        <Border Grid.Column="0" Background="White" CornerRadius="6" Padding="12">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,8">
+                    <Button Content="&lt;" Width="32" Command="{Binding PrevMonthCommand}" />
+                    <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0" />
+                    <Button Content="&gt;" Width="32" Command="{Binding NextMonthCommand}" />
+                </StackPanel>
+
+                <!-- Days of week header -->
+                <UniformGrid Columns="7" DockPanel.Dock="Top">
+                    <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" />
+                    <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" />
+                </UniformGrid>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Days}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="7" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#EEE" BorderThickness="1" Margin="4" Padding="6" Background="{Binding Background}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Date, StringFormat='dd/MM'}" FontWeight="Bold" Foreground="Black" />
+                                    <StackPanel x:Name="TimesPanel">
+                                        <TextBlock Text="{Binding CheckIn, StringFormat='Check-in: {0:HH:mm}'}" FontSize="12" />
+                                        <TextBlock Text="{Binding CheckOut, StringFormat='Check-out: {0:HH:mm}'}" FontSize="12" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding DisplayStatus}" FontSize="12" Foreground="DarkRed" />
+                                </StackPanel>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsWeekend}" Value="True">
+                                    <Setter TargetName="TimesPanel" Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsBeforeHireDate}" Value="True">
+                                    <Setter TargetName="TimesPanel" Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Right: Summary and actions -->
+        <Border Grid.Column="1" Background="White" CornerRadius="6" Padding="12" Margin="12,0,0,0">
+            <StackPanel>
+                <TextBlock Text="Summary" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,4">
+                    <TextBlock Text="Days worked:" Width="120" />
+                    <TextBlock Text="{Binding TotalDaysWorked}" FontWeight="Bold" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,4">
+                    <TextBlock Text="On-time days:" Width="120" />
+                    <TextBlock Text="{Binding TotalOnTime}" FontWeight="Bold" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,4">
+                    <TextBlock Text="Late days:" Width="120" />
+                    <TextBlock Text="{Binding TotalLate}" FontWeight="Bold" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,4">
+                    <TextBlock Text="Absent days:" Width="120" />
+                    <TextBlock Text="{Binding TotalAbsent}" FontWeight="Bold" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,12">
+                    <Button Content="Check In" Command="{Binding CheckInCommand}" Width="100" Margin="0,0,8,0" />
+                    <Button Content="Check Out" Command="{Binding CheckOutCommand}" Width="100" />
+                </StackPanel>
+
+                <TextBlock Text="Legend" FontWeight="Bold" Margin="0,16,0,6" />
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="LightGreen" Stroke="#DDD" />
+                        <TextBlock Text=" On time / Present" Margin="8,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="Orange" Stroke="#DDD" />
+                        <TextBlock Text=" Late" Margin="8,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="LightCoral" Stroke="#DDD" />
+                        <TextBlock Text=" Absent" Margin="8,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="LightSteelBlue" Stroke="#DDD" />
+                        <TextBlock Text=" Weekend (Sat/Sun)" Margin="8,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="LightGray" Stroke="#DDD" />
+                        <TextBlock Text=" Before hire date" Margin="8,0" />
+                    </StackPanel>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
 
     </Grid>
-
 </UserControl>
