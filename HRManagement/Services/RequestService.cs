@@ -15,19 +15,17 @@ public class RequestService : IRequestService
 
     public bool SubmitDayOffRequest(int employeeId, DateTime startDate, DateTime endDate, string reason)
     {
-        return Submit(employeeId, "Day Off", $"Reason: {reason}", startDate, endDate);
+        return Submit(employeeId, "Day Off", reason, startDate, endDate);
     }
 
     public bool SubmitResignationRequest(int employeeId, DateTime lastWorkingDate, string reason)
     {
-        return Submit(employeeId, "Resignation", $"Reason: {reason}", null, lastWorkingDate);
+        return Submit(employeeId, "Resignation", reason, null, lastWorkingDate);
     }
 
     public bool SubmitOtherRequest(int employeeId, string subject, string description)
     {
-        var content = $"Subject: {subject}\nDescription: {description}";
-
-        return Submit(employeeId, "Other", content, null, null);
+        return Submit(employeeId, subject, description, null, null);
     }
 
     public List<RequestFormSummary> GetAllRequests()
