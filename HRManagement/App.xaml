@@ -3,12 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:HRManagement.ViewModels"
              xmlns:views="clr-namespace:HRManagement.Views.Pages"
-             xmlns:local="clr-namespace:HRManagement">
+             xmlns:local="clr-namespace:HRManagement"
+             xmlns:utilities="clr-namespace:HRManagement.Utilities"
+             >
     <Application.Resources>
         
         <ResourceDictionary>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+
+            <utilities:RoleToVisibilityConverter x:Key="RoleToVisibilityConverter" />
+            <utilities:RoleToComboVisibilityConverter x:Key="RoleToComboVisibilityConverter" />
 
             <ResourceDictionary.MergedDictionaries>
 
@@ -17,6 +22,8 @@
                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- role-specific converters removed; use ViewModel properties and BoolToVisibility -->
 
         </ResourceDictionary>
         

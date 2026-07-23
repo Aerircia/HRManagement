@@ -6,14 +6,38 @@
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
              Background="Transparent">
 
-    <Grid>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Manage Attendances"
-                   FontSize="30"
-                   FontWeight="Bold"
-                   Margin="30"
-                   Foreground="{StaticResource PrimaryTextBrush}"/>
+        <StackPanel>
+            <TextBlock Text="Manage Attendances" FontSize="30" FontWeight="Bold" Margin="0,0,0,12" Foreground="{StaticResource PrimaryTextBrush}"/>
 
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <TextBlock Text="Department:" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}" />
+                <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" DisplayMemberPath="DepartmentName" Width="240" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}" />
+            </StackPanel>
+
+            <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Employee ID" Binding="{Binding EmployeeId}" Width="80" />
+                    <DataGridTextColumn Header="Employee Name" Binding="{Binding EmployeeName}" Width="*" />
+                    <DataGridTextColumn Header="Working Days" Binding="{Binding WorkingDays}" Width="100" />
+                    <DataGridTextColumn Header="On-time Days" Binding="{Binding OnTimeDays}" Width="100" />
+                    <DataGridTextColumn Header="Late Days" Binding="{Binding LateDays}" Width="100" />
+                    <DataGridTextColumn Header="Absent Days" Binding="{Binding AbsentDays}" Width="100" />
+                    <DataGridTemplateColumn Header="OT">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="OT" Command="{Binding DataContext.SelectOtCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Total OT Count" Binding="{Binding TotalOtCount}" Width="120" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
     </Grid>
 
 </UserControl>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Windows;
 using HRManagement.Data;
 using HRManagement.Models;
 using Microsoft.Data.SqlClient;
@@ -9,6 +10,8 @@ namespace HRManagement.Repositories;
 
 public class AttendanceRepository : RepositoryBase
 {
+    public static event EventHandler<HRManagement.Models.AttendanceChangedEventArgs>? OnAttendanceChanged;
+
     public IEnumerable<Attendance> GetAttendancesForEmployeeMonth(int employeeId, int year, int month)
     {
         var list = new List<Attendance>();
@@ -74,6 +77,7 @@ WHERE Employee_ID = @emp AND (
             upd.Parameters.Add(new SqlParameter("@id", SqlDbType.Int) { Value = id });
             upd.ExecuteNonQuery();
             attendance.AttendanceId = id;
+            OnAttendanceChanged?.Invoke(this, new HRManagement.Models.AttendanceChangedEventArgs { EmployeeId = attendance.EmployeeId, Date = date });
         }
         else
         {
@@ -88,6 +92,7 @@ WHERE Employee_ID = @emp AND (
             if (idObj != null && idObj != DBNull.Value)
             {
                 attendance.AttendanceId = Convert.ToInt32(idObj);
+                OnAttendanceChanged?.Invoke(this, new HRManagement.Models.AttendanceChangedEventArgs { EmployeeId = attendance.EmployeeId, Date = date });
             }
         }
     }

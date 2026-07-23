@@ -43,6 +43,9 @@ namespace HRManagement.ViewModels
             _sessionManager.OnUserChanged += SessionManager_OnUserChanged;
 
             BuildMonth();
+
+        // subscribe to attendance changes so calendar updates when OT assigned
+        AttendanceRepository.OnAttendanceChanged += AttendanceRepository_OnAttendanceChanged;
         }
 
         public override string Title => "Attendance";
@@ -109,12 +112,33 @@ namespace HRManagement.ViewModels
                     if (day != null)
                     {
                         day.CheckIn = att.CheckIn; day.CheckOut = att.CheckOut;
-                        if (day.CheckIn.HasValue)
+                        if (!string.IsNullOrEmpty(att.Status) && att.Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
+                        {
+                            day.Status = "OT";
+                            day.LatenessMinutes = null;
+                        }
+                        else if (day.CheckIn.HasValue)
                         {
                             var shiftStart = day.Date.Add(ShiftStart);
-                            var minutesLate = (int)Math.Round((day.CheckIn.Value - shiftStart).TotalMinutes);
-                            if (minutesLate <= LateGraceMinutes) { day.LatenessMinutes = 0; day.Status = "OnTime"; }
-                            else { day.LatenessMinutes = Math.Max(0, minutesLate); day.Status = "Late"; }
+
+                            // compute minutes late based on the stored check-in time
+                            int minutesLate = 0;
+                            if (att.CheckIn.HasValue)
+                            {
+                                minutesLate = (int)Math.Round((att.CheckIn.Value - shiftStart).TotalMinutes);
+                            }
+
+                            // set status and lateness
+                            if (minutesLate <= LateGraceMinutes)
+                            {
+                                day.Status = "OnTime";
+                                day.LatenessMinutes = 0;
+                            }
+                            else
+                            {
+                                day.Status = "Late";
+                                day.LatenessMinutes = minutesLate;
+                            }
                         }
                         else { day.LatenessMinutes = null; day.Status = att.Status; }
                     }
@@ -126,20 +150,49 @@ namespace HRManagement.ViewModels
             UpdateSummary();
         }
 
+    // Called externally to notify this viewmodel that attendance for an employee changed;
+    // if it concerns the current user and month, rebuild calendar.
+    public void RefreshIfEmployee(int employeeId, DateTime date)
+    {
+        if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Employee.EmployeeId == employeeId)
+        {
+            if (date.Year == CurrentMonth.Year && date.Month == CurrentMonth.Month)
+                BuildMonth();
+        }
+    }
+
         private bool CanCheckInLogic()
         {
             var today = DateTime.Now.Date;
-            if (today.DayOfWeek == System.DayOfWeek.Saturday || today.DayOfWeek == System.DayOfWeek.Sunday) return false;
+            // allow check-in on weekends only when there's a scheduled OT or existing attendance for today
             if (_hireDate.HasValue && today < _hireDate.Value) return false;
-            var cell = Days.FirstOrDefault(d => d.Date.Date == today); if (cell == null) return false;
-            if (cell.CheckIn.HasValue) return false; return true;
+            var cell = Days.FirstOrDefault(d => d.Date.Date == today);
+            if (cell == null) return false;
+            if (cell.CheckIn.HasValue) return false;
+            if (today.DayOfWeek == System.DayOfWeek.Saturday || today.DayOfWeek == System.DayOfWeek.Sunday)
+            {
+                // on weekends, only allow if the day is marked as OT or there is already an attendance record
+                if (string.IsNullOrEmpty(cell.Status) || !cell.Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+            return true;
         }
 
         private bool CanCheckOutLogic()
         {
-            var today = DateTime.Now.Date; if (today.DayOfWeek == System.DayOfWeek.Saturday || today.DayOfWeek == System.DayOfWeek.Sunday) return false;
-            if (_hireDate.HasValue && today < _hireDate.Value) return false; var cell = Days.FirstOrDefault(d => d.Date.Date == today); if (cell == null) return false;
-            if (!cell.CheckIn.HasValue) return false; if (cell.CheckOut.HasValue) return false; return true;
+            var today = DateTime.Now.Date;
+            if (_hireDate.HasValue && today < _hireDate.Value) return false;
+            var cell = Days.FirstOrDefault(d => d.Date.Date == today);
+            if (cell == null) return false;
+            if (!cell.CheckIn.HasValue) return false;
+            if (cell.CheckOut.HasValue) return false;
+            if (today.DayOfWeek == System.DayOfWeek.Saturday || today.DayOfWeek == System.DayOfWeek.Sunday)
+            {
+                // on weekends, only allow check-out when the day is OT
+                if (string.IsNullOrEmpty(cell.Status) || !cell.Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+            return true;
         }
 
         private void CheckIn()
@@ -176,13 +229,95 @@ namespace HRManagement.ViewModels
             BuildMonth(); _checkInCommand?.RaiseCanExecuteChanged(); _checkOutCommand?.RaiseCanExecuteChanged();
         }
 
+    private void AttendanceRepository_OnAttendanceChanged(object? sender, HRManagement.Models.AttendanceChangedEventArgs e)
+    {
+        // if this calendar belongs to the employee whose attendance changed, rebuild month
+        if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Employee.EmployeeId == e.EmployeeId)
+        {
+            // if changed date is in current month, rebuild
+            if (e.Date.Year == CurrentMonth.Year && e.Date.Month == CurrentMonth.Month)
+                BuildMonth();
+        }
+    }
+
         private void UpdateSummary()
         {
-            TotalDaysWorked = Days.Count(d => d.IsCurrentMonth && d.CheckIn.HasValue && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
-            TotalLate = Days.Count(d => d.IsCurrentMonth && d.LatenessMinutes.HasValue && d.LatenessMinutes > 0 && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
-            TotalLateMinutes = Days.Where(d => d.IsCurrentMonth && d.LatenessMinutes.HasValue && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date).Sum(d => d.LatenessMinutes ?? 0);
-            TotalAbsent = Days.Count(d => d.IsCurrentMonth && !d.CheckIn.HasValue && d.IsWorkday() && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
-            TotalOnTime = Days.Count(d => d.IsCurrentMonth && d.CheckIn.HasValue && d.LatenessMinutes.HasValue && d.LatenessMinutes.Value == 0 && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
+            // Build cumulative summary from hire date up to the end of the viewed month (or last available attendance month)
+            if (_sessionManager.CurrentUser == null)
+            {
+                // fallback to previous behavior when no current user
+                TotalDaysWorked = Days.Count(d => d.IsCurrentMonth && d.CheckIn.HasValue && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
+                TotalLate = Days.Count(d => d.IsCurrentMonth && d.LatenessMinutes.HasValue && d.LatenessMinutes > 0 && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
+                TotalLateMinutes = Days.Where(d => d.IsCurrentMonth && d.LatenessMinutes.HasValue && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date).Sum(d => d.LatenessMinutes ?? 0);
+                TotalAbsent = Days.Count(d => d.IsCurrentMonth && !d.CheckIn.HasValue && d.IsWorkday() && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
+                TotalOnTime = Days.Count(d => d.IsCurrentMonth && d.CheckIn.HasValue && d.LatenessMinutes.HasValue && d.LatenessMinutes.Value == 0 && (!_hireDate.HasValue || d.Date.Date >= _hireDate.Value) && d.Date.Date <= DateTime.Now.Date);
+                return;
+            }
+
+            var empId = _sessionManager.CurrentUser.Employee.EmployeeId;
+            var hire = _hireDate ?? _sessionManager.CurrentUser.Employee.HireDate.Date;
+
+            // gather attendance records from hire month up to now
+            var allAtts = new System.Collections.Generic.List<Attendance>();
+            var m = new DateTime(hire.Year, hire.Month, 1);
+            var searchEnd = DateTime.Now.Date;
+            while (m <= searchEnd)
+            {
+                allAtts.AddRange(_attendanceRepository.GetAttendancesForEmployeeMonth(empId, m.Year, m.Month));
+                m = m.AddMonths(1);
+            }
+
+            // determine last month that actually has attendance/OT data
+            DateTime lastDataDate = allAtts.Select(a => (a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date).DefaultIfEmpty(hire).Max();
+            var lastDataMonthStart = new DateTime(lastDataDate.Year, lastDataDate.Month, 1);
+
+            // decide which month we should accumulate up to: if viewing an earlier month use that month; if viewing beyond lastDataMonth use lastDataMonth
+            var viewMonthStart = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
+            DateTime accumulateUpToMonthStart = viewMonthStart <= lastDataMonthStart ? viewMonthStart : lastDataMonthStart;
+            var accumulateEndDate = accumulateUpToMonthStart.AddMonths(1).AddDays(-1);
+            if (accumulateEndDate > DateTime.Now.Date) accumulateEndDate = DateTime.Now.Date;
+
+            // collect attendances up to accumulateEndDate
+            var attUpTo = allAtts.Where(a => ((a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date) <= accumulateEndDate).ToList();
+
+            // build per-day grouping using earliest CheckIn when available
+            var grouped = attUpTo.GroupBy(a => (a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date)
+                                 .Select(g => new {
+                                     Date = g.Key,
+                                     EarliestCheckIn = g.Where(x => x.CheckIn.HasValue).Select(x => x.CheckIn!.Value).OrderBy(x => x).FirstOrDefault() as DateTime?,
+                                     HasCheckIn = g.Any(x => x.CheckIn.HasValue),
+                                     Status = g.Select(x => x.Status).FirstOrDefault(s => !string.IsNullOrEmpty(s)) ?? string.Empty
+                                 }).ToList();
+
+            // total working days from hire up to accumulateEndDate (excluding weekends and before hire)
+            var totalWorkingDays = 0;
+            for (var d = hire.Date; d <= accumulateEndDate; d = d.AddDays(1))
+            {
+                if (d.DayOfWeek == System.DayOfWeek.Saturday || d.DayOfWeek == System.DayOfWeek.Sunday) continue;
+                totalWorkingDays++;
+            }
+
+            var daysWorked = grouped.Count(g => g.HasCheckIn && g.Date >= hire.Date);
+            var onTime = 0; var late = 0; var totalLateMinutes = 0;
+            foreach (var g in grouped)
+            {
+                if (!g.HasCheckIn) continue;
+                var shiftStart = g.Date.Add(ShiftStart);
+                if (g.EarliestCheckIn.HasValue)
+                {
+                    var minutesLate = (int)Math.Round((g.EarliestCheckIn.Value - shiftStart).TotalMinutes);
+                    if (minutesLate <= LateGraceMinutes) onTime++;
+                    else { late++; totalLateMinutes += Math.Max(0, minutesLate); }
+                }
+            }
+
+            var absent = Math.Max(0, totalWorkingDays - daysWorked);
+
+            TotalDaysWorked = daysWorked;
+            TotalLate = late;
+            TotalLateMinutes = totalLateMinutes;
+            TotalAbsent = absent;
+            TotalOnTime = onTime;
         }
 
         private int _totalDaysWorked; public int TotalDaysWorked { get => _totalDaysWorked; set => SetProperty(ref _totalDaysWorked, value); }
@@ -203,13 +338,81 @@ namespace HRManagement.ViewModels
             private bool _isBeforeHireDate; public bool IsBeforeHireDate { get => _isBeforeHireDate; set => SetProperty(ref _isBeforeHireDate, value); }
             private int? _latenessMinutes; public int? LatenessMinutes { get => _latenessMinutes; set { if (SetProperty(ref _latenessMinutes, value)) OnPropertyChanged(nameof(DisplayStatus)); } }
             private bool _isWeekend; public bool IsWeekend { get => _isWeekend; set => SetProperty(ref _isWeekend, value); }
-            public string DisplayStatus { get { if (!string.IsNullOrEmpty(Status) && Status.Equals("Late", StringComparison.OrdinalIgnoreCase) && LatenessMinutes.HasValue && LatenessMinutes.Value > 0) return $"Late: {LatenessMinutes.Value} min"; if (!string.IsNullOrEmpty(Status)) return Status; return string.Empty; } }
+        public string DisplayStatus { get { if (!string.IsNullOrEmpty(Status) && Status.Equals("Late", StringComparison.OrdinalIgnoreCase) && LatenessMinutes.HasValue && LatenessMinutes.Value > 0) return $"Late: {LatenessMinutes.Value} min"; if (!string.IsNullOrEmpty(Status)) return Status; return string.Empty; } }
+
+        public bool ShouldShowTimes
+        {
+            get
+            {
+                if (IsBeforeHireDate) return false;
+                if (IsWeekend)
+                {
+                    // only show times on weekends when OT or explicit check-in/out exists
+                    return !string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)
+                           || CheckIn.HasValue
+                           || CheckOut.HasValue;
+                }
+
+                // weekdays: show times (may be empty) unless before hire
+                // For future dates, still show times if an OT/attendance record exists
+                if (Date.Date > DateTime.Now.Date)
+                {
+                    return (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue;
+                }
+
+                return true;
+            }
+        }
 
             public void UpdateColor()
             {
                 if (!IsCurrentMonth) { Background = System.Windows.Media.Brushes.Transparent; return; }
-                if (IsWeekend) { Background = System.Windows.Media.Brushes.LightSteelBlue; Status = "Weekend"; LatenessMinutes = null; return; }
-                if (Date.Date > DateTime.Now.Date) { Background = System.Windows.Media.Brushes.White; Status = string.Empty; LatenessMinutes = null; return; }
+                // OT should always render as purple regardless of weekend/weekday or lateness
+                if (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
+                {
+                    Background = System.Windows.Media.Brushes.MediumPurple;
+                    LatenessMinutes = null;
+                    return;
+                }
+                if (IsWeekend)
+                {
+                    // Nếu cuối tuần nhưng có dữ liệu chấm công (OT) thì hiển thị như ngày làm
+                // treat weekend as workday when there's an OT record (Status=="OT") or explicit check times
+                if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
+                    {
+                        if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0)
+                        {
+                            Background = System.Windows.Media.Brushes.Orange;
+                        }
+                        else
+                        {
+                            Background = System.Windows.Media.Brushes.MediumPurple;   // hoặc LightGreen
+                        }
+
+                        if (string.IsNullOrWhiteSpace(Status))
+                            Status = "OT";
+
+                        return;
+                    }
+
+                    Background = System.Windows.Media.Brushes.LightSteelBlue;
+                    Status = "Weekend";
+                    LatenessMinutes = null;
+                    return;
+                }
+                if (Date.Date > DateTime.Now.Date)
+                {
+                    // For future dates, preserve OT or explicit attendance so scheduled OT shows on calendar;
+                    // otherwise render as neutral/empty.
+                    if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
+                    {
+                        // allow normal coloring logic to run below
+                    }
+                    else
+                    {
+                        Background = System.Windows.Media.Brushes.White; Status = string.Empty; LatenessMinutes = null; return;
+                    }
+                }
                 if (IsBeforeHireDate) { Background = System.Windows.Media.Brushes.LightGray; Status = "Before Hire Date"; LatenessMinutes = null; return; }
                 if (!CheckIn.HasValue) { Background = System.Windows.Media.Brushes.LightCoral; Status = "Absent"; LatenessMinutes = null; return; }
                 if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0) { Background = System.Windows.Media.Brushes.Orange; return; }

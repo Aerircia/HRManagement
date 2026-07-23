@@ -58,7 +58,7 @@
                                 </StackPanel>
                             </Border>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding IsWeekend}" Value="True">
+                                <DataTrigger Binding="{Binding ShouldShowTimes}" Value="False">
                                     <Setter TargetName="TimesPanel" Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsBeforeHireDate}" Value="True">
@@ -119,6 +119,10 @@
                     <StackPanel Orientation="Horizontal" Margin="0,2">
                         <Rectangle Width="16" Height="16" Fill="LightSteelBlue" Stroke="#DDD" />
                         <TextBlock Text=" Weekend (Sat/Sun)" Margin="8,0" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <Rectangle Width="16" Height="16" Fill="MediumPurple" Stroke="#DDD" />
+                        <TextBlock Text=" OT" Margin="8,0" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,2">
                         <Rectangle Width="16" Height="16" Fill="LightGray" Stroke="#DDD" />

@@ -40,4 +40,64 @@ public class EmployeeRepository : RepositoryBase
             Avatar = reader["Avatar"] as string
         };
     }
+
+    public IEnumerable<Employee> GetAll()
+    {
+        var list = new List<Employee>();
+
+        using var conn = Db.CreateConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT EmployeeID, FullName, Date_of_birth, Phone, Email, Role_ID, Department_ID, HireDate, Status, Avatar FROM Employee";
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new Employee
+            {
+                EmployeeId = (int)reader[0],
+                FullName = reader[1].ToString()!,
+                DateOfBirth = (DateTime)reader[2],
+                Phone = reader[3] as string,
+                Email = reader[4].ToString()!,
+                RoleId = (int)reader[5],
+                DepartmentId = (int)reader[6],
+                HireDate = (DateTime)reader[7],
+                Status = reader[8].ToString()!,
+                Avatar = reader[9] as string
+            });
+        }
+
+        return list;
+    }
+
+    public IEnumerable<Employee> GetByDepartment(int departmentId)
+    {
+        var list = new List<Employee>();
+        using var conn = Db.CreateConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT EmployeeID, FullName, Date_of_birth, Phone, Email, Role_ID, Department_ID, HireDate, Status, Avatar FROM Employee WHERE Department_ID = @dept";
+        var p = cmd.CreateParameter(); p.ParameterName = "@dept"; p.Value = departmentId; cmd.Parameters.Add(p);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new Employee
+            {
+                EmployeeId = (int)reader[0],
+                FullName = reader[1].ToString()!,
+                DateOfBirth = (DateTime)reader[2],
+                Phone = reader[3] as string,
+                Email = reader[4].ToString()!,
+                RoleId = (int)reader[5],
+                DepartmentId = (int)reader[6],
+                HireDate = (DateTime)reader[7],
+                Status = reader[8].ToString()!,
+                Avatar = reader[9] as string
+            });
+        }
+
+        return list;
+    }
 }
