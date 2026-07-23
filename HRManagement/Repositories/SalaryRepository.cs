@@ -59,16 +59,6 @@ namespace HRManagement.Repositories
             using var connection = Db.CreateConnection();
             connection.Open();
 
-            /*
-             * Một hợp đồng được xem là có hiệu lực trong tháng khi:
-             *
-             * StartDate < ngày đầu tháng kế tiếp
-             * và
-             * EndDate chưa có hoặc EndDate >= ngày đầu tháng hiện tại.
-             *
-             * Nếu có nhiều hợp đồng cùng giao với tháng được chọn,
-             * lấy hợp đồng có StartDate gần nhất.
-             */
             const string sql = """
             SELECT TOP (1)
                 Contract_ID,
@@ -154,7 +144,7 @@ namespace HRManagement.Repositories
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(departmentId),
-                    "Department ID phải lớn hơn 0.");
+                    "Department ID must be > 0.");
             }
 
             using var connection = Db.CreateConnection();
@@ -194,14 +184,6 @@ namespace HRManagement.Repositories
             using var connection = Db.CreateConnection();
             connection.Open();
 
-            /*
-             * Dùng khoảng ngày thay vì:
-             *
-             * MONTH(Check_in) = @Month
-             * YEAR(Check_in) = @Year
-             *
-             * Cách này rõ ràng hơn và có thể tận dụng index tốt hơn.
-             */
             const string sql = """
             SELECT
                 Attendance_ID,
@@ -309,13 +291,6 @@ namespace HRManagement.Repositories
             using var connection = Db.CreateConnection();
             connection.Open();
 
-            /*
-             * Schema hiện tại chưa có UNIQUE constraint cho:
-             * Employee_ID + Month + Year.
-             *
-             * Vì vậy dùng TOP (1) và lấy Payroll_ID mới nhất
-             * trong trường hợp dữ liệu bị trùng.
-             */
             const string sql = """
             SELECT TOP (1) Payroll_ID
             FROM Payroll
@@ -573,7 +548,7 @@ namespace HRManagement.Repositories
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(employeeId),
-                    "Employee ID phải lớn hơn 0.");
+                    "Employee ID must be > 0.");
             }
         }
 
@@ -585,14 +560,14 @@ namespace HRManagement.Repositories
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(month),
-                    "Tháng phải nằm trong khoảng từ 1 đến 12.");
+                    "Month isn't between 1 and 12.");
             }
 
             if (year < 2000)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(year),
-                    "Năm tính lương phải lớn hơn hoặc bằng 2000.");
+                    "Year must be > 2000.");
             }
         }
     }

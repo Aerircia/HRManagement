@@ -8,10 +8,6 @@ namespace HRManagement.Services
 {
     public class SalaryCalculator : ISalaryCalculator
     {
-        /// <summary>
-        /// Số ngày công chuẩn trong tháng.
-        /// Có thể đưa vào Setting sau này.
-        /// </summary>
         private const int StandardWorkingDays = 26;
 
         public SalaryDetailModel CalculateSalary(
@@ -33,25 +29,19 @@ namespace HRManagement.Services
             if (role == null)
                 throw new ArgumentNullException(nameof(role));
 
-            //---------------------------------------------------
             // Attendance
-            //---------------------------------------------------
 
             int workingDays = CountWorkingDays(attendances);
 
             int absentDays = CountAbsentDays(attendances);
 
-            //---------------------------------------------------
             // Evaluation
-            //---------------------------------------------------
 
             decimal reward = CalculateReward(evaluations);
 
             decimal penalty = CalculatePenalty(evaluations);
 
-            //---------------------------------------------------
             // Salary
-            //---------------------------------------------------
 
             decimal roleSalary =
                 contract.BaseSalary * role.PayRate;
@@ -102,9 +92,7 @@ namespace HRManagement.Services
             };
         }
 
-        //-------------------------------------------------------
         // Attendance
-        //-------------------------------------------------------
 
         private static int CountWorkingDays(
             IReadOnlyList<Attendance> attendances)
@@ -130,9 +118,7 @@ namespace HRManagement.Services
                     StringComparison.OrdinalIgnoreCase));
         }
 
-        //-------------------------------------------------------
         // Evaluation
-        //-------------------------------------------------------
 
         private static decimal CalculateReward(
             IReadOnlyList<EmployeeEvaluation> evaluations)

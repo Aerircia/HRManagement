@@ -100,23 +100,14 @@ public class SalaryViewModel : PageViewModel
         private set => SetProperty(ref _hasSalary, value);
     }
 
-    /// <summary>
-    /// Lương sau khi áp dụng hệ số chức vụ.
-    /// </summary>
     public decimal RoleSalary =>
         Salary == null
             ? 0
             : Salary.BaseSalary * Salary.PayRate;
 
-    /// <summary>
-    /// Lương một ngày công theo quy định 26 ngày/tháng.
-    /// </summary>
     public decimal DailySalary =>
         RoleSalary / 26m;
 
-    /// <summary>
-    /// Lương được tính theo số ngày đi làm thực tế.
-    /// </summary>
     public decimal AttendanceSalary =>
         Salary == null
             ? 0
@@ -186,10 +177,6 @@ public class SalaryViewModel : PageViewModel
             var employeeId =
                 currentUser.Employee.EmployeeId;
 
-            /*
-             * Employee chỉ được xem kỳ lương đã được
-             * Manager hoặc Admin lập trong bảng Payroll.
-             */
             if (!_salaryRepository.PayrollExists(
                     employeeId,
                     SelectedMonth,
