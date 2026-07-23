@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using HRManagement.Models;
 using Microsoft.Data.SqlClient;
 
@@ -55,9 +56,9 @@ public class DepartmentRepository : RepositoryBase
     }
 
     private static Department Map(SqlDataReader reader)
-    {
-        return new Department
         {
+        return new Department
+            {
             DepartmentId = (int)reader["Department_ID"],
             DepartmentName = reader["DepartmentName"].ToString()!
         };

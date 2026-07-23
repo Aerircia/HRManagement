@@ -11,10 +11,14 @@ public class SessionManager
     public void Login(CurrentUser user)
     {
         CurrentUser = user;
+        OnUserChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void Logout()
     {
         CurrentUser = null;
+        OnUserChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    public event EventHandler? OnUserChanged;
 }

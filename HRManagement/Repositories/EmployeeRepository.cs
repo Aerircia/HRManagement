@@ -146,4 +146,3 @@ public class EmployeeRepository : RepositoryBase
             Avatar = reader["Avatar"] as string
         };
     }
-}
