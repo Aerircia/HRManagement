@@ -47,12 +47,16 @@ public partial class App : Application
         services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
 
         // Repositories
+        services.AddSingleton<ISalaryRepository, SalaryRepository>();
         services.AddSingleton<AccountRepository>();
         services.AddSingleton<EmployeeRepository>();
         services.AddSingleton<RoleRepository>();
+        services.AddSingleton<DepartmentRepository>();
+        services.AddSingleton<ContractRepository>();          
+        services.AddSingleton<AttendanceRepository>();        
+        services.AddSingleton<EmployeeEvaluationRepository>();
+        services.AddSingleton<PayrollRepository>();            
         services.AddSingleton<RequestFormRepository>();
-
-        services.AddSingleton<ISalaryRepository, SalaryRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

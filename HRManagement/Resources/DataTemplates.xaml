@@ -14,7 +14,7 @@
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:ContractViewModel}">
-        <views:ContractView/>
+        <views:ContractsView/>
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:EmployeeEvaluationViewModel}">
