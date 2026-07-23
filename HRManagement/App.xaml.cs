@@ -44,11 +44,15 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
 
+        services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
+
         // Repositories
         services.AddSingleton<AccountRepository>();
         services.AddSingleton<EmployeeRepository>();
         services.AddSingleton<RoleRepository>();
         services.AddSingleton<RequestFormRepository>();
+
+        services.AddSingleton<ISalaryRepository, SalaryRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
