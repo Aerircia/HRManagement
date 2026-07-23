@@ -136,5 +136,3 @@ WHERE Employee_ID = @emp AND (
         return results;
     }
 }
-
-}

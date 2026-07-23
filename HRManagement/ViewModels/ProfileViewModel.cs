@@ -57,7 +57,7 @@ namespace HRManagement.ViewModels
             SaveProfileCommand = new RelayCommand(_ => SaveProfile());
             CancelEditCommand = new RelayCommand(_ => IsEditOpen = false);
 
-            EmploymentDetails = new ObservableCollection<KeyValueItem>();
+            EmploymentDetails = [];
 
             LoadCurrentUser();
         }
@@ -463,15 +463,9 @@ namespace HRManagement.ViewModels
     }
 
   
-    public class KeyValueItem
+    public class KeyValueItem(string label, string value)
     {
-        public KeyValueItem(string label, string value)
-        {
-            Label = label;
-            Value = value;
-        }
-
-        public string Label { get; }
-        public string Value { get; }
+        public string Label { get; } = label;
+        public string Value { get; } = value;
     }
 }

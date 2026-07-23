@@ -1,11 +1,13 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:HRManagement.Converters">
-
+    xmlns:utilities="clr-namespace:HRManagement.Utilities">
+    
     <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
-    <converters:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
-    <converters:RequestDateRangeConverter x:Key="RequestDateRangeConverter"/>
-    <converters:FilterChipBrushConverter x:Key="FilterChipBrushConverter"/>
+
+    <utilities:RoleToVisibilityConverter x:Key="RoleToVisibilityConverter" />
+    <utilities:StatusToBrushConverter x:Key="StatusToBrushConverter"/>
+    <utilities:RequestDateRangeConverter x:Key="RequestDateRangeConverter"/>
+    <utilities:FilterChipBrushConverter x:Key="FilterChipBrushConverter"/>
 
 </ResourceDictionary>

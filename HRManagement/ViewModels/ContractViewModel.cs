@@ -15,17 +15,17 @@ namespace HRManagement.ViewModels
     public class ContractViewModel : PageViewModel
     {
         
-        private static readonly List<IdNamePair> Roles = new()
-        {
+        private static readonly List<IdNamePair> Roles =
+        [
             new IdNamePair(1, "Admin"),
             new IdNamePair(2, "Manager"),
             new IdNamePair(3, "Employee")
-        };
+        ];
 
-        public static readonly List<string> ContractTypeOptions = new() { "Full-time", "Part-time", "Internship", "Seasonal" };
-        public static readonly List<string> StatusOptions = new() { "Active", "Expired", "Terminated", "Pending" };
+        public static readonly List<string> ContractTypeOptions = ["Full-time", "Part-time", "Internship", "Seasonal"];
+        public static readonly List<string> StatusOptions = ["Active", "Expired", "Terminated", "Pending"];
 
-        private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 }; // Admin, Manager
+        private static readonly HashSet<int> AllowedRoleIds = [1, 2]; // Admin, Manager
 
         private readonly ContractRepository _contractRepository;
         private readonly EmployeeRepository _employeeRepository;
@@ -42,8 +42,8 @@ namespace HRManagement.ViewModels
             _employeeRepository = employeeRepository;
             _sessionManager = sessionManager;
 
-            Contracts = new ObservableCollection<ContractRow>();
-            Employees = new ObservableCollection<IdNamePair>();
+            Contracts = [];
+            Employees = [];
             RoleOptions = Roles;
             ContractTypeOptionsList = ContractTypeOptions;
             StatusOptionsList = StatusOptions;
