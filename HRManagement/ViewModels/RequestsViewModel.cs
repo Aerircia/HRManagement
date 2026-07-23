@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
+using HRManagement.Models;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
@@ -30,6 +32,34 @@ public class RequestsViewModel : PageViewModel
         SelectCategoryCommand = new RelayCommand(SelectCategory);
         BackCommand = new RelayCommand(_ => GoBack());
         SendCommand = new RelayCommand(Send);
+
+        LoadMyRequests();
+    }
+
+    public ObservableCollection<RequestFormSummary> MyRequests { get; } = new();
+
+    private bool _isMyRequestsEmpty;
+    public bool IsMyRequestsEmpty
+    {
+        get => _isMyRequestsEmpty;
+        set => SetProperty(ref _isMyRequestsEmpty, value);
+    }
+
+    private void LoadMyRequests()
+    {
+        var employeeId = _sessionManager.CurrentUser?.Employee.EmployeeId;
+
+        if (employeeId == null)
+            return;
+
+        var requests = _requestService.GetMyRequests(employeeId.Value);
+
+        MyRequests.Clear();
+
+        foreach (var request in requests)
+            MyRequests.Add(request);
+
+        IsMyRequestsEmpty = MyRequests.Count == 0;
     }
 
     private RequestCategory _selectedCategory = RequestCategory.None;
@@ -243,6 +273,8 @@ public class RequestsViewModel : PageViewModel
         SelectedCategory = RequestCategory.None;
         IsError = false;
         StatusMessage = "Your request has been submitted.";
+
+        LoadMyRequests();
     }
 
     private void ShowError(string message)

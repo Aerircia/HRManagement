@@ -51,18 +51,85 @@ public class RequestFormRepository : RepositoryBase
 
         while (reader.Read())
         {
-            requests.Add(new RequestFormSummary
-            {
-                RequestId = (int)reader["Request_ID"],
-                EmployeeId = (int)reader["Employee_ID"],
-                EmployeeName = reader["FullName"].ToString()!,
-                RequestType = reader["RequestType"].ToString()!,
-                Content = reader["Content"] as string,
-                StartDate = reader["StartDate"] as DateTime?,
-                EndDate = reader["EndDate"] as DateTime?,
-                SubmitDate = (DateTime)reader["SubmitDate"],
-                Status = reader["Status"].ToString()!
-            });
+            requests.Add(ReadSummary(reader));
+        }
+
+        return requests;
+    }
+
+    public List<RequestFormSummary> GetByEmployee(int employeeId)
+    {
+        var requests = new List<RequestFormSummary>();
+
+        using var connection = Db.CreateConnection();
+
+        connection.Open();
+
+        const string sql = """
+            SELECT r.Request_ID, r.Employee_ID, e.FullName, r.RequestType, r.Content,
+                   r.StartDate, r.EndDate, r.SubmitDate, r.Status
+            FROM RequestForm r
+            JOIN Employee e ON e.EmployeeID = r.Employee_ID
+            WHERE r.Employee_ID = @EmployeeId
+            ORDER BY r.SubmitDate DESC
+            """;
+
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@EmployeeId", employeeId);
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            requests.Add(ReadSummary(reader));
+        }
+
+        return requests;
+    }
+
+    private static RequestFormSummary ReadSummary(SqlDataReader reader)
+    {
+        return new RequestFormSummary
+        {
+            RequestId = (int)reader["Request_ID"],
+            EmployeeId = (int)reader["Employee_ID"],
+            EmployeeName = reader["FullName"].ToString()!,
+            RequestType = reader["RequestType"].ToString()!,
+            Content = reader["Content"] as string,
+            StartDate = reader["StartDate"] as DateTime?,
+            EndDate = reader["EndDate"] as DateTime?,
+            SubmitDate = (DateTime)reader["SubmitDate"],
+            Status = reader["Status"].ToString()!
+        };
+    }
+
+    public List<RequestFormSummary> GetByDepartment(int departmentId)
+    {
+        var requests = new List<RequestFormSummary>();
+
+        using var connection = Db.CreateConnection();
+
+        connection.Open();
+
+        const string sql = """
+            SELECT r.Request_ID, r.Employee_ID, e.FullName, r.RequestType, r.Content,
+                   r.StartDate, r.EndDate, r.SubmitDate, r.Status
+            FROM RequestForm r
+            JOIN Employee e ON e.EmployeeID = r.Employee_ID
+            WHERE e.Department_ID = @DepartmentId
+            ORDER BY r.SubmitDate DESC
+            """;
+
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@DepartmentId", departmentId);
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            requests.Add(ReadSummary(reader));
         }
 
         return requests;

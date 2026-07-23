@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using HRManagement.Services.Interfaces;
+﻿using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
+using HRManagement.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HRManagement.Services;
 
@@ -29,5 +30,11 @@ public class NavigationService(IServiceProvider serviceProvider) : ViewModelBase
         {
             CurrentView = vm;
         }
+    }
+    public void Reset()
+    {
+        CurrentView = null;
+
+        Navigate<DashboardViewModel>();
     }
 }

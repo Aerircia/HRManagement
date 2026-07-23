@@ -33,6 +33,16 @@ public class RequestService : IRequestService
         return _requestFormRepository.GetAll();
     }
 
+    public List<RequestFormSummary> GetRequestsByDepartment(int departmentId)
+    {
+        return _requestFormRepository.GetByDepartment(departmentId);
+    }
+
+    public List<RequestFormSummary> GetMyRequests(int employeeId)
+    {
+        return _requestFormRepository.GetByEmployee(employeeId);
+    }
+
     public bool ApproveRequest(int requestId)
     {
         return _requestFormRepository.UpdateStatus(requestId, "Approved");

@@ -12,6 +12,10 @@ public interface IRequestService
 
     List<RequestFormSummary> GetAllRequests();
 
+    List<RequestFormSummary> GetRequestsByDepartment(int departmentId);
+
+    List<RequestFormSummary> GetMyRequests(int employeeId);
+
     bool ApproveRequest(int requestId);
 
     bool RejectRequest(int requestId);

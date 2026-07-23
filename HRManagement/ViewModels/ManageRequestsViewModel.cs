@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Input;
 using HRManagement.Models;
+using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 
@@ -10,14 +11,21 @@ namespace HRManagement.ViewModels;
 public class ManageRequestsViewModel : PageViewModel
 {
     private readonly IRequestService _requestService;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly SessionManager _sessionManager;
 
-    private List<RequestFormSummary> _allRequests = [];
+    private List<RequestFormSummary> _allRequests = new();
 
     public override string Title => "Manage Requests";
 
-    public ManageRequestsViewModel(IRequestService requestService)
+    public ManageRequestsViewModel(
+        IRequestService requestService,
+        IAuthorizationService authorizationService,
+        SessionManager sessionManager)
     {
         _requestService = requestService;
+        _authorizationService = authorizationService;
+        _sessionManager = sessionManager;
 
         ApproveCommand = new RelayCommand(p => UpdateStatus(p, "Approved"));
         RejectCommand = new RelayCommand(p => UpdateStatus(p, "Rejected"));
@@ -27,7 +35,7 @@ public class ManageRequestsViewModel : PageViewModel
         Load();
     }
 
-    public ObservableCollection<RequestFormSummary> Requests { get; } = [];
+    public ObservableCollection<RequestFormSummary> Requests { get; } = new();
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -93,7 +101,9 @@ public class ManageRequestsViewModel : PageViewModel
 
     private void Load()
     {
-        _allRequests = _requestService.GetAllRequests();
+        _allRequests = _authorizationService.IsAdmin
+            ? _requestService.GetAllRequests()
+            : _requestService.GetRequestsByDepartment(_sessionManager.CurrentUser!.Employee.DepartmentId);
 
         TotalCount = _allRequests.Count;
         PendingCount = _allRequests.Count(r => r.Status == "Pending");
