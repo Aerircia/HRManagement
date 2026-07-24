@@ -1,5 +1,6 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Utilities;
 using System;
@@ -27,15 +28,15 @@ namespace HRManagement.ViewModels
 
         private static readonly HashSet<int> AllowedRoleIds = [1, 2]; // Admin, Manager
 
-        private readonly ContractRepository _contractRepository;
-        private readonly EmployeeRepository _employeeRepository;
+        private readonly IContractRepository _contractRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly SessionManager _sessionManager;
 
         public override string Title => "Contracts";
 
         public ContractViewModel(
-            ContractRepository contractRepository,
-            EmployeeRepository employeeRepository,
+            IContractRepository contractRepository,
+            IEmployeeRepository employeeRepository,
             SessionManager sessionManager)
         {
             _contractRepository = contractRepository;

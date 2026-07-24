@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using HRManagement.Models;
+﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
+using System;
+using System.Collections.Generic;
 
 namespace HRManagement.Repositories;
 
-public class DepartmentRepository : RepositoryBase
+public class DepartmentRepository : RepositoryBase, IDepartmentRepository
 {
     public Department? GetById(int id)
     {

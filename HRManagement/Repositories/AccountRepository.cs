@@ -1,9 +1,10 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class AccountRepository : RepositoryBase
+public class AccountRepository : RepositoryBase, IAccountRepository
 {
     public Account? GetByUsername(string username)
     {

@@ -1,14 +1,15 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
 public class RequestService : IRequestService
 {
-    private readonly RequestFormRepository _requestFormRepository;
+    private readonly IRequestFormRepository _requestFormRepository;
 
-    public RequestService(RequestFormRepository requestFormRepository)
+    public RequestService(IRequestFormRepository requestFormRepository)
     {
         _requestFormRepository = requestFormRepository;
     }

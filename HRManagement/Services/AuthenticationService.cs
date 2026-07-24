@@ -1,20 +1,20 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly AccountRepository _accountRepository;
-    private readonly EmployeeRepository _employeeRepository;
-    private readonly RoleRepository _roleRepository;
+    private readonly IAccountRepository _accountRepository;
+    private readonly IEmployeeRepository _employeeRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly SessionManager _sessionManager;
 
     public AuthenticationService(
-        AccountRepository accountRepository,
-        EmployeeRepository employeeRepository,
-        RoleRepository roleRepository,
+        IAccountRepository accountRepository,
+        IEmployeeRepository employeeRepository,
+        IRoleRepository roleRepository,
         SessionManager sessionManager)
     {
         _accountRepository = accountRepository;
