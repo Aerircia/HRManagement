@@ -9,7 +9,7 @@
 
     <Grid>
 
-        <TextBlock Text="Dashboard"
+        <TextBlock Text="{Binding UserName}"
                    FontSize="30"
                    FontWeight="Bold"
                    Margin="30"

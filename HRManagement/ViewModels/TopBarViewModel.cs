@@ -10,15 +10,18 @@ public class TopBarViewModel : ViewModelBase
     private readonly SessionManager _sessionManager;
     private readonly IAuthenticationService _authenticationService;
     private readonly IWindowService _windowService;
+    private readonly INavigationService _navigationService;
 
     public TopBarViewModel(
         SessionManager sessionManager,
         IAuthenticationService authenticationService,
-        IWindowService windowService)
+        IWindowService windowService,
+        INavigationService navigationService)
     {
         _sessionManager = sessionManager;
         _authenticationService = authenticationService;
         _windowService = windowService;
+        _navigationService = navigationService;
 
         LogoutCommand = new RelayCommand(Logout);
     }
@@ -37,6 +40,8 @@ public class TopBarViewModel : ViewModelBase
     private void Logout(object? parameter)
     {
         _authenticationService.Logout();
+
+        _navigationService.Reset();
 
         _windowService.ShowLoginWindow();
     }

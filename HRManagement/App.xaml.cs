@@ -39,14 +39,24 @@ public partial class App : Application
 
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IAuthorizationService, AuthorizationService>();
+        services.AddSingleton<IRequestService, RequestService>();
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
 
+        services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
+
         // Repositories
+        services.AddSingleton<ISalaryRepository, SalaryRepository>();
         services.AddSingleton<AccountRepository>();
         services.AddSingleton<EmployeeRepository>();
         services.AddSingleton<RoleRepository>();
+        services.AddSingleton<DepartmentRepository>();
+        services.AddSingleton<ContractRepository>();          
+        services.AddSingleton<AttendanceRepository>();        
+        services.AddSingleton<EmployeeEvaluationRepository>();
+        services.AddSingleton<PayrollRepository>();            
+        services.AddSingleton<RequestFormRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

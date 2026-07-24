@@ -6,7 +6,7 @@
     <Name>HRManagementDB</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{2ebf00fe-d2e5-47a0-8b05-29282058f4d5}</ProjectGuid>
+    <ProjectGuid>{bdc1ceca-56cc-48c7-80d6-16cd06d7fe0d}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
@@ -74,6 +74,6 @@
     <Build Include="dbo\Tables\SystemLog.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PostDeploy Include="seed.sql" />
+    <PostDeploy Include="script.sql" />
   </ItemGroup>
 </Project>

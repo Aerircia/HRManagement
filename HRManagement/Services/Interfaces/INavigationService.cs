@@ -11,4 +11,6 @@ public interface INavigationService : INotifyPropertyChanged
         where TViewModel : ViewModelBase;
 
     void Navigate(Type viewModelType);
+
+    void Reset();
 }

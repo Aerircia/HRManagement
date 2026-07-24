@@ -5,18 +5,20 @@
              xmlns:views="clr-namespace:HRManagement.Views.Pages"
              xmlns:local="clr-namespace:HRManagement">
     <Application.Resources>
-        
-        <ResourceDictionary>
 
-            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
 
+                <ResourceDictionary Source="Resources/Converters.xaml"/>
                 <ResourceDictionary Source="/Resources/Brushes.xaml"/>
                 <ResourceDictionary Source="/Resources/ButtonStyles.xaml"/>
                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
+                <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
+                <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
+
 
         </ResourceDictionary>
         

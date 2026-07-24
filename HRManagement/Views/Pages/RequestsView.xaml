@@ -4,15 +4,360 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              Background="Transparent">
 
-    <Grid>
+    <Grid Margin="30">
 
-        <TextBlock Text="Requests"
-                   FontSize="30"
-                   FontWeight="Bold"
-                   Margin="30"
-                   Foreground="{StaticResource PrimaryTextBrush}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    Style="{StaticResource TopBarIconButtonStyle}"
+                    Command="{Binding BackCommand}"
+                    Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVisibility}}"
+                    Margin="0,0,14,0">
+
+                <fa:IconBlock Icon="ArrowLeft"
+                              Width="16"
+                              Height="16"
+                              Foreground="{StaticResource PrimaryTextBrush}"/>
+
+            </Button>
+
+            <TextBlock Grid.Column="1"
+                       Text="Requests"
+                       FontSize="30"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource PrimaryTextBrush}"/>
+
+        </Grid>
+
+        <!-- Status messages -->
+
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{StaticResource DangerBrush}"
+                       Visibility="{Binding ShowErrorMessage, Converter={StaticResource BoolToVisibility}}"/>
+
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{StaticResource SuccessBrush}"
+                       Visibility="{Binding ShowSuccessMessage, Converter={StaticResource BoolToVisibility}}"/>
+
+        </StackPanel>
+
+        <!-- Content: my requests table (left) + selection / form (right) -->
+
+        <Grid Grid.Row="2">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- My requests table -->
+
+            <Border Grid.Column="0"
+                    Margin="0,0,24,0"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="15">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Table header -->
+
+                    <Grid Grid.Row="0" Background="{StaticResource TableHeaderBrush}" Height="46">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1.6*"/>
+                            <ColumnDefinition Width="2.2*"/>
+                            <ColumnDefinition Width="1.1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="Type" Style="{StaticResource TableHeaderTextStyle}"/>
+                        <TextBlock Grid.Column="1" Text="Date" Style="{StaticResource TableHeaderTextStyle}"/>
+                        <TextBlock Grid.Column="2" Text="Description" Style="{StaticResource TableHeaderTextStyle}"/>
+                        <TextBlock Grid.Column="3" Text="Submitted" Style="{StaticResource TableHeaderTextStyle}"/>
+                        <TextBlock Grid.Column="4" Text="Status" Style="{StaticResource TableHeaderTextStyle}"/>
+
+                    </Grid>
+
+                    <!-- Rows -->
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                        <ItemsControl ItemsSource="{Binding MyRequests}">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+
+                                    <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1">
+
+                                        <Grid MinHeight="60">
+
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="1.6*"/>
+                                                <ColumnDefinition Width="2.2*"/>
+                                                <ColumnDefinition Width="1.1*"/>
+                                                <ColumnDefinition Width="1*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding RequestType}"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Margin="20,10,10,10"/>
+
+                                            <TextBlock Grid.Column="1"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Margin="0,10">
+                                                <TextBlock.Text>
+                                                    <MultiBinding Converter="{StaticResource RequestDateRangeConverter}">
+                                                        <Binding Path="RequestType"/>
+                                                        <Binding Path="StartDate"/>
+                                                        <Binding Path="EndDate"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Content}"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Margin="0,10,10,10"/>
+
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding SubmitDate, StringFormat='MMM dd, yyyy'}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+
+                                            <Grid Grid.Column="4" HorizontalAlignment="Left">
+
+                                                <Border Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"
+                                                        Opacity="0.15"
+                                                        CornerRadius="10"
+                                                        Height="26"
+                                                        Width="86"/>
+
+                                                <TextBlock Text="{Binding Status}"
+                                                           Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="12"
+                                                           Width="86"
+                                                           TextAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+
+                                            </Grid>
+
+                                        </Grid>
+
+                                    </Border>
+
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+                    </ScrollViewer>
+
+                    <TextBlock Grid.Row="1"
+                               Text="You haven't submitted any requests yet."
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,40,0,0"
+                               Visibility="{Binding IsMyRequestsEmpty, Converter={StaticResource BoolToVisibility}}"/>
+
+                </Grid>
+
+            </Border>
+
+            <!-- Right column: category selection or active form -->
+
+            <Grid Grid.Column="1">
+
+                <!-- Category selection -->
+
+                <StackPanel Visibility="{Binding IsSelectionVisible, Converter={StaticResource BoolToVisibility}}">
+
+                    <Button Style="{StaticResource CategoryListButtonStyle}"
+                            Command="{Binding SelectCategoryCommand}"
+                            CommandParameter="DayOff">
+
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="CalendarDay" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Ask for Day Off" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                    </Button>
+
+                    <Button Style="{StaticResource CategoryListButtonStyle}"
+                            Command="{Binding SelectCategoryCommand}"
+                            CommandParameter="Resignation">
+
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="DoorOpen" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Resignation" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                    </Button>
+
+                    <Button Style="{StaticResource CategoryListButtonStyle}"
+                            Command="{Binding SelectCategoryCommand}"
+                            CommandParameter="Other">
+
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Question" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Other Request" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                    </Button>
+
+                </StackPanel>
+
+                <!-- Day Off form -->
+
+                <Border Style="{StaticResource PaperFormCardStyle}"
+                        Visibility="{Binding IsDayOffFormVisible, Converter={StaticResource BoolToVisibility}}">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Day Off Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                   Text="Please schedule day-off requests as far in advance as possible. Approval is based on business needs, and priority is given to whoever submits first when multiple employees request the same dates."/>
+
+                        <TextBlock Text="Reason for Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                        <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                 Text="{Binding DayOffReason, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 MinHeight="50"
+                                 Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Requested Date of Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
+
+                        <Grid Margin="0,0,0,24">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Starting Date" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffStartDate}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Back to Work On" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffEndDate}"/>
+                            </StackPanel>
+
+                        </Grid>
+
+                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <!-- Resignation form -->
+
+                <Border Style="{StaticResource PaperFormCardStyle}"
+                        Visibility="{Binding IsResignationFormVisible, Converter={StaticResource BoolToVisibility}}">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Resignation Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                   Text="Please provide as much notice as possible so we can plan for a smooth transition. Your manager will review this request and follow up with next steps."/>
+
+                        <TextBlock Text="Reason for Resignation:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                        <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                 Text="{Binding ResignationReason, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 MinHeight="50"
+                                 Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Last Working Day:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                        <DatePicker Style="{StaticResource PaperDatePickerLineStyle}"
+                                    SelectedDate="{Binding ResignationLastWorkingDate}"
+                                    HorizontalAlignment="Left"
+                                    Width="200"
+                                    Margin="0,0,0,24"/>
+
+                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <!-- Other form -->
+
+                <Border Style="{StaticResource PaperFormCardStyle}"
+                        Visibility="{Binding IsOtherFormVisible, Converter={StaticResource BoolToVisibility}}">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Other Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+
+                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                   Text="Use this form for any request that doesn't fit the categories above. Please provide a clear subject and description so it can be reviewed quickly."/>
+
+                        <TextBlock Text="Subject:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                        <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                 Text="{Binding OtherSubject, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Description:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                        <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                 Text="{Binding OtherDescription, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 MinHeight="80"
+                                 Margin="0,0,0,24"/>
+
+                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
 
     </Grid>
 
