@@ -1,0 +1,13 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        Default global font size. Bind controls with FontSize="{DynamicResource AppFontSize}"
+        wherever text should respond to the Large Text toggle. SettingService overwrites this
+        key at runtime (see Services/SettingService.cs) when the user toggles Large Text.
+    -->
+    <sys:Double x:Key="AppFontSize">14</sys:Double>
+
+</ResourceDictionary>

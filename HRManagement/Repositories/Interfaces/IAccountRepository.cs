@@ -12,5 +12,6 @@ namespace HRManagement.Repositories.Interfaces
         bool VerifyPassword(Account account, string password);
 
         Account? Login(string username, string password);
+        bool ChangePassword(int accountId, string currentPassword, string newPassword);
     }
 }

@@ -7,38 +7,69 @@
              mc:Ignorable="d"
              Background="Transparent">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HRManagement;component/Resources/AttendanceResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,10">
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,10">
             <TextBlock Text="Attendance" FontSize="30" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
         </StackPanel>
 
         <!-- Left: Calendar -->
-        <Border Grid.Column="0" Background="White" CornerRadius="6" Padding="12">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <Button Content="&lt;" Width="32" Command="{Binding PrevMonthCommand}" />
-                    <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0" />
-                    <Button Content="&gt;" Width="32" Command="{Binding NextMonthCommand}" />
+        <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Month navigation -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <Button Content="&#xE76B;" FontFamily="Segoe MDL2 Assets"
+                            Style="{StaticResource CalendarNavButtonStyle}"
+                            Command="{Binding PrevMonthCommand}" />
+                    <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}"
+                               FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PrimaryTextBrush}"
+                               VerticalAlignment="Center" Margin="16,0" />
+                    <Button Content="&#xE76C;" FontFamily="Segoe MDL2 Assets"
+                            Style="{StaticResource CalendarNavButtonStyle}"
+                            Command="{Binding NextMonthCommand}" />
                 </StackPanel>
 
                 <!-- Days of week header -->
-                <UniformGrid Columns="7" DockPanel.Dock="Top">
-                    <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" />
-                    <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" />
+                <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
+                    <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
                 </UniformGrid>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <!-- Calendar grid: every cell gets the SAME fixed height regardless of how
+                     many week-rows the visible month needs, so the card size never jumps
+                     between a 4-row and a 6-row month. The ScrollViewer only kicks in if
+                     a 6-row month can't fit the available vertical space. -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding Days}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -46,87 +77,155 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="#EEE" BorderThickness="1" Margin="4" Padding="6" Background="{Binding Background}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Date, StringFormat='dd/MM'}" FontWeight="Bold" Foreground="Black" />
-                                    <StackPanel x:Name="TimesPanel">
-                                        <TextBlock Text="{Binding CheckIn, StringFormat='Check-in: {0:HH:mm}'}" FontSize="12" />
-                                        <TextBlock Text="{Binding CheckOut, StringFormat='Check-out: {0:HH:mm}'}" FontSize="12" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding DisplayStatus}" FontSize="12" Foreground="DarkRed" />
-                                </StackPanel>
-                            </Border>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding ShouldShowTimes}" Value="False">
-                                    <Setter TargetName="TimesPanel" Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsBeforeHireDate}" Value="True">
-                                    <Setter TargetName="TimesPanel" Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
+                            <DataTemplate>
+                                <!-- Fixed Height keeps every cell identical no matter how many
+                                     lines of content (times, lateness, status) it has, and no
+                                     matter whether the month renders 5 or 6 week-rows. -->
+                                <Border Height="96"
+                                        Margin="4"
+                                        CornerRadius="8"
+                                        BorderThickness="1"
+                                        Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                                            <Setter Property="Opacity" Value="1" />
+                                            <Style.Triggers>
+                                                <!-- Leading/trailing days from adjacent months: subdued placeholder -->
+                                                <DataTrigger Binding="{Binding IsFillerCell}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.35" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <Grid Margin="8,6">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Date number -->
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{Binding Date, StringFormat='dd/MM'}"
+                                                   FontWeight="Bold" FontSize="13">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasStatus}" Value="False">
+                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Weekend">
+                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
+                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <!-- Check-in / Check-out -->
+                                        <StackPanel Grid.Row="1" VerticalAlignment="Center"
+                                                    Visibility="{Binding ShouldShowTimes, Converter={StaticResource BoolToVisibility}}">
+                                            <TextBlock Text="{Binding CheckIn, StringFormat='In: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
+                                            <TextBlock Text="{Binding CheckOut, StringFormat='Out: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
+                                        </StackPanel>
+
+                                        <!-- Status label -->
+                                        <TextBlock Grid.Row="2"
+                                                   Text="{Binding DisplayStatus}"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Weekend">
+                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
+                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding HasStatus}" Value="False">
+                                                            <Setter Property="Foreground" Value="Transparent" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-            </DockPanel>
+            </Grid>
         </Border>
 
         <!-- Right: Summary and actions -->
-        <Border Grid.Column="1" Background="White" CornerRadius="6" Padding="12" Margin="12,0,0,0">
+        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="12,0,0,0"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <StackPanel>
-                <TextBlock Text="Summary" FontSize="18" FontWeight="Bold" Margin="0,0,0,8" />
+                <TextBlock Text="Summary" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,10" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Days worked:" Width="120" />
-                    <TextBlock Text="{Binding TotalDaysWorked}" FontWeight="Bold" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="On-time days:" Width="120" />
-                    <TextBlock Text="{Binding TotalOnTime}" FontWeight="Bold" />
+                    <TextBlock Text="Days worked:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding TotalDaysWorked}" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Late days:" Width="120" />
-                    <TextBlock Text="{Binding TotalLate}" FontWeight="Bold" />
+                    <TextBlock Text="On-time days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding TotalOnTime}" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Absent days:" Width="120" />
-                    <TextBlock Text="{Binding TotalAbsent}" FontWeight="Bold" />
+                    <TextBlock Text="Late days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding TotalLate}" FontWeight="Bold" Foreground="{StaticResource WarningBrush}" />
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,12">
-                    <Button Content="Check In" Command="{Binding CheckInCommand}" Width="100" Margin="0,0,8,0" />
-                    <Button Content="Check Out" Command="{Binding CheckOutCommand}" Width="100" />
+                <StackPanel Orientation="Horizontal" Margin="0,4">
+                    <TextBlock Text="Absent days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
+                    <TextBlock Text="{Binding TotalAbsent}" FontWeight="Bold" Foreground="{StaticResource DangerBrush}" />
                 </StackPanel>
 
-                <TextBlock Text="Legend" FontWeight="Bold" Margin="0,16,0,6" />
+                <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                    <Button Content="Check In"
+                            Style="{StaticResource CheckInButtonStyle}"
+                            Command="{Binding CheckInCommand}" Width="106" Margin="0,0,10,0" />
+                    <Button Content="Check Out"
+                            Style="{StaticResource CheckOutButtonStyle}"
+                            Command="{Binding CheckOutCommand}" Width="106" />
+                </StackPanel>
+
+                <TextBlock Text="Legend" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,18,0,6" />
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="LightGreen" Stroke="#DDD" />
-                        <TextBlock Text=" On time / Present" Margin="8,0" />
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource SuccessBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" On time / Present" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="Orange" Stroke="#DDD" />
-                        <TextBlock Text=" Late" Margin="8,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource WarningBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" Late" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="LightCoral" Stroke="#DDD" />
-                        <TextBlock Text=" Absent" Margin="8,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource DangerBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" Absent" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="LightSteelBlue" Stroke="#DDD" />
-                        <TextBlock Text=" Weekend (Sat/Sun)" Margin="8,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource WeekendBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" Weekend (Sat/Sun)" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="MediumPurple" Stroke="#DDD" />
-                        <TextBlock Text=" OT" Margin="8,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource OtBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" OT" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" Fill="LightGray" Stroke="#DDD" />
-                        <TextBlock Text=" Before hire date" Margin="8,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource NeutralBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" Before hire date" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
                 </StackPanel>
 

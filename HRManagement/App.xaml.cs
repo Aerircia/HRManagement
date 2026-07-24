@@ -45,6 +45,7 @@ public partial class App : Application
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<IAttendanceService, AttendanceService>();
         services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
+        services.AddSingleton<ISettingService, SettingService>();
 
         // Repositories
         services.AddSingleton<ISalaryRepository, SalaryRepository>();

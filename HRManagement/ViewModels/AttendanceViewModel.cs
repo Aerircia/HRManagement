@@ -23,7 +23,7 @@ public class AttendanceViewModel : PageViewModel
         _hireDate = employee?.HireDate.Date;
         CurrentMonth = StartOfMonth(_hireDate);
 
-        Days = new ObservableCollection<AttendanceDayViewModel>();
+        Days = [];
 
         _prevCommand = new RelayCommand(_ => ChangeMonth(-1));
         _nextCommand = new RelayCommand(_ => ChangeMonth(1));
@@ -164,24 +164,23 @@ public class AttendanceViewModel : PageViewModel
             Refresh();
     }
 
-    public class AttendanceDayViewModel
+    public class AttendanceDayViewModel(AttendanceDayModel model)
     {
-        public AttendanceDayViewModel(AttendanceDayModel model)
-        {
-            Date = model.Date;
-            IsCurrentMonth = model.IsCurrentMonth;
-            IsBeforeHireDate = model.IsBeforeHireDate;
-            Status = model.Status;
-            LatenessMinutes = model.LatenessMinutes;
-        }
+        public DateTime Date { get; } = model.Date;
+        public bool IsCurrentMonth { get; } = model.IsCurrentMonth;
+        public bool IsBeforeHireDate { get; } = model.IsBeforeHireDate;
+        public string Status { get; } = model.Status;
+        public int? LatenessMinutes { get; } = model.LatenessMinutes;
+        public DateTime? CheckIn { get; } = model.CheckIn;
+        public DateTime? CheckOut { get; } = model.CheckOut;
 
-        public DateTime Date { get; }
-        public bool IsCurrentMonth { get; }
-        public bool IsBeforeHireDate { get; }
-        public string Status { get; }
-        public int? LatenessMinutes { get; }
+        // Cells outside the current month (leading/trailing grid filler) are shown
+        // as empty placeholders so the calendar grid always has full 7-column rows.
+        public bool IsFillerCell => !IsCurrentMonth;
 
-        public bool ShouldShowTimes => IsCurrentMonth && !IsBeforeHireDate && !string.IsNullOrEmpty(Status);
+        public bool HasStatus => !string.IsNullOrEmpty(Status);
+
+        public bool ShouldShowTimes => IsCurrentMonth && !IsBeforeHireDate && HasStatus && (CheckIn.HasValue || CheckOut.HasValue);
 
         public string DisplayStatus =>
             Status == "Late" && LatenessMinutes is > 0

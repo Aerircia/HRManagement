@@ -9,8 +9,8 @@
     <!-- Stat cards -->
 
     <Style x:Key="StatCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
         <Setter Property="Padding" Value="18,16"/>
@@ -75,7 +75,7 @@
     <Style x:Key="TableHeaderTextStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="20,0,10,0"/>
     </Style>
@@ -120,11 +120,11 @@
     </Style>
 
     <Style x:Key="ApproveIconButtonStyle" TargetType="Button" BasedOn="{StaticResource RowActionButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
     </Style>
 
     <Style x:Key="RejectIconButtonStyle" TargetType="Button" BasedOn="{StaticResource RowActionButtonBaseStyle}">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
     </Style>
 
 </ResourceDictionary>

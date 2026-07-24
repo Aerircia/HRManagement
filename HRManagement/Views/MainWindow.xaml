@@ -8,11 +8,11 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="CanResize"
-        Background="{StaticResource WindowBackgroundBrush}">
+        Background="{DynamicResource WindowBackgroundBrush}">
 
     <Border
-        Background="{StaticResource WindowBackgroundBrush}"
-        BorderBrush="{StaticResource BorderBrush}"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
         BorderThickness="1">
 
         <Grid>
@@ -53,7 +53,7 @@
             <Border Grid.Column="1"
                     Grid.Row="2"
                     Margin="20"
-                    Background="{StaticResource WindowBackgroundBrush}">
+                    Background="{DynamicResource WindowBackgroundBrush}">
 
                 <ContentControl
                     Content="{Binding CurrentPage}" />

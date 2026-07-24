@@ -8,7 +8,7 @@
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              xmlns:vm="clr-namespace:HRManagement.ViewModels">
 
-    <Border Background="{StaticResource SidebarBackgroundBrush}">
+    <Border Background="{DynamicResource SidebarBackgroundBrush}">
 
         <Grid>
 
@@ -26,10 +26,10 @@
                 <TextBlock Text="HR MANAGER"
                            FontSize="22"
                            FontWeight="Bold"
-                           Foreground="{StaticResource WhiteBrush}"/>
+                           Foreground="{DynamicResource WhiteBrush}"/>
 
                 <TextBlock Text="Human Resource"
-                           Foreground="{StaticResource WhiteBrush}"
+                           Foreground="{DynamicResource WhiteBrush}"
                            Opacity="0.75"/>
 
             </StackPanel>
@@ -53,11 +53,11 @@
                             <fa:IconBlock Icon="House"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                            VerticalAlignment="Center"
-                                           Foreground="{StaticResource SidebarTextBrush}"
+                                           Foreground="{DynamicResource SidebarTextBrush}"
                                            Text="Dashboard"/>
 
                         </StackPanel>
@@ -75,11 +75,11 @@
                             <fa:IconBlock Icon="User"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="My Profile"/>
 
                         </StackPanel>
@@ -97,11 +97,11 @@
                             <fa:IconBlock Icon="FileContract"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Contracts"/>
 
                         </StackPanel>
@@ -119,11 +119,11 @@
                             <fa:IconBlock Icon="MoneyBillWave"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Salary"/>
 
                         </StackPanel>
@@ -141,11 +141,11 @@
                             <fa:IconBlock Icon="Clock"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Attendance"/>
 
                         </StackPanel>
@@ -163,11 +163,11 @@
                             <fa:IconBlock Icon="Envelope"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Requests"/>
 
                         </StackPanel>
@@ -189,11 +189,11 @@
                             <fa:IconBlock Icon="Users"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Manage Profiles"/>
 
                         </StackPanel>
@@ -212,11 +212,11 @@
                             <fa:IconBlock Icon="ClipboardCheck"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Manage Requests"/>
 
                         </StackPanel>
@@ -235,11 +235,11 @@
                             <fa:IconBlock Icon="CalendarCheck"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Manage Attendances"/>
 
                         </StackPanel>
@@ -261,11 +261,11 @@
                             <fa:IconBlock Icon="Coins"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Manage Salaries"/>
 
                         </StackPanel>
@@ -284,11 +284,11 @@
                             <fa:IconBlock Icon="ClipboardUser"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Evaluations"/>
 
                         </StackPanel>
@@ -307,11 +307,11 @@
                             <fa:IconBlock Icon="History"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Logs"/>
 
                         </StackPanel>
@@ -331,11 +331,11 @@
                             <fa:IconBlock Icon="Cog"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{StaticResource SidebarTextBrush}"/>
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
                                        Text="Settings"/>
 
                         </StackPanel>
