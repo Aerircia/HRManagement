@@ -22,7 +22,7 @@ namespace HRManagement.ViewModels
             [3] = "Employee"
         };
 
-        private static readonly HashSet<int> AllowedRoleIds = [2, 3]; // Manager, Employee
+        private static readonly HashSet<int> AllowedRoleIds = [1,2,3]; 
 
         private readonly IContractRepository _contractRepository;
         private readonly IEmployeeRepository _employeeRepository;
