@@ -11,6 +11,27 @@ namespace HRManagement.ViewModels
 {
     public class AttendanceViewModel : PageViewModel
     {
+        private int? _displayEmployeeId;
+        private DateTime? _displayHireDate;
+
+        public void SetDisplayedEmployee(int? employeeId, DateTime? hireDate)
+        {
+            _displayEmployeeId = employeeId;
+            _displayHireDate = hireDate;
+            UpdateHireAndRebuild();
+        }
+
+        private void UpdateHireAndRebuild()
+        {
+            _hireDate = _displayHireDate ?? _sessionManager.CurrentUser?.Employee.HireDate.Date;
+            if (_hireDate.HasValue)
+            {
+                var hireMonth = new DateTime(_hireDate.Value.Year, _hireDate.Value.Month, 1);
+                if (CurrentMonth < hireMonth) CurrentMonth = hireMonth;
+            }
+            BuildMonth();
+        }
+
         private DateTime? _hireDate;
         public int LateGraceMinutes { get; set; } = 5;
         public TimeSpan ShiftStart => TimeSpan.FromHours(8);
@@ -101,10 +122,11 @@ namespace HRManagement.ViewModels
                 Days.Add(cell);
             }
 
-            if (_sessionManager.CurrentUser != null)
+            // choose which employee to display: override if provided, otherwise session user
+            int? empIdToUse = _displayEmployeeId ?? _sessionManager.CurrentUser?.Employee.EmployeeId;
+            if (empIdToUse.HasValue)
             {
-                var empId = _sessionManager.CurrentUser.Employee.EmployeeId;
-                var list = _attendanceRepository.GetAttendancesForEmployeeMonth(empId, CurrentMonth.Year, CurrentMonth.Month);
+                var list = _attendanceRepository.GetAttendancesForEmployeeMonth(empIdToUse.Value, CurrentMonth.Year, CurrentMonth.Month);
                 foreach (var att in list)
                 {
                     var dateKey = (att.CheckIn ?? att.CheckOut ?? DateTime.Now).Date;
@@ -117,18 +139,16 @@ namespace HRManagement.ViewModels
                             day.Status = "OT";
                             day.LatenessMinutes = null;
                         }
-                        else if (day.CheckIn.HasValue)
+                        else if (day.CheckIn.HasValue && !day.CheckOut.HasValue)
+                        {
+                            // in-progress
+                            day.Status = "Working";
+                            day.LatenessMinutes = null;
+                        }
+                        else if (day.CheckIn.HasValue && day.CheckOut.HasValue)
                         {
                             var shiftStart = day.Date.Add(ShiftStart);
-
-                            // compute minutes late based on the stored check-in time
-                            int minutesLate = 0;
-                            if (att.CheckIn.HasValue)
-                            {
-                                minutesLate = (int)Math.Round((att.CheckIn.Value - shiftStart).TotalMinutes);
-                            }
-
-                            // set status and lateness
+                            int minutesLate = (int)Math.Round((day.CheckIn.Value - shiftStart).TotalMinutes);
                             if (minutesLate <= LateGraceMinutes)
                             {
                                 day.Status = "OnTime";
@@ -338,6 +358,9 @@ namespace HRManagement.ViewModels
             private bool _isBeforeHireDate; public bool IsBeforeHireDate { get => _isBeforeHireDate; set => SetProperty(ref _isBeforeHireDate, value); }
             private int? _latenessMinutes; public int? LatenessMinutes { get => _latenessMinutes; set { if (SetProperty(ref _latenessMinutes, value)) OnPropertyChanged(nameof(DisplayStatus)); } }
             private bool _isWeekend; public bool IsWeekend { get => _isWeekend; set => SetProperty(ref _isWeekend, value); }
+            // optional scheduled times that may be populated from attendance records
+            private DateTime? _scheduledStart; public DateTime? ScheduledStart { get => _scheduledStart; set => SetProperty(ref _scheduledStart, value); }
+            private DateTime? _scheduledEnd; public DateTime? ScheduledEnd { get => _scheduledEnd; set => SetProperty(ref _scheduledEnd, value); }
         public string DisplayStatus { get { if (!string.IsNullOrEmpty(Status) && Status.Equals("Late", StringComparison.OrdinalIgnoreCase) && LatenessMinutes.HasValue && LatenessMinutes.Value > 0) return $"Late: {LatenessMinutes.Value} min"; if (!string.IsNullOrEmpty(Status)) return Status; return string.Empty; } }
 
         public bool ShouldShowTimes
