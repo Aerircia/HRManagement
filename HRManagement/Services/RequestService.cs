@@ -5,14 +5,9 @@ using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
-public class RequestService : IRequestService
+public class RequestService(IRequestFormRepository requestFormRepository) : IRequestService
 {
-    private readonly IRequestFormRepository _requestFormRepository;
-
-    public RequestService(IRequestFormRepository requestFormRepository)
-    {
-        _requestFormRepository = requestFormRepository;
-    }
+    private readonly IRequestFormRepository _requestFormRepository = requestFormRepository;
 
     public bool SubmitDayOffRequest(int employeeId, DateTime startDate, DateTime endDate, string reason)
     {
