@@ -74,6 +74,6 @@
     <Build Include="dbo\Tables\SystemLog.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PostDeploy Include="script.sql" />
+    <PostDeploy Include="Script.sql" />
   </ItemGroup>
 </Project>
