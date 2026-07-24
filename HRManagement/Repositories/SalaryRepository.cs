@@ -1,4 +1,5 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -280,10 +281,7 @@ namespace HRManagement.Repositories
             return evaluations;
         }
 
-        public int? GetPayrollId(
-            int employeeId,
-            int month,
-            int year)
+        public int? GetPayrollId(int employeeId,int month,int year)
         {
             ValidateEmployeeId(employeeId);
             ValidateSalaryPeriod(month, year);
@@ -322,10 +320,7 @@ namespace HRManagement.Repositories
             return Convert.ToInt32(result);
         }
 
-        public bool PayrollExists(
-            int employeeId,
-            int month,
-            int year)
+        public bool PayrollExists(int employeeId,int month,int year)
         {
             ValidateEmployeeId(employeeId);
             ValidateSalaryPeriod(month, year);
@@ -476,8 +471,7 @@ namespace HRManagement.Repositories
             };
         }
 
-        private static EmployeeEvaluation MapEvaluation(
-            SqlDataReader reader)
+        private static EmployeeEvaluation MapEvaluation(SqlDataReader reader)
         {
             return new EmployeeEvaluation
             {

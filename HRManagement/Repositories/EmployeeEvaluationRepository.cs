@@ -1,9 +1,10 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class EmployeeEvaluationRepository : RepositoryBase
+public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationRepository
 {
     public EmployeeEvaluation? GetLatestByEmployeeId(int employeeId)
     {
@@ -73,7 +74,7 @@ public class EmployeeEvaluationRepository : RepositoryBase
         return result == null ? 0m : (decimal)result;
     }
 
-    private static EmployeeEvaluation Map(SqlDataReader reader)
+    public EmployeeEvaluation Map(SqlDataReader reader)
     {
         return new EmployeeEvaluation
         {

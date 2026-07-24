@@ -1,9 +1,10 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class RoleRepository : RepositoryBase
+public class RoleRepository : RepositoryBase, IRoleRepository
 {
     public Role? GetById(int id)
     {

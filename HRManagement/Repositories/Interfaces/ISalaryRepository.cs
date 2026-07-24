@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HRManagement.Repositories
+namespace HRManagement.Repositories.Interfaces
 {
     public interface ISalaryRepository
     {
