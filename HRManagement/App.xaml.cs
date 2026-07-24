@@ -1,5 +1,6 @@
 ﻿using HRManagement.Data;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.ViewModels;
@@ -40,23 +41,22 @@ public partial class App : Application
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IAuthorizationService, AuthorizationService>();
         services.AddSingleton<IRequestService, RequestService>();
-
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
-
+        services.AddSingleton<IAttendanceService, AttendanceService>();
         services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
 
         // Repositories
         services.AddSingleton<ISalaryRepository, SalaryRepository>();
-        services.AddSingleton<AccountRepository>();
-        services.AddSingleton<EmployeeRepository>();
-        services.AddSingleton<RoleRepository>();
-        services.AddSingleton<DepartmentRepository>();
-        services.AddSingleton<ContractRepository>();          
-        services.AddSingleton<AttendanceRepository>();        
-        services.AddSingleton<EmployeeEvaluationRepository>();
-        services.AddSingleton<PayrollRepository>();            
-        services.AddSingleton<RequestFormRepository>();
+        services.AddSingleton<IAccountRepository, AccountRepository>();
+        services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
+        services.AddSingleton<IRoleRepository, RoleRepository>();
+        services.AddSingleton<IDepartmentRepository, DepartmentRepository>();
+        services.AddSingleton<IContractRepository, ContractRepository>();          
+        services.AddSingleton<IAttendanceRepository, AttendanceRepository>();        
+        services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
+        services.AddSingleton<IPayrollRepository, PayrollRepository>();            
+        services.AddSingleton<IRequestFormRepository , RequestFormRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

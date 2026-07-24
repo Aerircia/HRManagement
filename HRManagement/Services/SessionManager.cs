@@ -1,4 +1,5 @@
 ﻿using HRManagement.Models;
+using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 

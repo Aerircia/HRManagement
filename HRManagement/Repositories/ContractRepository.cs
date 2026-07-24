@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using HRManagement.Models;
+﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace HRManagement.Repositories;
 
-public class ContractRepository : RepositoryBase
+public class ContractRepository : RepositoryBase, IContractRepository
 {
     /// <summary>
     /// Returns the employee's current contract: prefers one with Status = 'Active',
