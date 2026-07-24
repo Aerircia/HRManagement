@@ -53,8 +53,8 @@ public partial class App : Application
         services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
         services.AddSingleton<IRoleRepository, RoleRepository>();
         services.AddSingleton<IDepartmentRepository, DepartmentRepository>();
-        services.AddSingleton<IContractRepository, ContractRepository>();          
-        services.AddSingleton<IAttendanceRepository, AttendanceRepository>();        
+        services.AddSingleton<IContractRepository, ContractRepository>();
+        services.AddSingleton<IAttendanceRepository, AttendanceRepository>();
         services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
         services.AddSingleton<IPayrollRepository, PayrollRepository>();            
         services.AddSingleton<IRequestFormRepository , RequestFormRepository>();

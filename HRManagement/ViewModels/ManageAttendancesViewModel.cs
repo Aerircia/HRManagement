@@ -1,9 +1,12 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
+using HRManagement.Data;
 using HRManagement.Models;
+using HRManagement.Repositories;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
-using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 
 namespace HRManagement.ViewModels;
@@ -12,19 +15,17 @@ public class ManageAttendancesViewModel : PageViewModel
 {
     private readonly SessionManager _sessionManager;
     private readonly IEmployeeRepository _employeeRepository;
-    private readonly IDepartmentRepository _departmentRepository;
-    private readonly IAttendanceService _attendanceService;
+    private readonly IDepartmentRepository _departmentRepository = new DepartmentRepository(); // optional: inject instead
+    private readonly IAttendanceRepository _attendanceRepository;
 
     public ManageAttendancesViewModel(
         SessionManager sessionManager,
         IEmployeeRepository employeeRepository,
-        IDepartmentRepository departmentRepository,
-        IAttendanceService attendanceService)
+        IAttendanceRepository attendanceRepository)
     {
         _sessionManager = sessionManager;
         _employeeRepository = employeeRepository;
-        _departmentRepository = departmentRepository;
-        _attendanceService = attendanceService;
+        _attendanceRepository = attendanceRepository;
 
         Departments = new ObservableCollection<Department>();
         Employees = new ObservableCollection<ManageEmployeeRowViewModel>();
@@ -35,17 +36,14 @@ public class ManageAttendancesViewModel : PageViewModel
         LoadEmployeesCommand = new RelayCommand(_ => LoadEmployees());
         SelectEmployeeCommand = new RelayCommand(p => SelectEmployee(p));
 
+        // initial load
         LoadDepartments();
         LoadEmployees();
-
-        _attendanceService.AttendanceChanged += (_, e) => RefreshEmployeeRow(e.EmployeeId);
     }
 
     public override string Title => "Manage Attendances";
 
-    public bool IsAdmin =>
-        _sessionManager.CurrentUser != null &&
-        _sessionManager.CurrentUser.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+    public bool IsAdmin => _sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
     public ObservableCollection<Department> Departments { get; }
     public ObservableCollection<ManageEmployeeRowViewModel> Employees { get; }
@@ -70,6 +68,8 @@ public class ManageAttendancesViewModel : PageViewModel
 
     public bool IsEmployeeSelected => SelectedEmployee != null;
 
+    private Department? _selectedDepartment;
+    public Department? SelectedDepartment { get => _selectedDepartment; set { SetProperty(ref _selectedDepartment, value); LoadEmployees(); } }
 
     private string _employeeIdFilter = string.Empty;
     public string EmployeeIdFilter { get => _employeeIdFilter; set { if (SetProperty(ref _employeeIdFilter, value)) LoadEmployees(); } }
@@ -78,7 +78,6 @@ public class ManageAttendancesViewModel : PageViewModel
     public ICommand LoadEmployeesCommand { get; }
     public ICommand SelectEmployeeCommand { get; }
 
-    // OT modal (replaces OtDialog window)
     private void LoadDepartments()
     {
         Departments.Clear();
@@ -104,7 +103,7 @@ public class ManageAttendancesViewModel : PageViewModel
         if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
             var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
-            SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentId == deptId) ?? Departments.First();
+            SelectedDepartment = Departments.FirstOrDefault(x => x.DepartmentId == deptId) ?? Departments.First();
         }
         else
         {

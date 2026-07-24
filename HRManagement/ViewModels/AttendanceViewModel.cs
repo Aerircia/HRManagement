@@ -1,9 +1,11 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using HRManagement.Models;
+using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace HRManagement.ViewModels
 {
@@ -34,15 +36,17 @@ namespace HRManagement.ViewModels
         public int LateGraceMinutes { get; set; } = 5;
         public TimeSpan ShiftStart => TimeSpan.FromHours(8);
 
+        private readonly IAttendanceRepository _attendanceRepository;
         private readonly IAttendanceService _attendanceService;
         private readonly SessionManager _sessionManager;
 
-        private DateTime? _hireDate;
-
-        public AttendanceViewModel(SessionManager sessionManager, AttendanceRepository attendanceRepository)
+        public AttendanceViewModel(SessionManager sessionManager, IAttendanceRepository attendanceRepository, IAttendanceService? attendanceService = null)
         {
             _sessionManager = sessionManager;
             _attendanceRepository = attendanceRepository;
+            _attendanceService = attendanceService ?? new AttendanceService(attendanceRepository); // adjust as appropriate
+            _attendanceRepository.OnAttendanceChanged += AttendanceRepository_OnAttendanceChanged;
+
 
             if (_sessionManager.CurrentUser != null)
             {
@@ -66,25 +70,25 @@ namespace HRManagement.ViewModels
             BuildMonth();
 
             // subscribe to attendance changes so calendar updates when OT assigned
-            AttendanceRepository.OnAttendanceChanged += AttendanceRepository_OnAttendanceChanged;
+            _attendanceRepository.OnAttendanceChanged += AttendanceRepository_OnAttendanceChanged;
         }
 
         public override string Title => "Attendance";
 
-    private DateTime _currentMonth;
+        private DateTime _currentMonth;
         public DateTime CurrentMonth { get => _currentMonth; set => SetProperty(ref _currentMonth, value); }
 
         public ObservableCollection<AttendanceDayViewModel> Days { get; }
 
-    private readonly RelayCommand _prevCommand;
-    private readonly RelayCommand _nextCommand;
-    private readonly RelayCommand _checkInCommand;
-    private readonly RelayCommand _checkOutCommand;
+        private readonly RelayCommand _prevCommand;
+        private readonly RelayCommand _nextCommand;
+        private readonly RelayCommand _checkInCommand;
+        private readonly RelayCommand _checkOutCommand;
 
-    public ICommand PrevMonthCommand => _prevCommand;
-    public ICommand NextMonthCommand => _nextCommand;
-    public ICommand CheckInCommand => _checkInCommand;
-    public ICommand CheckOutCommand => _checkOutCommand;
+        public ICommand PrevMonthCommand => _prevCommand;
+        public ICommand NextMonthCommand => _nextCommand;
+        public ICommand CheckInCommand => _checkInCommand;
+        public ICommand CheckOutCommand => _checkOutCommand;
 
         private void ChangeMonth(int delta)
         {
@@ -169,12 +173,7 @@ namespace HRManagement.ViewModels
             _checkInCommand?.RaiseCanExecuteChanged(); _checkOutCommand?.RaiseCanExecuteChanged();
             UpdateSummary();
         }
-        
-            foreach (var d in Days) d.UpdateColor();
-            _checkInCommand?.RaiseCanExecuteChanged(); _checkOutCommand?.RaiseCanExecuteChanged();
-        UpdateSummary();
-    }
-    public void RefreshIfEmployee(int employeeId, DateTime date)
+        public void RefreshIfEmployee(int employeeId, DateTime date)
         {
             if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Employee.EmployeeId == employeeId)
             {
@@ -304,7 +303,8 @@ namespace HRManagement.ViewModels
 
             // build per-day grouping using earliest CheckIn when available
             var grouped = attUpTo.GroupBy(a => (a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date)
-                                 .Select(g => new {
+                                 .Select(g => new
+                                 {
                                      Date = g.Key,
                                      EarliestCheckIn = g.Where(x => x.CheckIn.HasValue).Select(x => x.CheckIn!.Value).OrderBy(x => x).FirstOrDefault() as DateTime?,
                                      HasCheckIn = g.Any(x => x.CheckIn.HasValue),
@@ -363,85 +363,88 @@ namespace HRManagement.ViewModels
             // optional scheduled times that may be populated from attendance records
             private DateTime? _scheduledStart; public DateTime? ScheduledStart { get => _scheduledStart; set => SetProperty(ref _scheduledStart, value); }
             private DateTime? _scheduledEnd; public DateTime? ScheduledEnd { get => _scheduledEnd; set => SetProperty(ref _scheduledEnd, value); }
-        public string DisplayStatus { get { if (!string.IsNullOrEmpty(Status) && Status.Equals("Late", StringComparison.OrdinalIgnoreCase) && LatenessMinutes.HasValue && LatenessMinutes.Value > 0) return $"Late: {LatenessMinutes.Value} min"; if (!string.IsNullOrEmpty(Status)) return Status; return string.Empty; } }
+            public string DisplayStatus { get { if (!string.IsNullOrEmpty(Status) && Status.Equals("Late", StringComparison.OrdinalIgnoreCase) && LatenessMinutes.HasValue && LatenessMinutes.Value > 0) return $"Late: {LatenessMinutes.Value} min"; if (!string.IsNullOrEmpty(Status)) return Status; return string.Empty; } }
 
-        public bool ShouldShowTimes
-        {
-            get
+            public bool ShouldShowTimes
             {
-                if (IsBeforeHireDate) return false;
+                get
+                {
+                    if (IsBeforeHireDate) return false;
+                    if (IsWeekend)
+                    {
+                        // only show times on weekends when OT or explicit check-in/out exists
+                        return !string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)
+                               || CheckIn.HasValue
+                               || CheckOut.HasValue;
+                    }
+
+                    // weekdays: show times (may be empty) unless before hire
+                    // For future dates, still show times if an OT/attendance record exists
+                    if (Date.Date > DateTime.Now.Date)
+                    {
+                        return (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue;
+                    }
+
+                    return true;
+                }
+            }
+
+            public void UpdateColor()
+            {
+                if (!IsCurrentMonth) { Background = System.Windows.Media.Brushes.Transparent; return; }
+                // OT should always render as purple regardless of weekend/weekday or lateness
+                if (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
+                {
+                    Background = System.Windows.Media.Brushes.MediumPurple;
+                    LatenessMinutes = null;
+                    return;
+                }
                 if (IsWeekend)
                 {
-                    // only show times on weekends when OT or explicit check-in/out exists
-                    return !string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)
-                           || CheckIn.HasValue
-                           || CheckOut.HasValue;
-                }
+                    // Nếu cuối tuần nhưng có dữ liệu chấm công (OT) thì hiển thị như ngày làm
+                    // treat weekend as workday when there's an OT record (Status=="OT") or explicit check times
+                    if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
+                    {
+                        if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0)
+                        {
+                            Background = System.Windows.Media.Brushes.Orange;
+                        }
+                        else
+                        {
+                            Background = System.Windows.Media.Brushes.MediumPurple;   // hoặc LightGreen
+                        }
 
-                // weekdays: show times (may be empty) unless before hire
-                // For future dates, still show times if an OT/attendance record exists
+                        if (string.IsNullOrWhiteSpace(Status))
+                            Status = "OT";
+
+                        return;
+                    }
+
+                    Background = System.Windows.Media.Brushes.LightSteelBlue;
+                    Status = "Weekend";
+                    LatenessMinutes = null;
+                    return;
+                }
                 if (Date.Date > DateTime.Now.Date)
                 {
-                    return (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue;
-                }
-
-                return true;
-            }
-        }
-
-        public void UpdateColor()
-        {
-            if (!IsCurrentMonth) { Background = System.Windows.Media.Brushes.Transparent; return; }
-            // OT should always render as purple regardless of weekend/weekday or lateness
-            if (!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase))
-            {
-                Background = System.Windows.Media.Brushes.MediumPurple;
-                LatenessMinutes = null;
-                return;
-            }
-            if (IsWeekend)
-            {
-                // Nếu cuối tuần nhưng có dữ liệu chấm công (OT) thì hiển thị như ngày làm
-                // treat weekend as workday when there's an OT record (Status=="OT") or explicit check times
-                if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
-                {
-                    if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0)
+                    // For future dates, preserve OT or explicit attendance so scheduled OT shows on calendar;
+                    // otherwise render as neutral/empty.
+                    if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
                     {
-                        Background = System.Windows.Media.Brushes.Orange;
+                        // allow normal coloring logic to run below
                     }
                     else
                     {
-                        Background = System.Windows.Media.Brushes.MediumPurple;   // hoặc LightGreen
+                        Background = System.Windows.Media.Brushes.White; Status = string.Empty; LatenessMinutes = null; return;
                     }
-
-                    if (string.IsNullOrWhiteSpace(Status))
-                        Status = "OT";
-
-                    return;
                 }
-
-                Background = System.Windows.Media.Brushes.LightSteelBlue;
-                Status = "Weekend";
-                LatenessMinutes = null;
-                return;
+                if (IsBeforeHireDate) { Background = System.Windows.Media.Brushes.LightGray; Status = "Before Hire Date"; LatenessMinutes = null; return; }
+                if (!CheckIn.HasValue) { Background = System.Windows.Media.Brushes.LightCoral; Status = "Absent"; LatenessMinutes = null; return; }
+                if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0) { Background = System.Windows.Media.Brushes.Orange; return; }
+                Background = System.Windows.Media.Brushes.LightGreen;
             }
-            if (Date.Date > DateTime.Now.Date)
-            {
-                // For future dates, preserve OT or explicit attendance so scheduled OT shows on calendar;
-                // otherwise render as neutral/empty.
-                if ((!string.IsNullOrEmpty(Status) && Status.Equals("OT", StringComparison.OrdinalIgnoreCase)) || CheckIn.HasValue || CheckOut.HasValue)
-                {
-                    // allow normal coloring logic to run below
-                }
-                else
-                {
-                    Background = System.Windows.Media.Brushes.White; Status = string.Empty; LatenessMinutes = null; return;
-                }
-            }
-            if (IsBeforeHireDate) { Background = System.Windows.Media.Brushes.LightGray; Status = "Before Hire Date"; LatenessMinutes = null; return; }
-            if (!CheckIn.HasValue) { Background = System.Windows.Media.Brushes.LightCoral; Status = "Absent"; LatenessMinutes = null; return; }
-            if (LatenessMinutes.HasValue && LatenessMinutes.Value > 0) { Background = System.Windows.Media.Brushes.Orange; return; }
-            Background = System.Windows.Media.Brushes.LightGreen;
+
+            public bool IsWorkday() { return Date.DayOfWeek != System.DayOfWeek.Saturday && Date.DayOfWeek != System.DayOfWeek.Sunday; }
         }
-
-        public bool IsWorkday() { return Date.DayOfWeek != System.DayOfWeek.Saturday && Date.DayOfWeek != System.DayOfWeek.Sunday; }
+    }
+}

@@ -34,7 +34,7 @@ public class AttendanceService : IAttendanceService
             totalCells++;
 
         var records = _attendanceRepository
-            .GetByEmployeeForMonth(employeeId, monthStart.Year, monthStart.Month)
+            .GetAttendancesForEmployeeMonth(employeeId, monthStart.Year, monthStart.Month)
             .GroupBy(a => (a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date)
             .ToDictionary(g => g.Key, g => g.First());
 
@@ -82,7 +82,7 @@ public class AttendanceService : IAttendanceService
 
         while (cursor <= searchEnd)
         {
-            allRecords.AddRange(_attendanceRepository.GetByEmployeeForMonth(employeeId, cursor.Year, cursor.Month));
+            allRecords.AddRange(_attendanceRepository.GetAttendancesForEmployeeMonth(employeeId, cursor.Year, cursor.Month));
             cursor = cursor.AddMonths(1);
         }
 
@@ -251,6 +251,6 @@ public class AttendanceService : IAttendanceService
 
     private Attendance? FindToday(int employeeId) =>
         _attendanceRepository
-            .GetByEmployeeForMonth(employeeId, DateTime.Now.Year, DateTime.Now.Month)
+            .GetAttendancesForEmployeeMonth(employeeId, DateTime.Now.Year, DateTime.Now.Month)
             .FirstOrDefault(a => (a.CheckIn ?? a.CheckOut ?? DateTime.MinValue).Date == DateTime.Now.Date);
 }

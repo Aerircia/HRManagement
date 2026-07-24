@@ -9,7 +9,7 @@ namespace HRManagement.Repositories.Interfaces
     {
         event EventHandler<AttendanceChangedEventArgs>? OnAttendanceChanged;
 
-        List<Attendance> GetByEmployeeForMonth(int employeeId, int year, int month);
+        public IEnumerable<Attendance> GetAttendancesForEmployeeMonth(int employeeId, int year, int month);
 
         void UpsertAttendance(Attendance attendance);
     }

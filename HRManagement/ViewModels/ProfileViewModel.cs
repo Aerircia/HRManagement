@@ -362,9 +362,9 @@ namespace HRManagement.ViewModels
 
             // Attendance
            
-            var attendanceRecords = _attendanceRepository.GetByEmployeeForMonth(_employee.EmployeeId, now.Year, now.Month);
+            var attendanceRecords = _attendanceRepository.GetAttendancesForEmployeeMonth(_employee.EmployeeId, now.Year, now.Month);
             var presentCount = attendanceRecords.Count(a => string.Equals(a.Status, "Present", StringComparison.OrdinalIgnoreCase));
-            var totalAttendanceRecords = attendanceRecords.Count;
+            var totalAttendanceRecords = attendanceRecords.Count();
 
             AttendanceRate = totalAttendanceRecords > 0
                 ? (double)presentCount / totalAttendanceRecords * 100
