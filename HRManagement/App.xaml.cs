@@ -52,7 +52,8 @@ public partial class App : Application
         services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
         services.AddSingleton<IRoleRepository, RoleRepository>();
         services.AddSingleton<IDepartmentRepository, DepartmentRepository>();
-        services.AddSingleton<IContractRepository, ContractRepository>();          
+        services.AddSingleton<DepartmentRepository>();
+        services.AddSingleton<IContractRepository, ContractRepository>();
         services.AddSingleton<IAttendanceRepository, AttendanceRepository>();        
         services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
         services.AddSingleton<IPayrollRepository, PayrollRepository>();            
@@ -72,6 +73,7 @@ public partial class App : Application
         services.AddTransient<LogsViewModel>();
         services.AddTransient<ManageAttendancesViewModel>();
         services.AddTransient<ManageProfilesViewModel>();
+        services.AddTransient<ManageContractsViewModel>();
         services.AddTransient<ManageRequestsViewModel>();
         services.AddTransient<ManageSalariesViewModel>();
         services.AddTransient<ProfileViewModel>();

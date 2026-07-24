@@ -14,7 +14,7 @@
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:ContractViewModel}">
-        <views:ContractsView/>
+        <views:ContractView/>
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:EmployeeEvaluationViewModel}">
@@ -33,6 +33,10 @@
         <views:ManageProfilesView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:ManageContractsViewModel}">
+        <views:ManageContractsView/>
+    </DataTemplate>
+    
     <DataTemplate DataType="{x:Type vm:ManageRequestsViewModel}">
         <views:ManageRequestsView/>
     </DataTemplate>

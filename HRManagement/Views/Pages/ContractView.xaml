@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.ContractsView"
+﻿<UserControl x:Class="HRManagement.Views.Pages.ContractView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,7 +15,7 @@
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
             <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="22"/>
+            <Setter Property="Padding" Value="32"/>
             <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect Color="#1A2B3674" BlurRadius="18" ShadowDepth="4" Opacity="0.12" Direction="270"/>
@@ -25,255 +25,153 @@
 
         <Style x:Key="StatusPillStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Padding" Value="12,5"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
         </Style>
 
-        <Style x:Key="RowIconButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="32"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" CornerRadius="8" Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
-        <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
+        <Style x:Key="FieldValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="12,0"
-                                          VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-
-        <Style x:Key="GridCellTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
     </UserControl.Resources>
 
     <Grid>
 
-        <!-- Page content (Admin / Manager only)-->
+        <!-- ============ Page content (Employee / Manager only) ============ -->
         <Grid Margin="28"
+              MaxWidth="760"
+              HorizontalAlignment="Center"
               Visibility="{Binding HasAccess, Converter={StaticResource BoolToVisibility}}">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="16"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="16"/>
+                <RowDefinition Height="20"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0">
+                <TextBlock Text="Contract"
+                           FontSize="24" FontWeight="Bold"
+                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                <TextBlock Text="Your work contract on file"
+                           FontSize="13"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Contracts"
-                               FontSize="24" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
-                    <TextBlock Text="Manage employee contracts and salary terms"
-                               FontSize="13"
-                               Foreground="{StaticResource SecondaryTextBrush}"
-                               Margin="0,4,0,0"/>
+            <!-- Contract card -->
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}"
+                    Visibility="{Binding HasContract, Converter={StaticResource BoolToVisibility}}"
+                    VerticalAlignment="Top" Height="609" Margin="-310,20,-308,0" Grid.RowSpan="2">
+
+                <StackPanel>
+
+                    <!-- Top row: employee name + status -->
+                    <Grid Margin="0,0,0,22">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding EmployeeNameDisplay}"
+                                       FontSize="20" FontWeight="Bold"
+                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                            <TextBlock Text="{Binding ContractIdDisplay}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <Border Grid.Column="1" Style="{StaticResource StatusPillStyle}" VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryBrush}"/>
+                        </Border>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" Margin="0,0,0,22"/>
+
+                    <!-- Field grid: 2 columns -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Contract Type" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding ContractType}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Role" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding RoleDisplay}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Department" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding DepartmentDisplay}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Base Salary" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding BaseSalaryDisplay}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Start Date" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding StartDateDisplay}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="End Date" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Text="{Binding EndDateDisplay}" Style="{StaticResource FieldValueStyle}"/>
+                        </StackPanel>
+                    </Grid>
+
                 </StackPanel>
 
-                <Button Grid.Column="1"
-                        Content="+ New Contract"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Command="{Binding AddCommand}"
-                        Width="170"/>
-            </Grid>
-
-            <!-- Search -->
-            <Border Grid.Row="2"
-                    Background="{StaticResource CardBackgroundBrush}"
-                    CornerRadius="14"
-                    Padding="14,0"
-                    Height="48"
-                    HorizontalAlignment="Left"
-                    Width="340">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
-                               Foreground="{StaticResource SecondaryTextBrush}"
-                               VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox Grid.Column="1"
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             VerticalContentAlignment="Center"
-                             Foreground="{StaticResource PrimaryTextBrush}"
-                             Tag="Search by employee or contract type..."/>
-                </Grid>
             </Border>
 
-            <!-- Contract table -->
-            <Border Grid.Row="4" Style="{StaticResource CardStyle}" Padding="0">
+            <!-- No contract on file -->
+            <StackPanel Grid.Row="2"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Center"
+                        Margin="0,40,0,0"
+                        Visibility="{Binding HasNoContract, Converter={StaticResource BoolToVisibility}}">
 
-                <DataGrid ItemsSource="{Binding ContractsView}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          CanUserResizeRows="False"
-                          IsReadOnly="True"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="None"
-                          RowHeight="56"
-                          BorderThickness="0"
-                          Background="Transparent"
-                          RowBackground="Transparent"
-                          AlternatingRowBackground="Transparent"
-                          HorizontalScrollBarVisibility="Disabled">
+                <TextBlock Text="No contract on file yet."
+                           FontSize="15"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           HorizontalAlignment="Center"/>
 
-                    <DataGrid.Resources>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="{StaticResource TableHeaderBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Padding" Value="16,14"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                        </Style>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource RowSelectedBrush}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Padding" Value="16,0"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                        </Style>
-                    </DataGrid.Resources>
-
-                    <DataGrid.Columns>
-
-                        <DataGridTextColumn Header="Employee" Binding="{Binding EmployeeName}" Width="1.6*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTextColumn Header="Role" Binding="{Binding RoleName}" Width="*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTextColumn Header="Contract Type" Binding="{Binding ContractType}" Width="1.2*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTextColumn Header="Start Date" Binding="{Binding StartDateDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTextColumn Header="End Date" Binding="{Binding EndDateDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTemplateColumn Header="Status" Width="*">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource StatusPillStyle}">
-                                        <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource PrimaryBrush}"/>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTextColumn Header="Base Salary" Binding="{Binding BaseSalaryDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
-
-                        <DataGridTemplateColumn Header="" Width="90">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource RowIconButtonStyle}"
-                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets"
-                                                       Foreground="{StaticResource PrimaryBrush}"/>
-                                        </Button>
-                                        <Button Style="{StaticResource RowIconButtonStyle}"
-                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"
-                                                       Foreground="{StaticResource DangerBrush}"/>
-                                        </Button>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                    </DataGrid.Columns>
-
-                </DataGrid>
-
-            </Border>
+            </StackPanel>
 
         </Grid>
 
-        <!-- Access denied  -->
+        <!-- ============ Access denied (Admin) ============ -->
         <StackPanel VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     MaxWidth="360"
@@ -289,173 +187,19 @@
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
 
-            <TextBlock Text="Access restricted"
+            <TextBlock Text="Not applicable"
                        FontSize="18" FontWeight="Bold"
                        HorizontalAlignment="Center"
                        Foreground="{StaticResource PrimaryTextBrush}"
                        Margin="0,0,0,8"/>
 
-            <TextBlock Text="Contracts is only available to Admin and Manager accounts. Contact your administrator if you believe this is a mistake."
+            <TextBlock Text="This page shows your own work contract and is only available to Employee and Manager accounts. Use Manage Contracts to view or edit contracts."
                        FontSize="13"
                        TextAlignment="Center"
                        TextWrapping="Wrap"
                        Foreground="{StaticResource SecondaryTextBrush}"/>
 
         </StackPanel>
-
-        <!--Add / Edit overlay  -->
-        <Grid Background="#66000000"
-              Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVisibility}}">
-
-            <Border Style="{StaticResource CardStyle}"
-                    Width="480"
-                    MaxHeight="680"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-
-                <StackPanel>
-
-                    <TextBlock Text="{Binding FormTitle}"
-                               FontSize="18" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
-                               Margin="0,0,0,18"/>
-
-                    <TextBlock Text="{Binding FormErrorMessage}"
-                               Foreground="{StaticResource DangerBrush}"
-                               FontSize="12"
-                               Margin="0,0,0,10"
-                               TextWrapping="Wrap"
-                               Visibility="{Binding HasFormError, Converter={StaticResource BoolToVisibility}}"/>
-
-                    <TextBlock Text="Employee" Style="{StaticResource FormLabelStyle}"/>
-                    <ComboBox ItemsSource="{Binding Employees}"
-                              SelectedItem="{Binding FormSelectedEmployee}"
-                              DisplayMemberPath="Name"
-                              Style="{StaticResource FormComboBoxStyle}"
-                              Margin="0,0,0,14"/>
-
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="14"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Role" Style="{StaticResource FormLabelStyle}"/>
-                            <ComboBox ItemsSource="{Binding RoleOptions}"
-                                      SelectedItem="{Binding FormSelectedRole}"
-                                      DisplayMemberPath="Name"
-                                      Style="{StaticResource FormComboBoxStyle}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Contract Type" Style="{StaticResource FormLabelStyle}"/>
-                            <ComboBox ItemsSource="{Binding ContractTypeOptionsList}"
-                                      SelectedItem="{Binding FormContractType}"
-                                      Style="{StaticResource FormComboBoxStyle}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="14"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Start Date" Style="{StaticResource FormLabelStyle}"/>
-                            <DatePicker SelectedDate="{Binding FormStartDate}"
-                                        Style="{StaticResource FormDatePickerStyle}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="End Date (optional)" Style="{StaticResource FormLabelStyle}"/>
-                            <DatePicker SelectedDate="{Binding FormEndDate}"
-                                        Style="{StaticResource FormDatePickerStyle}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,0,0,20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="14"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Status" Style="{StaticResource FormLabelStyle}"/>
-                            <ComboBox ItemsSource="{Binding StatusOptionsList}"
-                                      SelectedItem="{Binding FormStatus}"
-                                      Style="{StaticResource FormComboBoxStyle}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Base Salary" Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding FormBaseSalary, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="Cancel"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding CancelCommand}"/>
-                        <Button Grid.Column="2" Content="Save"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Command="{Binding SaveCommand}"/>
-                    </Grid>
-
-                </StackPanel>
-
-            </Border>
-        </Grid>
-
-        <!-- Delete confirmation overlay  -->
-        <Grid Background="#66000000"
-              Visibility="{Binding IsDeleteConfirmOpen, Converter={StaticResource BoolToVisibility}}">
-
-            <Border Style="{StaticResource CardStyle}"
-                    Width="380"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-
-                <StackPanel>
-                    <TextBlock Text="Remove contract?"
-                               FontSize="16" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
-                               Margin="0,0,0,8"/>
-
-                    <TextBlock Foreground="{StaticResource SecondaryTextBrush}"
-                               FontSize="13"
-                               TextWrapping="Wrap"
-                               Margin="0,0,0,20">
-                        <Run Text="This will permanently delete the"/>
-                        <Run Text="{Binding PendingDelete.ContractType, Mode=OneWay}" FontWeight="SemiBold"/>
-                        <Run Text="contract for"/>
-                        <Run Text="{Binding PendingDelete.EmployeeName, Mode=OneWay}" FontWeight="SemiBold"/>
-                        <Run Text="."/>
-                    </TextBlock>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="Cancel"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding CancelDeleteCommand}"/>
-                        <Button Grid.Column="2" Content="Delete"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Background="{StaticResource DangerBrush}"
-                                Command="{Binding ConfirmDeleteCommand}"/>
-                    </Grid>
-
-                </StackPanel>
-
-            </Border>
-        </Grid>
 
     </Grid>
 

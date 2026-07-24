@@ -200,6 +200,29 @@
 
                     </Button>
 
+                    <!-- Contracts Manager -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:ManageContractsViewModel}">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="FileContract"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{StaticResource SidebarTextBrush}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource SidebarTextBrush}"
+                                       Text="Manage Contracts"/>
+
+                        </StackPanel>
+
+                    </Button>
+
                     <!-- Requests Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
