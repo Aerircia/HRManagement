@@ -19,12 +19,13 @@
                 <ResourceDictionary Source="Resources/AttendanceResources.xaml"/>
                 <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
+                <ResourceDictionary Source="/Resources/TableStyles.xaml"/>
                 <ResourceDictionary Source="Resources/Converters.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
 
 
         </ResourceDictionary>
-        
+
     </Application.Resources>
 </Application>

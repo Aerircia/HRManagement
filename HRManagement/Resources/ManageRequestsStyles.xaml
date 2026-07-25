@@ -71,14 +71,9 @@
     </Style>
 
     <!-- Table -->
-
-    <Style x:Key="TableHeaderTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="20,0,10,0"/>
-    </Style>
+    <!-- TableHeaderTextStyle now lives in Resources/TableStyles.xaml (shared
+         across all table views); kept out of this file to avoid a duplicate
+         resource key now that both dictionaries are merged in App.xaml. -->
 
     <!-- Row action buttons -->
 

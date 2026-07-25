@@ -1,13 +1,12 @@
+using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
+using HRManagement.Services;
+using HRManagement.Services.Interfaces;
+using HRManagement.Utilities;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using HRManagement.Data;
-using HRManagement.Models;
-using HRManagement.Repositories;
-using HRManagement.Repositories.Interfaces;
-using HRManagement.Services;
-using HRManagement.Utilities;
 
 namespace HRManagement.ViewModels;
 
@@ -15,35 +14,41 @@ public class ManageAttendancesViewModel : PageViewModel
 {
     private readonly SessionManager _sessionManager;
     private readonly IEmployeeRepository _employeeRepository;
-    private readonly IDepartmentRepository _departmentRepository = new DepartmentRepository(); // optional: inject instead
-    private readonly IAttendanceRepository _attendanceRepository;
+    private readonly IDepartmentRepository _departmentRepository;
+    private readonly IAttendanceService _attendanceService;
 
     public ManageAttendancesViewModel(
         SessionManager sessionManager,
         IEmployeeRepository employeeRepository,
-        IAttendanceRepository attendanceRepository)
+        IDepartmentRepository departmentRepository,
+        IAttendanceService attendanceService,
+        AttendanceViewModel childAttendanceViewModel)
     {
         _sessionManager = sessionManager;
         _employeeRepository = employeeRepository;
-        _attendanceRepository = attendanceRepository;
+        _departmentRepository = departmentRepository;
+        _attendanceService = attendanceService;
 
         Departments = new ObservableCollection<Department>();
         Employees = new ObservableCollection<ManageEmployeeRowViewModel>();
 
-        ChildAttendanceViewModel = new AttendanceViewModel(_sessionManager, _attendanceRepository);
+        // Injected by DI instead of being newed up here, so it shares the
+        // same IAttendanceService instance (and its AttendanceChanged
+        // event wiring) as the rest of the app.
+        ChildAttendanceViewModel = childAttendanceViewModel;
 
         LoadDepartmentsCommand = new RelayCommand(_ => LoadDepartments());
         LoadEmployeesCommand = new RelayCommand(_ => LoadEmployees());
         SelectEmployeeCommand = new RelayCommand(p => SelectEmployee(p));
 
-        // initial load
         LoadDepartments();
         LoadEmployees();
     }
 
     public override string Title => "Manage Attendances";
 
-    public bool IsAdmin => _sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+    public bool IsAdmin => _sessionManager.CurrentUser != null &&
+                            _sessionManager.CurrentUser.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
     public ObservableCollection<Department> Departments { get; }
     public ObservableCollection<ManageEmployeeRowViewModel> Employees { get; }
@@ -58,6 +63,7 @@ public class ManageAttendancesViewModel : PageViewModel
         {
             SetProperty(ref _selectedEmployee, value);
             OnPropertyChanged(nameof(IsEmployeeSelected));
+
             if (_selectedEmployee != null)
             {
                 var emp = _employeeRepository.GetById(_selectedEmployee.EmployeeId);
@@ -69,10 +75,18 @@ public class ManageAttendancesViewModel : PageViewModel
     public bool IsEmployeeSelected => SelectedEmployee != null;
 
     private Department? _selectedDepartment;
-    public Department? SelectedDepartment { get => _selectedDepartment; set { SetProperty(ref _selectedDepartment, value); LoadEmployees(); } }
+    public Department? SelectedDepartment
+    {
+        get => _selectedDepartment;
+        set { SetProperty(ref _selectedDepartment, value); LoadEmployees(); }
+    }
 
     private string _employeeIdFilter = string.Empty;
-    public string EmployeeIdFilter { get => _employeeIdFilter; set { if (SetProperty(ref _employeeIdFilter, value)) LoadEmployees(); } }
+    public string EmployeeIdFilter
+    {
+        get => _employeeIdFilter;
+        set { if (SetProperty(ref _employeeIdFilter, value)) LoadEmployees(); }
+    }
 
     public ICommand LoadDepartmentsCommand { get; }
     public ICommand LoadEmployeesCommand { get; }
@@ -85,22 +99,20 @@ public class ManageAttendancesViewModel : PageViewModel
 
         if (IsAdmin)
         {
-            var depts = _departmentRepository.GetAll();
-            foreach (var d in depts) Departments.Add(d);
+            foreach (var d in _departmentRepository.GetAll())
+                Departments.Add(d);
         }
-        else
+        else if (_sessionManager.CurrentUser != null)
         {
-            // for non-admin (manager), only include the manager's department so selection/filtering can still work
-            if (_sessionManager.CurrentUser != null)
-            {
-                var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
-                var dept = _departmentRepository.GetAll().FirstOrDefault(d => d.DepartmentId == deptId);
-                Departments.Add(dept ?? new Department { DepartmentId = deptId, DepartmentName = $"Department {deptId}" });
-            }
+            // Non-admin (manager): only include the manager's own department
+            // so filtering still works without exposing other departments.
+            var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
+            var dept = _departmentRepository.GetAll().FirstOrDefault(d => d.DepartmentId == deptId);
+            Departments.Add(dept ?? new Department { DepartmentId = deptId, DepartmentName = $"Department {deptId}" });
         }
 
-        // pre-select appropriate department
-        if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+        if (_sessionManager.CurrentUser != null &&
+            _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
             var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
             SelectedDepartment = Departments.FirstOrDefault(x => x.DepartmentId == deptId) ?? Departments.First();
@@ -116,82 +128,51 @@ public class ManageAttendancesViewModel : PageViewModel
         Employees.Clear();
 
         IEnumerable<Employee> list;
-        if (_sessionManager.CurrentUser != null && _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+        if (_sessionManager.CurrentUser != null &&
+            _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
-            var dept = _sessionManager.CurrentUser.Employee.DepartmentId;
-            list = _employeeRepository.GetByDepartment(dept);
+            list = _employeeRepository.GetByDepartment(_sessionManager.CurrentUser.Employee.DepartmentId);
+        }
+        else if (SelectedDepartment != null && SelectedDepartment.DepartmentId != 0)
+        {
+            list = _employeeRepository.GetByDepartment(SelectedDepartment.DepartmentId);
         }
         else
         {
-            if (SelectedDepartment != null && SelectedDepartment.DepartmentId != 0)
-                list = _employeeRepository.GetByDepartment(SelectedDepartment.DepartmentId);
-            else
-                list = _employeeRepository.GetAll();
+            list = _employeeRepository.GetAll();
         }
+
+        var now = DateTime.Now;
 
         foreach (var e in list)
         {
-            // apply employee id filter if provided
             if (!string.IsNullOrWhiteSpace(EmployeeIdFilter))
             {
-                if (!int.TryParse(EmployeeIdFilter, out var fid) || fid != e.EmployeeId) continue;
+                if (!int.TryParse(EmployeeIdFilter, out var fid) || fid != e.EmployeeId)
+                    continue;
             }
 
-            var summary = ComputeSummaryForEmployeeMonth(e, DateTime.Now.Year, DateTime.Now.Month);
+            // Single source of truth for the summary math - same service
+            // method used by the calendar itself, so the row list and the
+            // detail calendar can never disagree.
+            var summary = _attendanceService.GetMonthSummary(e.EmployeeId, e.HireDate.Date, now);
 
-            var vm = new ManageEmployeeRowViewModel
+            Employees.Add(new ManageEmployeeRowViewModel
             {
                 EmployeeId = e.EmployeeId,
                 EmployeeName = e.FullName,
-                WorkingDays = summary.TotalWorkingDays,
-                OnTimeDays = summary.OnTimeDays,
-                LateDays = summary.LateDays,
-                AbsentDays = summary.AbsentDays
-            };
-
-            Employees.Add(vm);
+                WorkingDays = summary.TotalDaysWorked,
+                OnTimeDays = summary.TotalOnTime,
+                LateDays = summary.TotalLate,
+                AbsentDays = summary.TotalAbsent
+            });
         }
-    }
-
-    private (int TotalWorkingDays, int OnTimeDays, int LateDays, int AbsentDays) ComputeSummaryForEmployeeMonth(Employee e, int year, int month)
-    {
-        var hire = e.HireDate.Date;
-        var empId = e.EmployeeId;
-
-        var allAtts = new System.Collections.Generic.List<Attendance>();
-        var m = new DateTime(hire.Year, hire.Month, 1);
-        var searchEnd = DateTime.Now.Date;
-        while (m <= searchEnd)
-        {
-            allAtts.AddRange(_attendanceRepository.GetAttendancesForEmployeeMonth(empId, m.Year, m.Month));
-            m = m.AddMonths(1);
-        }
-
-        var viewMonthStart = new DateTime(year, month, 1);
-        var attUpTo = allAtts.Where(a => ((a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date) >= viewMonthStart && ((a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date) <= viewMonthStart.AddMonths(1).AddDays(-1)).ToList();
-
-        int onTime = 0, late = 0, absent = 0, totalWorkingDays = 0;
-        for (var d = viewMonthStart; d <= viewMonthStart.AddMonths(1).AddDays(-1); d = d.AddDays(1))
-        {
-            if (d.DayOfWeek == System.DayOfWeek.Saturday || d.DayOfWeek == System.DayOfWeek.Sunday) continue;
-            if (d < hire) continue;
-            totalWorkingDays++;
-            var dayAtt = attUpTo.Where(a => ((a.CheckIn ?? a.CheckOut ?? DateTime.Now).Date) == d.Date).ToList();
-            if (!dayAtt.Any() || !dayAtt.Any(a => a.CheckIn.HasValue)) { absent++; continue; }
-            var earliest = dayAtt.Where(a => a.CheckIn.HasValue).Select(a => a.CheckIn!.Value).OrderBy(x => x).FirstOrDefault();
-            var minutesLate = (int)Math.Round((earliest - d.AddHours(8)).TotalMinutes);
-            if (minutesLate <= 5) onTime++; else late++;
-        }
-
-        return (totalWorkingDays, onTime, late, absent);
     }
 
     private void SelectEmployee(object? param)
     {
         if (param is ManageEmployeeRowViewModel row)
-        {
             SelectedEmployee = row;
-        }
     }
 }
 

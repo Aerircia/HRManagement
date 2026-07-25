@@ -4,16 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             xmlns:controls="clr-namespace:HRManagement.Controls"
              mc:Ignorable="d"
              Background="Transparent">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/HRManagement;component/Resources/AttendanceResources.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!--
+        No per-view resource merge here: AttendanceResources.xaml (converters,
+        status brushes, calendar/button styles) is merged once at the app
+        level in App.xaml, so every view - including AttendanceCalendarView -
+        resolves the same StaticResources. Re-merging it per-view previously
+        caused the duplicate-resource-key ambiguity described in
+        AttendanceResources.xaml.
+    -->
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
@@ -33,137 +35,9 @@
         <!-- Left: Calendar -->
         <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!-- Month navigation -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                    <Button Content="&#xE76B;" FontFamily="Segoe MDL2 Assets"
-                            Style="{StaticResource CalendarNavButtonStyle}"
-                            Command="{Binding PrevMonthCommand}" />
-                    <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}"
-                               FontWeight="Bold" FontSize="16"
-                               Foreground="{StaticResource PrimaryTextBrush}"
-                               VerticalAlignment="Center" Margin="16,0" />
-                    <Button Content="&#xE76C;" FontFamily="Segoe MDL2 Assets"
-                            Style="{StaticResource CalendarNavButtonStyle}"
-                            Command="{Binding NextMonthCommand}" />
-                </StackPanel>
-
-                <!-- Days of week header -->
-                <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
-                    <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-                </UniformGrid>
-
-                <!-- Calendar grid: every cell gets the SAME fixed height regardless of how
-                     many week-rows the visible month needs, so the card size never jumps
-                     between a 4-row and a 6-row month. The ScrollViewer only kicks in if
-                     a 6-row month can't fit the available vertical space. -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <ItemsControl ItemsSource="{Binding Days}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="7" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <!-- Fixed Height keeps every cell identical no matter how many
-                                     lines of content (times, lateness, status) it has, and no
-                                     matter whether the month renders 5 or 6 week-rows. -->
-                                <Border Height="96"
-                                        Margin="4"
-                                        CornerRadius="8"
-                                        BorderThickness="1"
-                                        Background="{Binding Status, Converter={StaticResource StatusToBrushConverter}}">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-                                            <Setter Property="Opacity" Value="1" />
-                                            <Style.Triggers>
-                                                <!-- Leading/trailing days from adjacent months: subdued placeholder -->
-                                                <DataTrigger Binding="{Binding IsFillerCell}" Value="True">
-                                                    <Setter Property="Opacity" Value="0.35" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-
-                                    <Grid Margin="8,6">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-
-                                        <!-- Date number -->
-                                        <TextBlock Grid.Row="0"
-                                                   Text="{Binding Date, StringFormat='dd/MM'}"
-                                                   FontWeight="Bold" FontSize="13">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="White" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasStatus}" Value="False">
-                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Weekend">
-                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
-                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-
-                                        <!-- Check-in / Check-out -->
-                                        <StackPanel Grid.Row="1" VerticalAlignment="Center"
-                                                    Visibility="{Binding ShouldShowTimes, Converter={StaticResource BoolToVisibility}}">
-                                            <TextBlock Text="{Binding CheckIn, StringFormat='In: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
-                                            <TextBlock Text="{Binding CheckOut, StringFormat='Out: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
-                                        </StackPanel>
-
-                                        <!-- Status label -->
-                                        <TextBlock Grid.Row="2"
-                                                   Text="{Binding DisplayStatus}"
-                                                   FontSize="11" FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="White" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Weekend">
-                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
-                                                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding HasStatus}" Value="False">
-                                                            <Setter Property="Foreground" Value="Transparent" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Grid>
+            <!-- DataContext flows through implicitly: this page's own
+                 AttendanceViewModel is exactly what AttendanceCalendarView expects. -->
+            <controls:AttendanceCalendarView />
         </Border>
 
         <!-- Right: Summary and actions -->

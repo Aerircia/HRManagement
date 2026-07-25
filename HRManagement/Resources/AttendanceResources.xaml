@@ -3,17 +3,21 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:util="clr-namespace:HRManagement.Utilities">
 
-    <!-- ============================================================
-         Shared resources for the attendance calendar: converters,
-         status fill brushes, and control styles (month-nav arrows,
-         check-in/out action buttons). Merge this dictionary into any
-         view that hosts the calendar component.
-         ============================================================ -->
-
     <!-- ========= Converters ========= -->
-
-    <util:AttendanceStatusToBrushConverter x:Key="StatusToBrushConverter" />
-    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <!--
+        Key is deliberately AttendanceStatusToBrushConverter, not StatusToBrushConverter.
+        Converters.xaml separately defines a key literally named "StatusToBrushConverter"
+        for HRManagement.Utilities.StatusToBrushConverter (used by request-status pills
+        in RequestsView/ManageRequestsView, e.g. "Approved"/"Rejected"/"Pending"). Since
+        both dictionaries are merged app-wide in App.xaml, using the same key name here
+        previously caused whichever dictionary merges last (Converters.xaml) to silently
+        win, so every attendance calendar cell resolved through the REQUEST converter
+        instead of this one - its switch doesn't recognize "Present"/"Late"/"Absent"/
+        "OT"/"Weekend", so it fell through to a default brush and every cell rendered
+        as the same near-white/neutral color regardless of actual attendance status.
+        Giving this converter its own unique key fixes that collision.
+    -->
+    <util:AttendanceStatusToBrushConverter x:Key="AttendanceStatusToBrushConverter" />
 
     <!-- ========= Attendance status fills ========= -->
     <!-- Looked up by key from AttendanceStatusToBrushConverter; also used

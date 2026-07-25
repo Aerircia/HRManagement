@@ -12,45 +12,13 @@
 
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
-        <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="22"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="#1A2B3674" BlurRadius="18" ShadowDepth="4" Opacity="0.12" Direction="270"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="StatusPillStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-        </Style>
-
-        <Style x:Key="RowIconButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="32"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" CornerRadius="8" Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!--
+            CardStyle -> SurfaceCardStyle, StatusPillStyle, RowIconButtonStyle, and
+            GridCellTextStyle -> TableCellTextStyle now come from the shared
+            Resources/TableStyles.xaml (merged in App.xaml) so this page matches
+            Manage Profiles, Requests, Manage Requests, and Manage Attendances.
+            Only styles specific to this page's Add/Edit form remain local.
+        -->
 
         <Style x:Key="FormLabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
@@ -92,12 +60,6 @@
             <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-
-        <Style x:Key="GridCellTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
     </UserControl.Resources>
@@ -167,7 +129,7 @@
             </Border>
 
             <!-- Contract table -->
-            <Border Grid.Row="4" Style="{StaticResource CardStyle}" Padding="0">
+            <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}" Padding="0">
 
                 <DataGrid ItemsSource="{Binding ContractsView}"
                           AutoGenerateColumns="False"
@@ -185,50 +147,27 @@
                           HorizontalScrollBarVisibility="Disabled">
 
                     <DataGrid.Resources>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="{StaticResource TableHeaderBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Padding" Value="16,14"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                        </Style>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource RowSelectedBrush}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Padding" Value="16,0"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                        </Style>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+                        <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
 
                         <DataGridTextColumn Header="Employee" Binding="{Binding EmployeeName}" Width="1.6*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTextColumn Header="Role" Binding="{Binding RoleName}" Width="*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTextColumn Header="Contract Type" Binding="{Binding ContractType}" Width="1.2*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTextColumn Header="Start Date" Binding="{Binding StartDateDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTextColumn Header="End Date" Binding="{Binding EndDateDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTemplateColumn Header="Status" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
@@ -242,7 +181,7 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Base Salary" Binding="{Binding BaseSalaryDisplay}" Width="1.1*"
-                                             ElementStyle="{StaticResource GridCellTextStyle}"/>
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTemplateColumn Header="" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
@@ -307,7 +246,7 @@
         <Grid Background="#66000000"
               Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVisibility}}">
 
-            <Border Style="{StaticResource CardStyle}"
+            <Border Style="{StaticResource SurfaceCardStyle}"
                     Width="480"
                     MaxHeight="680"
                     HorizontalAlignment="Center"
@@ -415,7 +354,7 @@
         <Grid Background="#66000000"
               Visibility="{Binding IsDeleteConfirmOpen, Converter={StaticResource BoolToVisibility}}">
 
-            <Border Style="{StaticResource CardStyle}"
+            <Border Style="{StaticResource SurfaceCardStyle}"
                     Width="380"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">

@@ -1,0 +1,177 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Unified table visuals for: ContractsView, ManageProfilesView, RequestsView,
+        ManageRequestsView, ManageAttendancesView (employee list).
+
+        This dictionary standardizes the *look* of tables app-wide (card chrome,
+        header row, row hover/selected/divider, empty-state text, row action
+        buttons, status pills) without forcing every table onto the same control.
+        DataGrid-based tables (Contracts, Manage Profiles, Manage Attendances) and
+        ItemsControl-based tables (Requests, Manage Requests) both consume these
+        keys so they render consistently side by side.
+
+        Merge this once at the app level (App.xaml) alongside the other shared
+        dictionaries, then remove the per-view duplicated copies of these styles.
+    -->
+
+    <!-- ========= Shared table card container ========= -->
+    <!-- Wraps every table (DataGrid or ItemsControl) in the same card chrome.
+         Use Padding="0" on the Border when the table renders its own header
+         row background edge-to-edge (all current tables do). -->
+    <Style x:Key="TableCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="15"/>
+    </Style>
+
+    <!-- Slightly heavier card used behind forms/search bars/stat groupings that
+         sit above a table (kept separate from TableCardStyle so callers can pick
+         per element; same visual language, includes the drop shadow the
+         Contracts/Manage Profiles cards previously each redefined locally). -->
+    <Style x:Key="SurfaceCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="22"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#1A2B3674" BlurRadius="18" ShadowDepth="4" Opacity="0.12" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========= Table header row text (ItemsControl-based tables) ========= -->
+    <!-- Matches ManageRequestsStyles.xaml's original TableHeaderTextStyle so
+         Requests/Manage Requests keep their exact current look; kept here too
+         so every table style lives in one place going forward. -->
+    <Style x:Key="TableHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="20,0,10,0"/>
+    </Style>
+
+    <!-- Header row background strip for ItemsControl tables (Grid with this
+         Background + TableHeaderTextStyle children == same header look as
+         DataGridColumnHeaderStyle below). -->
+    <Style x:Key="TableHeaderRowStyle" TargetType="Grid">
+        <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}"/>
+        <Setter Property="Height" Value="46"/>
+    </Style>
+
+    <!-- Divider under each ItemsControl row -->
+    <Style x:Key="TableRowDividerStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+    </Style>
+
+    <!-- ========= DataGrid header/row/cell (DataGrid-based tables) ========= -->
+    <!-- Column header: same padding/foreground/weight as the header text style
+         above, so a DataGrid table and an ItemsControl table look identical
+         when placed in the same page. -->
+    <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
+        <Setter Property="Background" Value="Transparent"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Convenience style bundling the three above via BasedOn is not possible
+         across different TargetTypes, so consumers set DataGrid.Resources with
+         a TargetType-keyed <Style> that uses these three directly, e.g.:
+
+         <DataGrid.Resources>
+             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+             <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+             <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
+         </DataGrid.Resources>
+    -->
+
+    <!-- Cell text used inside DataGridTextColumn.ElementStyle -->
+    <Style x:Key="TableCellTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ========= Status pill (Contracts / Manage Profiles) ========= -->
+    <Style x:Key="StatusPillStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+    </Style>
+
+    <!-- ========= Row action icon buttons (edit/delete - Contracts, Manage Profiles) ========= -->
+    <Style x:Key="RowIconButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="32"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Border" CornerRadius="8" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========= Empty-state text ("No requests found.", "You haven't submitted...") ========= -->
+    <Style x:Key="TableEmptyStateStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,40,0,0"/>
+    </Style>
+
+    <!-- ========= Table toolbar search box (Contracts, Manage Profiles, Manage Requests) ========= -->
+    <Style x:Key="TableSearchBoxContainerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="Height" Value="48"/>
+    </Style>
+
+    <Style x:Key="TableSearchTextBoxStyle" TargetType="TextBox">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+</ResourceDictionary>

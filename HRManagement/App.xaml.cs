@@ -56,8 +56,8 @@ public partial class App : Application
         services.AddSingleton<IContractRepository, ContractRepository>();
         services.AddSingleton<IAttendanceRepository, AttendanceRepository>();
         services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
-        services.AddSingleton<IPayrollRepository, PayrollRepository>();            
-        services.AddSingleton<IRequestFormRepository , RequestFormRepository>();
+        services.AddSingleton<IPayrollRepository, PayrollRepository>();
+        services.AddSingleton<IRequestFormRepository, RequestFormRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
