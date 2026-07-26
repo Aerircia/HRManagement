@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 
 // Model aliases

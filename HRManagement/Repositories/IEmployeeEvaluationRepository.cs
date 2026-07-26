@@ -62,5 +62,8 @@ namespace HRManagement.Repositories
         /// </summary>
         void DeleteEvaluation(
             int evaluationId);
+        EmployeeEvaluation? GetLatestByEmployeeId(int employeeId);
+        EmployeeEvaluation? GetById(int evaluationId);
+        decimal GetTotalBonusForYear(int employeeId, int year);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
