@@ -4,6 +4,7 @@ using System.Text;
 using HRManagement.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using HRManagement.Repositories.Interfaces;
 
 namespace HRManagement.Repositories
 {

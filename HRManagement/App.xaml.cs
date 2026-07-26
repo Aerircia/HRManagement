@@ -52,20 +52,8 @@ public partial class App : Application
         services.AddTransient<IEmployeeEvaluationService,EmployeeEvaluationService>();
 
         // Repositories
+        services.AddSingleton<IManageSalariesRepository,ManageSalariesRepository>();
         services.AddSingleton<ISalaryRepository, SalaryRepository>();
-
-        services.AddSingleton<AccountRepository>();
-        services.AddSingleton<EmployeeRepository>();
-        services.AddSingleton<RoleRepository>();
-        services.AddSingleton<DepartmentRepository>();
-        services.AddSingleton<ContractRepository>();          
-        services.AddSingleton<AttendanceRepository>();        
-        services.AddSingleton<EmployeeEvaluationRepository>();
-        services.AddSingleton<PayrollRepository>();            
-        services.AddSingleton<RequestFormRepository>();
-        services.AddSingleton< IManageSalariesRepository,ManageSalariesRepository>();
-        services.AddTransient< IEmployeeEvaluationRepository,EmployeeEvaluationRepository>();
-
         services.AddSingleton<IAccountRepository, AccountRepository>();
         services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
         services.AddSingleton<IRoleRepository, RoleRepository>();
@@ -95,6 +83,7 @@ public partial class App : Application
         services.AddTransient<ManageProfilesViewModel>();
         services.AddTransient<ManageRequestsViewModel>();
         services.AddTransient<ManageSalariesViewModel>();
+        services.AddTransient<ManageAnnouncementsViewModel>();
         services.AddTransient<ProfileViewModel>();
         services.AddTransient<RequestsViewModel>();
         services.AddTransient<SalaryViewModel>();

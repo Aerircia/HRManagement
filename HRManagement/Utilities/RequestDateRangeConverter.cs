@@ -25,6 +25,9 @@ namespace HRManagement.Utilities
                 "Resignation" when endDate != null =>
                     $"Last day: {endDate:MMM dd, yyyy}",
 
+                "OT Request" when startDate != null && endDate != null =>
+                    $"{startDate:MMM dd, yyyy} {startDate:HH:mm} - {endDate:HH:mm}",
+
                 _ => "-"
             };
         }

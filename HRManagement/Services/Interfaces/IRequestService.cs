@@ -10,13 +10,15 @@ public interface IRequestService
 
     bool SubmitOtherRequest(int employeeId, string subject, string description);
 
+    bool SubmitOtRequest(int employeeId, DateTime date, TimeSpan startTime, TimeSpan endTime, string reason);
+
     List<RequestFormSummary> GetAllRequests();
 
     List<RequestFormSummary> GetRequestsByDepartment(int departmentId);
 
     List<RequestFormSummary> GetMyRequests(int employeeId);
 
-    bool ApproveRequest(int requestId);
+    bool ApproveRequest(RequestFormSummary request);
 
     bool RejectRequest(int requestId);
 }

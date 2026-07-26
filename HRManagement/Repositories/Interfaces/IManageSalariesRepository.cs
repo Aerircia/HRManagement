@@ -1,9 +1,9 @@
-﻿using System;
+﻿using HRManagement.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using HRManagement.Models;
 
-namespace HRManagement.Repositories
+namespace HRManagement.Repositories.Interfaces
 {
     public interface IManageSalariesRepository
     {

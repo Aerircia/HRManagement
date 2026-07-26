@@ -12,6 +12,7 @@ public enum RequestCategory
     None,
     DayOff,
     Resignation,
+    OT,
     Other
 }
 
@@ -74,6 +75,7 @@ public class RequestsViewModel : PageViewModel
                 OnPropertyChanged(nameof(IsFormVisible));
                 OnPropertyChanged(nameof(IsDayOffFormVisible));
                 OnPropertyChanged(nameof(IsResignationFormVisible));
+                OnPropertyChanged(nameof(IsOtFormVisible));
                 OnPropertyChanged(nameof(IsOtherFormVisible));
             }
         }
@@ -83,6 +85,7 @@ public class RequestsViewModel : PageViewModel
     public bool IsFormVisible => SelectedCategory != RequestCategory.None;
     public bool IsDayOffFormVisible => SelectedCategory == RequestCategory.DayOff;
     public bool IsResignationFormVisible => SelectedCategory == RequestCategory.Resignation;
+    public bool IsOtFormVisible => SelectedCategory == RequestCategory.OT;
     public bool IsOtherFormVisible => SelectedCategory == RequestCategory.Other;
 
     // Day Off fields
@@ -122,6 +125,36 @@ public class RequestsViewModel : PageViewModel
     {
         get => _resignationReason;
         set => SetProperty(ref _resignationReason, value);
+    }
+
+    // OT fields
+
+    private DateTime? _otDate;
+    public DateTime? OtDate
+    {
+        get => _otDate;
+        set => SetProperty(ref _otDate, value);
+    }
+
+    private string _otStartTime = "18:00";
+    public string OtStartTime
+    {
+        get => _otStartTime;
+        set => SetProperty(ref _otStartTime, value);
+    }
+
+    private string _otEndTime = "20:00";
+    public string OtEndTime
+    {
+        get => _otEndTime;
+        set => SetProperty(ref _otEndTime, value);
+    }
+
+    private string _otReason = string.Empty;
+    public string OtReason
+    {
+        get => _otReason;
+        set => SetProperty(ref _otReason, value);
     }
 
     // Other fields
@@ -243,6 +276,37 @@ public class RequestsViewModel : PageViewModel
 
                 break;
 
+            case RequestCategory.OT:
+
+                if (OtDate == null || string.IsNullOrWhiteSpace(OtStartTime) ||
+                    string.IsNullOrWhiteSpace(OtEndTime) || string.IsNullOrWhiteSpace(OtReason))
+                {
+                    ShowError("Please fill in all fields.");
+                    return;
+                }
+
+                if (!TimeSpan.TryParse(OtStartTime, out var otStart) ||
+                    !TimeSpan.TryParse(OtEndTime, out var otEnd))
+                {
+                    ShowError("Please enter valid times (e.g. 18:00).");
+                    return;
+                }
+
+                if (otEnd <= otStart)
+                {
+                    ShowError("End time must be after start time.");
+                    return;
+                }
+
+                success = _requestService.SubmitOtRequest(
+                    employeeId.Value,
+                    OtDate.Value,
+                    otStart,
+                    otEnd,
+                    OtReason.Trim());
+
+                break;
+
             case RequestCategory.Other:
 
                 if (string.IsNullOrWhiteSpace(OtherSubject) || string.IsNullOrWhiteSpace(OtherDescription))
@@ -291,6 +355,11 @@ public class RequestsViewModel : PageViewModel
 
         ResignationLastWorkingDate = null;
         ResignationReason = string.Empty;
+
+        OtDate = null;
+        OtStartTime = "18:00";
+        OtEndTime = "20:00";
+        OtReason = string.Empty;
 
         OtherSubject = string.Empty;
         OtherDescription = string.Empty;

@@ -4,7 +4,7 @@ using System.Text;
 using HRManagement.Models;
 using System.Collections.Generic;
 
-namespace HRManagement.Repositories
+namespace HRManagement.Repositories.Interfaces
 {
     public interface IEmployeeEvaluationRepository
     {

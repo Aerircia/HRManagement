@@ -341,6 +341,29 @@
 
                     </Button>
 
+                    <!-- Manage Announcements -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:ManageAnnouncementsViewModel}">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="Bullhorn"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
+                                       Text="Announcements"/>
+
+                        </StackPanel>
+
+                    </Button>
+
                     <Separator Margin="0,18"/>
 
                     <!-- Setting -->

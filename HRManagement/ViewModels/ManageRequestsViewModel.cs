@@ -143,7 +143,7 @@ public class ManageRequestsViewModel : PageViewModel
             return;
 
         var success = status == "Approved"
-            ? _requestService.ApproveRequest(request.RequestId)
+            ? _requestService.ApproveRequest(request)
             : _requestService.RejectRequest(request.RequestId);
 
         if (success)

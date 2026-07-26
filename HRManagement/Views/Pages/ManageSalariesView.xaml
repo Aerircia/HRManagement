@@ -112,84 +112,49 @@
                     Value="1" />
         </Style>
 
-        <Style x:Key="ManageSalaryComboBoxStyle"
-               TargetType="ComboBox">
-            <Setter Property="Height"
-                    Value="38" />
-
-            <Setter Property="Padding"
-                    Value="8,4" />
-
-            <Setter Property="VerticalContentAlignment"
-                    Value="Center" />
-
-            <Setter Property="Background"
-                    Value="{DynamicResource CardBackgroundBrush}" />
-
-            <Setter Property="BorderBrush"
-                    Value="{DynamicResource BorderBrush}" />
-
-            <Setter Property="BorderThickness"
-                    Value="1" />
-        </Style>
-
         <!-- =====================================================
-             Secondary button
+             ComboBox / Buttons
              ===================================================== -->
-
-        <Style x:Key="SecondaryButtonStyle"
-               TargetType="Button">
-            <Setter Property="Height"
-                    Value="38" />
-
-            <Setter Property="Padding"
-                    Value="16,0" />
-
-            <Setter Property="Background"
-                    Value="{DynamicResource CardBackgroundBrush}" />
-
-            <Setter Property="Foreground"
-                    Value="{DynamicResource PrimaryBrush}" />
-
-            <Setter Property="BorderBrush"
-                    Value="{DynamicResource PrimaryBrush}" />
-
-            <Setter Property="BorderThickness"
-                    Value="1" />
-
-            <Setter Property="FontWeight"
-                    Value="SemiBold" />
-
-            <Setter Property="Cursor"
-                    Value="Hand" />
-        </Style>
-
-        <!-- =====================================================
-             Danger button
-             ===================================================== -->
+        <!-- Uses the project's shared ModernComboBox (Resources/ComboBoxStyles.xaml)
+             and PrimaryButtonStyle/SecondaryButtonStyle (Resources/ButtonStyles.xaml)
+             instead of page-local styles, so this page matches the rest of the app.
+             The project has no shared "danger" button, so this local style reuses
+             PrimaryButtonStyle's pill shape/template but swaps in DangerBrush. -->
 
         <Style x:Key="DangerButtonStyle"
-               TargetType="Button">
-            <Setter Property="Height"
-                    Value="38" />
-
-            <Setter Property="Padding"
-                    Value="16,0" />
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButtonStyle}">
 
             <Setter Property="Background"
                     Value="{DynamicResource DangerBrush}" />
 
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle"
+       TargetType="Button">
+            <Setter Property="Height"
+            Value="38" />
+
+            <Setter Property="Padding"
+            Value="16,0" />
+
+            <Setter Property="Background"
+            Value="{DynamicResource CardBackgroundBrush}" />
+
             <Setter Property="Foreground"
-                    Value="White" />
+            Value="{DynamicResource PrimaryBrush}" />
+
+            <Setter Property="BorderBrush"
+            Value="{DynamicResource PrimaryBrush}" />
 
             <Setter Property="BorderThickness"
-                    Value="0" />
+            Value="1" />
 
             <Setter Property="FontWeight"
-                    Value="SemiBold" />
+            Value="SemiBold" />
 
             <Setter Property="Cursor"
-                    Value="Hand" />
+            Value="Hand" />
         </Style>
 
         <!-- =====================================================
@@ -489,7 +454,7 @@
                 </StackPanel>
 
                 <ComboBox Grid.Column="1"
-                          Style="{StaticResource ManageSalaryComboBoxStyle}"
+                          Style="{StaticResource ModernComboBox}"
                           ItemsSource="{Binding Months}"
                           SelectedItem="{Binding SelectedMonth,
                                                  Mode=TwoWay,
@@ -507,7 +472,7 @@
                 </StackPanel>
 
                 <ComboBox Grid.Column="4"
-                          Style="{StaticResource ManageSalaryComboBoxStyle}"
+                          Style="{StaticResource ModernComboBox}"
                           ItemsSource="{Binding Years}"
                           SelectedItem="{Binding SelectedYear,
                                                  Mode=TwoWay,
@@ -576,7 +541,7 @@
                 </Grid>
 
                 <Button Grid.Column="8"
-                        Style="{StaticResource SecondaryButtonStyle}"
+                        Style="{DynamicResource ResourceKey=SecondaryButtonStyle}"
                         Command="{Binding ClearSearchCommand}"
                         Content="Clear" />
 
@@ -740,7 +705,7 @@
                         </StackPanel>
 
                         <Button Grid.Column="1"
-                                Style="{StaticResource SecondaryButtonStyle}"
+                                Style="{DynamicResource SecondaryButtonStyle}"
                                 Command="{Binding RefreshCommand}"
                                 Content="Refresh" />
 
@@ -805,7 +770,11 @@
 
                                         <DataTemplate>
 
-                                            <Border Style="{StaticResource PayrollStatusBadgeStyle}">
+                                            <Border Style="{StaticResource PayrollStatusBadgeStyle}"
+                                                    Opacity="0.75"
+                                                    CornerRadius="10"
+                                                    Height="26"
+                                                    Width="86">
 
                                                 <TextBlock HorizontalAlignment="Center"
                                                            TextAlignment="Center"
@@ -1020,7 +989,7 @@
                                     Content="Save Changes" />
 
                             <Button Grid.Column="2"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
                                     Command="{Binding ResetSalaryComponentsCommand}"
                                     Content="Reset" />
 

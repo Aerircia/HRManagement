@@ -33,6 +33,10 @@
         <views:ManageAttendancesView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:ManageAnnouncementsViewModel}">
+        <views:ManageAnnouncementsView/>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type vm:ManageProfilesViewModel}">
         <views:ManageProfilesView/>
     </DataTemplate>
