@@ -2,9 +2,9 @@
 
 namespace HRManagement.Views.Pages
 {
-    public partial class ContractsView : UserControl
+    public partial class ContractView : UserControl
     {
-        public ContractsView()
+        public ContractView()
         {
             InitializeComponent();
         }

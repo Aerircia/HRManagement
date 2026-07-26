@@ -564,5 +564,43 @@ namespace HRManagement.Repositories
                     "Year must be > 2000.");
             }
         }
+        public List<int> GetAllEmployeeIds()
+        {
+            var ids = new List<int>();
+
+            using var connection = Db.CreateConnection();
+            connection.Open();
+
+            const string sql = "SELECT EmployeeID FROM Employee;";
+
+            using var command = new SqlCommand(sql, connection);
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+                ids.Add(reader.GetInt32(0));
+
+            return ids;
+        }
+
+        public List<int> GetEmployeeIdsByDepartment(int departmentId)
+        {
+            var ids = new List<int>();
+
+            using var connection = Db.CreateConnection();
+            connection.Open();
+
+            const string sql = "SELECT EmployeeID FROM Employee WHERE Department_ID = @DepartmentId;";
+
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.Add("@DepartmentId", SqlDbType.Int).Value = departmentId;
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+                ids.Add(reader.GetInt32(0));
+
+            return ids;
+        }
+
     }
 }

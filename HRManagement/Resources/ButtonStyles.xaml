@@ -127,7 +127,7 @@
 
                     <Border x:Name="Border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="21">
+                            CornerRadius="16">
 
                         <ContentPresenter
                             HorizontalAlignment="Center"

@@ -37,5 +37,6 @@ public class SidebarViewModel : ViewModelBase
     public bool IsManager => _authorizationService.IsManager;
 
     public bool IsEmployee => _authorizationService.IsEmployee;
+
     #endregion
 }

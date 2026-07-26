@@ -4,24 +4,16 @@ using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
-public class AuthenticationService : IAuthenticationService
+public class AuthenticationService(
+    IAccountRepository accountRepository,
+    IEmployeeRepository employeeRepository,
+    IRoleRepository roleRepository,
+    SessionManager sessionManager) : IAuthenticationService
 {
-    private readonly IAccountRepository _accountRepository;
-    private readonly IEmployeeRepository _employeeRepository;
-    private readonly IRoleRepository _roleRepository;
-    private readonly SessionManager _sessionManager;
-
-    public AuthenticationService(
-        IAccountRepository accountRepository,
-        IEmployeeRepository employeeRepository,
-        IRoleRepository roleRepository,
-        SessionManager sessionManager)
-    {
-        _accountRepository = accountRepository;
-        _employeeRepository = employeeRepository;
-        _roleRepository = roleRepository;
-        _sessionManager = sessionManager;
-    }
+    private readonly IAccountRepository _accountRepository = accountRepository;
+    private readonly IEmployeeRepository _employeeRepository = employeeRepository;
+    private readonly IRoleRepository _roleRepository = roleRepository;
+    private readonly SessionManager _sessionManager = sessionManager;
 
     public CurrentUser? Login(string username, string password)
     {

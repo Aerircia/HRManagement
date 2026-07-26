@@ -46,6 +46,7 @@ public partial class App : Application
         services.AddSingleton<IAttendanceService, AttendanceService>();
         services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
         services.AddSingleton<ISettingService, SettingService>();
+        services.AddSingleton<IDashboardService, DashboardService>();
 
         // Repositories
         services.AddSingleton<ISalaryRepository, SalaryRepository>();
@@ -58,6 +59,7 @@ public partial class App : Application
         services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
         services.AddSingleton<IPayrollRepository, PayrollRepository>();
         services.AddSingleton<IRequestFormRepository, RequestFormRepository>();
+        services.AddSingleton<IAnnouncementRepository, AnnouncementRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
@@ -68,6 +70,7 @@ public partial class App : Application
         services.AddTransient<LoginViewModel>();
         services.AddTransient<AttendanceViewModel>();
         services.AddTransient<ContractViewModel>();
+        services.AddTransient<ManageContractsViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<EmployeeEvaluationViewModel>();
         services.AddTransient<LogsViewModel>();
