@@ -299,13 +299,19 @@
                     Value="{DynamicResource CardBackgroundBrush}" />
 
             <Setter Property="RowHeight"
-                    Value="52" />
+                    Value="56" />
 
             <Setter Property="ColumnHeaderHeight"
-                    Value="44" />
+                    Value="48" />
 
             <Setter Property="AlternationCount"
                     Value="2" />
+
+            <Setter Property="CanUserResizeColumns"
+                    Value="True" />
+
+            <Setter Property="MinColumnWidth"
+                    Value="45" />
         </Style>
 
         <Style x:Key="ManageSalaryDataGridCellStyle"
@@ -314,6 +320,9 @@
                     Value="10,5" />
 
             <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+
+            <Setter Property="HorizontalContentAlignment"
                     Value="Center" />
 
             <Setter Property="BorderThickness"
@@ -603,7 +612,7 @@
                     <TextBlock Margin="0,8,0,0"
                                FontSize="26"
                                FontWeight="Bold"
-                               Text="{Binding TotalEmployees}" />
+                               Text="{Binding TotalEmployees, Mode=OneWay}" />
 
                 </StackPanel>
 
@@ -624,7 +633,7 @@
                                FontSize="26"
                                FontWeight="Bold"
                                Foreground="{DynamicResource SuccessBrush}"
-                               Text="{Binding CreatedPayrollCount}" />
+                               Text="{Binding CreatedPayrollCount, Mode=OneWay}" />
 
                 </StackPanel>
 
@@ -645,7 +654,7 @@
                                FontSize="26"
                                FontWeight="Bold"
                                Foreground="{DynamicResource DangerBrush}"
-                               Text="{Binding PendingPayrollCount}" />
+                               Text="{Binding PendingPayrollCount, Mode=OneWay}" />
 
                 </StackPanel>
 
@@ -668,6 +677,7 @@
                                FontWeight="Bold"
                                Foreground="{DynamicResource PrimaryBrush}"
                                Text="{Binding TotalMonthlySalary,
+                                              Mode=OneWay,
                                               StringFormat={}{0:N0} VND}" />
 
                 </StackPanel>
@@ -683,9 +693,9 @@
         <Grid Grid.Row="3">
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.3*" />
+                <ColumnDefinition Width="3.6*" />
                 <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1.2*" />
             </Grid.ColumnDefinitions>
 
             <!-- =================================================
@@ -738,59 +748,58 @@
 
                     <Grid Grid.Row="1">
 
-                        <DataGrid ItemsSource="{Binding Salaries}"
+                        <DataGrid ItemsSource="{Binding Salaries, Mode=OneWay}"
                                   SelectedItem="{Binding SelectedSalary,
-                                                         Mode=TwoWay}"
+                                                         Mode=TwoWay,
+                                                         UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource ManageSalaryDataGridStyle}"
                                   CellStyle="{StaticResource ManageSalaryDataGridCellStyle}"
-                                  ColumnHeaderStyle="{StaticResource ManageSalaryColumnHeaderStyle}">
+                                  ColumnHeaderStyle="{StaticResource ManageSalaryColumnHeaderStyle}"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.CanContentScroll="True">
 
                             <DataGrid.Columns>
 
+                                <!-- Compact identity column -->
                                 <DataGridTextColumn Header="ID"
-                                                    Width="65"
-                                                    Binding="{Binding EmployeeId}" />
+                                                    Width="0.55*"
+                                                    MinWidth="48"
+                                                    Binding="{Binding EmployeeId, Mode=OneWay}" />
 
+                                <!-- Main information: receives the largest available width -->
                                 <DataGridTextColumn Header="Employee"
-                                                    Width="1.5*"
+                                                    Width="2.2*"
                                                     MinWidth="150"
-                                                    Binding="{Binding FullName}" />
+                                                    Binding="{Binding FullName, Mode=OneWay}" />
 
                                 <DataGridTextColumn Header="Department"
-                                                    Width="*"
-                                                    MinWidth="115"
-                                                    Binding="{Binding DepartmentName}" />
+                                                    Width="1.35*"
+                                                    MinWidth="105"
+                                                    Binding="{Binding DepartmentName, Mode=OneWay}" />
 
-                                <DataGridTextColumn Header="Role"
-                                                    Width="*"
-                                                    MinWidth="110"
-                                                    Binding="{Binding RoleName}" />
-
+                                <!-- Attendance summary -->
                                 <DataGridTextColumn Header="Working"
-                                                    Width="85"
-                                                    Binding="{Binding WorkingDays}" />
+                                                    Width="0.85*"
+                                                    MinWidth="68"
+                                                    Binding="{Binding WorkingDays, Mode=OneWay}" />
 
                                 <DataGridTextColumn Header="Absent"
-                                                    Width="75"
-                                                    Binding="{Binding AbsentDays}" />
+                                                    Width="0.8*"
+                                                    MinWidth="64"
+                                                    Binding="{Binding AbsentDays, Mode=OneWay}" />
 
-                                <DataGridTextColumn Header="Reward"
-                                                    Width="105"
-                                                    Binding="{Binding Reward,
-                                                                      StringFormat={}{0:N0}}" />
-
-                                <DataGridTextColumn Header="Penalty"
-                                                    Width="105"
-                                                    Binding="{Binding Penalty,
-                                                                      StringFormat={}{0:N0}}" />
-
-                                <DataGridTextColumn Header="Total Salary"
-                                                    Width="135"
+                                <!-- Main payroll value -->
+                                <DataGridTextColumn Header="Salary (VND)"
+                                                    Width="1.35*"
+                                                    MinWidth="120"
                                                     Binding="{Binding TotalSalary,
+                                                                      Mode=OneWay,
                                                                       StringFormat={}{0:N0}}" />
 
-                                <DataGridTemplateColumn Header="Payroll"
-                                                        Width="110">
+                                <DataGridTemplateColumn Header="Status"
+                                                        Width="1.05*"
+                                                        MinWidth="90">
 
                                     <DataGridTemplateColumn.CellTemplate>
 
@@ -798,10 +807,13 @@
 
                                             <Border Style="{StaticResource PayrollStatusBadgeStyle}">
 
-                                                <TextBlock Foreground="White"
+                                                <TextBlock HorizontalAlignment="Center"
+                                                           TextAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Foreground="White"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           Text="{Binding PayrollStatus}" />
+                                                           Text="{Binding PayrollStatus, Mode=OneWay}" />
 
                                             </Border>
 
@@ -871,7 +883,7 @@
                         <TextBlock FontSize="12"
                                    Opacity="0.8"
                                    TextWrapping="Wrap"
-                                   Text="{Binding StatusMessage}" />
+                                   Text="{Binding StatusMessage, Mode=OneWay}" />
 
                     </Border>
 
@@ -906,7 +918,7 @@
                                 <TextBlock Foreground="White"
                                            FontSize="17"
                                            FontWeight="SemiBold"
-                                           Text="{Binding SelectedEmployeeName}" />
+                                           Text="{Binding SelectedEmployeeName, Mode=OneWay}" />
 
                                 <TextBlock Margin="0,5,0,0"
                                            Foreground="White"
@@ -1109,6 +1121,7 @@
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
                                        Text="{Binding PreviewRoleSalary,
+                                                      Mode=OneWay,
                                                       StringFormat={}{0:N0} VND}" />
 
                         </Grid>
@@ -1126,6 +1139,7 @@
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
                                        Text="{Binding PreviewAttendanceSalary,
+                                                      Mode=OneWay,
                                                       StringFormat={}{0:N0} VND}" />
 
                         </Grid>
