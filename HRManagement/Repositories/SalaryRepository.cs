@@ -246,7 +246,8 @@ namespace HRManagement.Repositories
                 EvaluationType,
                 BonusType,
                 Amount,
-                Bonus_Date
+                Bonus_Date,
+                Comment
             FROM EmployeeEvaluation
             WHERE Employee_ID = @EmployeeId
               AND Bonus_Date >= @PeriodStart
@@ -499,7 +500,11 @@ namespace HRManagement.Repositories
                     reader.GetOrdinal("Amount")),
 
                 BonusDate = reader.GetDateTime(
-                    reader.GetOrdinal("Bonus_Date"))
+                    reader.GetOrdinal("Bonus_Date")),
+
+                Comment = GetNullableString(
+                    reader,
+                    "Comment")
             };
         }
 
