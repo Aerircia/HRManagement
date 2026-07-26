@@ -4,13 +4,14 @@ using System.Data;
 using System.Windows;
 using HRManagement.Data;
 using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class AttendanceRepository : RepositoryBase
+public class AttendanceRepository : RepositoryBase, IAttendanceRepository
 {
-    public static event EventHandler<HRManagement.Models.AttendanceChangedEventArgs>? OnAttendanceChanged;
+    public event EventHandler<AttendanceChangedEventArgs>? OnAttendanceChanged;
 
     public IEnumerable<Attendance> GetAttendancesForEmployeeMonth(int employeeId, int year, int month)
     {
@@ -23,13 +24,13 @@ public class AttendanceRepository : RepositoryBase
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-SELECT Attendance_ID, Employee_ID, Check_in, Check_out, Status
-FROM Attendance
-WHERE Employee_ID = @emp AND (
-      (Check_in IS NOT NULL AND Check_in >= @start AND Check_in < @end)
-   OR (Check_out IS NOT NULL AND Check_out >= @start AND Check_out < @end)
-)
-";
+            SELECT Attendance_ID, Employee_ID, Check_in, Check_out, Status
+            FROM Attendance
+            WHERE Employee_ID = @emp AND (
+                  (Check_in IS NOT NULL AND Check_in >= @start AND Check_in < @end)
+               OR (Check_out IS NOT NULL AND Check_out >= @start AND Check_out < @end)
+            )
+            ";
         cmd.Parameters.Add(new SqlParameter("@emp", SqlDbType.Int) { Value = employeeId });
         cmd.Parameters.Add(new SqlParameter("@start", SqlDbType.DateTime) { Value = start });
         cmd.Parameters.Add(new SqlParameter("@end", SqlDbType.DateTime) { Value = end });
@@ -95,44 +96,5 @@ WHERE Employee_ID = @emp AND (
                 OnAttendanceChanged?.Invoke(this, new HRManagement.Models.AttendanceChangedEventArgs { EmployeeId = attendance.EmployeeId, Date = date });
             }
         }
-    }
-
-    public List<Attendance> GetByEmployeeForMonth(int employeeId, int year, int month)
-    {
-        using var connection = Db.CreateConnection();
-
-        connection.Open();
-
-        const string sql = """
-            SELECT *
-            FROM Attendance
-            WHERE Employee_ID = @EmployeeId
-              AND YEAR(Check_in) = @Year
-              AND MONTH(Check_in) = @Month
-            ORDER BY Check_in
-            """;
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@EmployeeId", employeeId);
-        command.Parameters.AddWithValue("@Year", year);
-        command.Parameters.AddWithValue("@Month", month);
-
-        using var reader = command.ExecuteReader();
-
-        var results = new List<Attendance>();
-
-        while (reader.Read())
-        {
-            results.Add(new Attendance
-            {
-                AttendanceId = (int)reader["Attendance_ID"],
-                EmployeeId = (int)reader["Employee_ID"],
-                CheckIn = reader["Check_in"] as DateTime?,
-                CheckOut = reader["Check_out"] as DateTime?,
-                Status = reader["Status"].ToString()!
-            });
-        }
-
-        return results;
     }
 }

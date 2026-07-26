@@ -10,7 +10,7 @@
         <Setter Property="Height" Value="150"/>
         <Setter Property="Margin" Value="0,0,20,20"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -18,7 +18,7 @@
 
                     <Border x:Name="Border"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="16">
 
@@ -30,8 +30,8 @@
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                         </Trigger>
 
                         <Trigger Property="IsPressed" Value="True">
@@ -51,13 +51,13 @@
     <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
         <Setter Property="Margin" Value="0,0,0,6"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
     </Style>
 
     <Style x:Key="FieldBoxStyle" TargetType="Border">
         <Setter Property="Margin" Value="0,0,0,18"/>
-        <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="8"/>
     </Style>
@@ -66,21 +66,21 @@
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="12,10"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
     </Style>
 
     <Style x:Key="FieldDatePickerStyle" TargetType="DatePicker">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
     </Style>
 
     <Style x:Key="FormCardStyle" TargetType="Border">
         <Setter Property="Width" Value="460"/>
         <Setter Property="Padding" Value="30"/>
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="15"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -95,7 +95,7 @@
         <Setter Property="Margin" Value="0,0,0,14"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -103,7 +103,7 @@
 
                     <Border x:Name="Border"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="12">
 
@@ -116,8 +116,8 @@
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                         </Trigger>
 
                         <Trigger Property="IsPressed" Value="True">
@@ -136,8 +136,8 @@
 
     <Style x:Key="PaperFormCardStyle" TargetType="Border">
         <Setter Property="Padding" Value="28"/>
-        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="15"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
@@ -147,14 +147,14 @@
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="FontSize" Value="12.5"/>
         <Setter Property="FontStyle" Value="Italic"/>
-        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         <Setter Property="Margin" Value="0,0,0,20"/>
     </Style>
 
     <Style x:Key="PaperSectionLabelStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         <Setter Property="Margin" Value="0,0,0,10"/>
     </Style>
 

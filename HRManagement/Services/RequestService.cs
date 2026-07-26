@@ -1,17 +1,13 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
-public class RequestService : IRequestService
+public class RequestService(IRequestFormRepository requestFormRepository) : IRequestService
 {
-    private readonly RequestFormRepository _requestFormRepository;
-
-    public RequestService(RequestFormRepository requestFormRepository)
-    {
-        _requestFormRepository = requestFormRepository;
-    }
+    private readonly IRequestFormRepository _requestFormRepository = requestFormRepository;
 
     public bool SubmitDayOffRequest(int employeeId, DateTime startDate, DateTime endDate, string reason)
     {

@@ -150,7 +150,8 @@
                             Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding LoginCommand}"
                             Width="180"
-                            HorizontalAlignment="Center"/>
+                            HorizontalAlignment="Center"
+                            IsDefault="True"/>
 
                     <TextBlock
                             Text="{Binding ErrorMessage}"

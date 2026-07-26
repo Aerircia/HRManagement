@@ -20,14 +20,11 @@ namespace HRManagement.Services
             int month,
             int year)
         {
-            if (employee == null)
-                throw new ArgumentNullException(nameof(employee));
+            ArgumentNullException.ThrowIfNull(employee);
 
-            if (contract == null)
-                throw new ArgumentNullException(nameof(contract));
+            ArgumentNullException.ThrowIfNull(contract);
 
-            if (role == null)
-                throw new ArgumentNullException(nameof(role));
+            ArgumentNullException.ThrowIfNull(role);
 
             // Attendance
 

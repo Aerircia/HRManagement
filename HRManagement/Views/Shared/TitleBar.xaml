@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:HRManagement.Views.Shared"
              mc:Ignorable="d" 
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp">
-    <Border Background="{StaticResource CardBackgroundBrush}"
+    <Border Background="{DynamicResource CardBackgroundBrush}"
             MouseLeftButtonDown="Border_MouseLeftButtonDown">
 
         <Grid Margin="12,0">

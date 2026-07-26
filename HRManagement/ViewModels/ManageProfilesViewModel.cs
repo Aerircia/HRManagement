@@ -1,5 +1,6 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Utilities;
 using System;
@@ -24,8 +25,8 @@ namespace HRManagement.ViewModels
 
         public static readonly List<string> StatusOptions = new() { "Active", "Inactive", "On Leave" };
 
-        private readonly EmployeeRepository _employeeRepository;
-        private readonly DepartmentRepository _departmentRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IDepartmentRepository _departmentRepository;
         private readonly SessionManager _sessionManager;
 
         private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 }; // Admin, Manager
@@ -33,8 +34,8 @@ namespace HRManagement.ViewModels
         public override string Title => "Manage Profiles";
 
         public ManageProfilesViewModel(
-            EmployeeRepository employeeRepository,
-            DepartmentRepository departmentRepository,
+            IEmployeeRepository employeeRepository,
+            IDepartmentRepository departmentRepository,
             SessionManager sessionManager)
         {
             _employeeRepository = employeeRepository;

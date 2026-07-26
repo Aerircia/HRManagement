@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using HRManagement.Models;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Utilities;
 
@@ -20,13 +21,13 @@ namespace HRManagement.ViewModels
             [3] = "Employee"
         };
 
-        private readonly EmployeeRepository _employeeRepository;
-        private readonly DepartmentRepository _departmentRepository;
-        private readonly ContractRepository _contractRepository;
-        private readonly AttendanceRepository _attendanceRepository;
-        private readonly EmployeeEvaluationRepository _evaluationRepository;
-        private readonly PayrollRepository _payrollRepository;
-        private readonly RequestFormRepository _requestFormRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IDepartmentRepository _departmentRepository;
+        private readonly IContractRepository _contractRepository;
+        private readonly IAttendanceRepository _attendanceRepository;
+        private readonly IEmployeeEvaluationRepository _evaluationRepository;
+        private readonly IPayrollRepository _payrollRepository;
+        private readonly IRequestFormRepository _requestFormRepository;
         private readonly SessionManager _sessionManager;
 
         private Employee _employee;
@@ -35,13 +36,13 @@ namespace HRManagement.ViewModels
         public override string Title => "My Profile";
 
         public ProfileViewModel(
-            EmployeeRepository employeeRepository,
-            DepartmentRepository departmentRepository,
-            ContractRepository contractRepository,
-            AttendanceRepository attendanceRepository,
-            EmployeeEvaluationRepository evaluationRepository,
-            PayrollRepository payrollRepository,
-            RequestFormRepository requestFormRepository,
+            IEmployeeRepository employeeRepository,
+            IDepartmentRepository departmentRepository,
+            IContractRepository contractRepository,
+            IAttendanceRepository attendanceRepository,
+            IEmployeeEvaluationRepository evaluationRepository,
+            IPayrollRepository payrollRepository,
+            IRequestFormRepository requestFormRepository,
             SessionManager sessionManager)
         {
             _employeeRepository = employeeRepository;
@@ -361,9 +362,9 @@ namespace HRManagement.ViewModels
 
             // Attendance
            
-            var attendanceRecords = _attendanceRepository.GetByEmployeeForMonth(_employee.EmployeeId, now.Year, now.Month);
+            var attendanceRecords = _attendanceRepository.GetAttendancesForEmployeeMonth(_employee.EmployeeId, now.Year, now.Month);
             var presentCount = attendanceRecords.Count(a => string.Equals(a.Status, "Present", StringComparison.OrdinalIgnoreCase));
-            var totalAttendanceRecords = attendanceRecords.Count;
+            var totalAttendanceRecords = attendanceRecords.Count();
 
             AttendanceRate = totalAttendanceRecords > 0
                 ? (double)presentCount / totalAttendanceRecords * 100

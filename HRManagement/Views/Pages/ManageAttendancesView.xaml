@@ -4,40 +4,112 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             xmlns:controls="clr-namespace:HRManagement.Controls"
              Background="Transparent">
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
+            <!-- Left fixed width for employee list (slightly smaller) -->
+            <ColumnDefinition Width="300" />
+            <!-- Right takes remaining space (larger) -->
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel>
-            <TextBlock Text="Manage Attendances" FontSize="30" FontWeight="Bold" Margin="0,0,0,12" Foreground="{StaticResource PrimaryTextBrush}"/>
+        <TextBlock Text="Manage Attendances" FontSize="30" FontWeight="Bold" Margin="0,0,0,12" Foreground="{StaticResource PrimaryTextBrush}" Grid.ColumnSpan="2" />
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                <TextBlock Text="Department:" VerticalAlignment="Center" Margin="0,0,8,0" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}" />
-                <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}" DisplayMemberPath="DepartmentName" Width="240" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}" />
-            </StackPanel>
+        <!-- Left: Filters + Employee list -->
+        <Border Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="8" Padding="12" Margin="6,42,10,0"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Employee ID:" VerticalAlignment="Center" Width="90" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <TextBox Width="140" Text="{Binding EmployeeIdFilter, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-            <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Employee ID" Binding="{Binding EmployeeId}" Width="80" />
-                    <DataGridTextColumn Header="Employee Name" Binding="{Binding EmployeeName}" Width="*" />
-                    <DataGridTextColumn Header="Working Days" Binding="{Binding WorkingDays}" Width="100" />
-                    <DataGridTextColumn Header="On-time Days" Binding="{Binding OnTimeDays}" Width="100" />
-                    <DataGridTextColumn Header="Late Days" Binding="{Binding LateDays}" Width="100" />
-                    <DataGridTextColumn Header="Absent Days" Binding="{Binding AbsentDays}" Width="100" />
-                    <DataGridTemplateColumn Header="OT">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Content="OT" Command="{Binding DataContext.SelectOtCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Total OT Count" Binding="{Binding TotalOtCount}" Width="120" />
-                </DataGrid.Columns>
-            </DataGrid>
-        </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="Department:" VerticalAlignment="Center" Width="90" Foreground="{StaticResource SecondaryTextBrush}" />
+                        <ComboBox Style="{StaticResource ModernComboBox}"
+                                  ItemsSource="{Binding Departments}" 
+                                  SelectedItem="{Binding SelectedDepartment}" 
+                                  DisplayMemberPath="DepartmentName" 
+                                  Width="167"
+                                  Height="24" />
+                    </StackPanel>
+                </StackPanel>
+
+                <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" IsReadOnly="True"
+                          Height="720" VerticalAlignment="Top" RowHeight="32"
+                          GridLinesVisibility="None" HeadersVisibility="Column"
+                          Background="Transparent"
+                          RowBackground="Transparent" AlternatingRowBackground="Transparent"
+                          BorderThickness="0">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+                        <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding EmployeeId}" Width="60"
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding EmployeeName}" Width="*"
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <!-- Right: Calendar + Summary (visible only after selecting an employee) -->
+        <Border Grid.Column="1" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="12,42,0,0"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                Visibility="{Binding IsEmployeeSelected, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!-- Summary on top -->
+                    <RowDefinition Height="*" />
+                    <!-- Calendar below -->
+                </Grid.RowDefinitions>
+
+                <!-- Summary row: same four figures as AttendanceView's summary panel,
+                     bound to the shared ChildAttendanceViewModel so the numbers can
+                     never drift from what the calendar below is showing. -->
+                <Border Grid.Row="0" Background="{StaticResource WindowBackgroundBrush}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                    <UniformGrid Columns="4">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="Days worked" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding ChildAttendanceViewModel.TotalDaysWorked}" FontSize="18" FontWeight="Bold"
+                                       Foreground="{StaticResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="On-time" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding ChildAttendanceViewModel.TotalOnTime}" FontSize="18" FontWeight="Bold"
+                                       Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="Late" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding ChildAttendanceViewModel.TotalLate}" FontSize="18" FontWeight="Bold"
+                                       Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="Absent" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding ChildAttendanceViewModel.TotalAbsent}" FontSize="18" FontWeight="Bold"
+                                       Foreground="{StaticResource DangerBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </UniformGrid>
+                </Border>
+
+                <!-- Calendar: the exact same control/template AttendanceView uses,
+                     just pointed at ChildAttendanceViewModel instead of the page's
+                     own DataContext. This is the only place ManageAttendancesView
+                     needs to know about attendance-calendar rendering at all -
+                     everything else is delegated to the shared control. -->
+                <controls:AttendanceCalendarView Grid.Row="1" DataContext="{Binding ChildAttendanceViewModel}" />
+            </Grid>
+        </Border>
     </Grid>
 
 </UserControl>

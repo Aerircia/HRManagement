@@ -58,6 +58,8 @@
     <SolidColorBrush x:Key="SuccessBrush" Color="#05CD99"/>
     <SolidColorBrush x:Key="WarningBrush" Color="#FFB547"/>
     <SolidColorBrush x:Key="DangerBrush" Color="#EE5D50"/>
+    <SolidColorBrush x:Key="OtBrush" Color="#8B5CF6"/>
+    <SolidColorBrush x:Key="WeekendBrush" Color="#A3AED0"/>
 
     <!-- ========= DataGrid ========= -->
 
@@ -72,5 +74,11 @@
 
     <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#FF9F1A"/>
     <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#E58A00"/>
+
+    <!-- Stat Badge Soft Tints (Light Mode) -->
+    <SolidColorBrush x:Key="PrimaryBadgeBrush" Color="#1F2E5BFF"/>
+    <SolidColorBrush x:Key="WarningBadgeBrush" Color="#1FFF9F1A"/>
+    <SolidColorBrush x:Key="SuccessBadgeBrush" Color="#1F05CD99"/>
+    <SolidColorBrush x:Key="DangerBadgeBrush" Color="#1FEE5D50"/>
 
 </ResourceDictionary>

@@ -6,7 +6,7 @@
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              mc:Ignorable="d">
 
-    <Border Background="{StaticResource CardBackgroundBrush}">
+    <Border Background="{DynamicResource CardBackgroundBrush}">
 
         <Grid Margin="20,0">
 
@@ -62,12 +62,12 @@
                     <TextBlock
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource PrimaryTextBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
                         Text="{Binding UserName}" />
 
                     <TextBlock
                         FontSize="12"
-                        Foreground="{StaticResource SecondaryTextBrush}"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
                         Text="{Binding RoleName}" />
 
                 </StackPanel>
@@ -83,7 +83,7 @@
                 <fa:IconBlock Icon="Bell"
                   Width="16"
                   Height="16"
-                  Foreground="{StaticResource SecondaryTextBrush}"/>
+                  Foreground="{DynamicResource SecondaryTextBrush}"/>
 
             </Button>
 
@@ -96,7 +96,7 @@
                 <fa:IconBlock Icon="CircleQuestion"
                       Width="16"
                       Height="16"
-                      Foreground="{StaticResource SecondaryTextBrush}" />
+                      Foreground="{DynamicResource SecondaryTextBrush}" />
 
             </Button>
 
@@ -109,7 +109,7 @@
                 <fa:IconBlock Icon="RightFromBracket"
                       Width="16"
                       Height="16"
-                      Foreground="{StaticResource SecondaryTextBrush}" />
+                      Foreground="{DynamicResource SecondaryTextBrush}" />
 
             </Button>
 

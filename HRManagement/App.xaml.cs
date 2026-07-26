@@ -1,5 +1,6 @@
 ﻿using HRManagement.Data;
 using HRManagement.Repositories;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.ViewModels;
@@ -40,11 +41,12 @@ public partial class App : Application
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IAuthorizationService, AuthorizationService>();
         services.AddSingleton<IRequestService, RequestService>();
-
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IWindowService, WindowService>();
-
+        services.AddSingleton<IAttendanceService, AttendanceService>();
         services.AddSingleton<ISalaryCalculator, SalaryCalculator>();
+        services.AddSingleton<ISettingService, SettingService>();
+        services.AddSingleton<IDashboardService, DashboardService>();
 
         services.AddSingleton<IManageSalariesService,ManageSalariesService>();
         services.AddTransient<IEmployeeEvaluationService,EmployeeEvaluationService>();
@@ -62,6 +64,16 @@ public partial class App : Application
         services.AddSingleton<RequestFormRepository>();
         services.AddSingleton< IManageSalariesRepository,ManageSalariesRepository>();
         services.AddTransient< IEmployeeEvaluationRepository,EmployeeEvaluationRepository>();
+        services.AddSingleton<IAccountRepository, AccountRepository>();
+        services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
+        services.AddSingleton<IRoleRepository, RoleRepository>();
+        services.AddSingleton<IDepartmentRepository, DepartmentRepository>();
+        services.AddSingleton<IContractRepository, ContractRepository>();
+        services.AddSingleton<IAttendanceRepository, AttendanceRepository>();
+        services.AddSingleton<IEmployeeEvaluationRepository, EmployeeEvaluationRepository>();
+        services.AddSingleton<IPayrollRepository, PayrollRepository>();
+        services.AddSingleton<IRequestFormRepository, RequestFormRepository>();
+        services.AddSingleton<IAnnouncementRepository, AnnouncementRepository>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
@@ -72,6 +84,7 @@ public partial class App : Application
         services.AddTransient<LoginViewModel>();
         services.AddTransient<AttendanceViewModel>();
         services.AddTransient<ContractViewModel>();
+        services.AddTransient<ManageContractsViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<EmployeeEvaluationViewModel>();
         services.AddTransient<LogsViewModel>();

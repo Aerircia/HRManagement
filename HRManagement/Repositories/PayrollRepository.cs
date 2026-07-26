@@ -1,9 +1,10 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class PayrollRepository : RepositoryBase
+public class PayrollRepository : RepositoryBase, IPayrollRepository
 {
     public Payroll? GetLatestByEmployeeId(int employeeId)
     {

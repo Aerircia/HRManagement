@@ -2,6 +2,7 @@
 using HRManagement.Utilities;
 using HRManagement.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace HRManagement.Services;
 
@@ -33,8 +34,14 @@ public class NavigationService(IServiceProvider serviceProvider) : ViewModelBase
     }
     public void Reset()
     {
+        // 1. Clear the view
         CurrentView = null;
 
-        Navigate<DashboardViewModel>();
+        // 2. Yield to the WPF UI thread so it actually has time to destroy 
+        // the old view and the LiveCharts canvas before we load the new one.
+        Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            Navigate<DashboardViewModel>();
+        });
     }
 }

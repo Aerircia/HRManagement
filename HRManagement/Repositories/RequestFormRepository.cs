@@ -1,9 +1,10 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 namespace HRManagement.Repositories;
 
-public class RequestFormRepository : RepositoryBase
+public class RequestFormRepository : RepositoryBase, IRequestFormRepository
 {
     public bool Insert(RequestForm form)
     {

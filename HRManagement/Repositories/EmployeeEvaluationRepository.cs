@@ -1,4 +1,5 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
         return result == null ? 0m : (decimal)result;
     }
 
-    private static EmployeeEvaluation Map(SqlDataReader reader)
+    public EmployeeEvaluation Map(SqlDataReader reader)
     {
         return new EmployeeEvaluation
         {
