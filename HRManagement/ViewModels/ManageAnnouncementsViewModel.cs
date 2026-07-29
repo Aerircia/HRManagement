@@ -1,6 +1,7 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
 using System.Collections.Generic;
@@ -22,15 +23,18 @@ namespace HRManagement.ViewModels
     {
         private readonly IAnnouncementRepository _announcementRepository;
         private readonly SessionManager _sessionManager;
+        private readonly ILogService _logService;
 
         public override string Title => "Manage Announcements";
 
         public ManageAnnouncementsViewModel(
             IAnnouncementRepository announcementRepository,
-            SessionManager sessionManager)
+            SessionManager sessionManager,
+            ILogService logService)
         {
             _announcementRepository = announcementRepository;
             _sessionManager = sessionManager;
+            _logService = logService;
 
             Announcements = [];
 
@@ -252,6 +256,7 @@ namespace HRManagement.ViewModels
                 announcement.PostedByName = _sessionManager.CurrentUser!.Employee.FullName;
 
                 Announcements.Insert(0, ToRow(announcement));
+                _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId,  $"Created announcement: {announcement.Title}");
             }
             else
             {
@@ -271,6 +276,7 @@ namespace HRManagement.ViewModels
 
                 var index = Announcements.IndexOf(existing);
                 Announcements[index] = ToRow(announcement);
+                _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId, $"Updated announcement: {announcement.Title}");
             }
 
             IsFormOpen = false;
@@ -294,7 +300,7 @@ namespace HRManagement.ViewModels
 
             _announcementRepository.Delete(PendingDelete.Announcement.AnnouncementId);
             Announcements.Remove(PendingDelete);
-
+            _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId, $"Deleted announcement: {PendingDelete.Title}");
             PendingDelete = null;
             IsDeleteConfirmOpen = false;
         }

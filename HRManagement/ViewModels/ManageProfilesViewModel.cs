@@ -2,6 +2,7 @@
 using HRManagement.Repositories;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace HRManagement.ViewModels
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly SessionManager _sessionManager;
+        private readonly ILogService _logService;
 
         private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 }; // Admin, Manager
 
@@ -36,11 +38,13 @@ namespace HRManagement.ViewModels
         public ManageProfilesViewModel(
             IEmployeeRepository employeeRepository,
             IDepartmentRepository departmentRepository,
-            SessionManager sessionManager)
+            SessionManager sessionManager,
+            ILogService logService)
         {
             _employeeRepository = employeeRepository;
             _departmentRepository = departmentRepository;
             _sessionManager = sessionManager;
+            _logService = logService;
 
             Employees = new ObservableCollection<EmployeeRow>();
             Departments = new ObservableCollection<IdNamePair>();
@@ -311,6 +315,8 @@ namespace HRManagement.ViewModels
                 return;
             }
 
+            Employee? oldEmployee = null;
+            if (_formEmployeeId != 0) oldEmployee = _employeeRepository.GetById(_formEmployeeId);
             var employee = new Employee
             {
                 EmployeeId = _formEmployeeId,
@@ -327,6 +333,7 @@ namespace HRManagement.ViewModels
             if (_formEmployeeId == 0)
             {
                 var newId = _employeeRepository.Insert(employee);
+                _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Added employee: {employee.FullName}");
                 employee.EmployeeId = newId;
                 Employees.Add(ToRow(employee));
             }
@@ -338,6 +345,24 @@ namespace HRManagement.ViewModels
                 {
                     var index = Employees.IndexOf(existing);
                     Employees[index] = ToRow(employee);
+                }
+                if (oldEmployee != null)
+                {
+                    List<string> changes = new();
+                    if (oldEmployee.FullName != employee.FullName) changes.Add("Full Name");
+                    if (oldEmployee.Email != employee.Email) changes.Add("Email");
+                    if ((oldEmployee.Phone ?? "") != (employee.Phone ?? "")) changes.Add("Phone");
+                    if (oldEmployee.DepartmentId != employee.DepartmentId) changes.Add("Department");
+                    if (oldEmployee.RoleId != employee.RoleId) changes.Add("Role");
+                    if (oldEmployee.Status != employee.Status) changes.Add("Status");
+                    if (oldEmployee.HireDate != employee.HireDate) changes.Add("Hire Date");
+                    if (oldEmployee.DateOfBirth != employee.DateOfBirth) changes.Add("Date Of Birth");
+
+                    string message = changes.Count > 0
+                        ? $"Updated employee {employee.FullName}: {string.Join(", ", changes)}"
+                        : $"Updated employee {employee.FullName}";
+
+                    _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, message);
                 }
             }
 
@@ -361,6 +386,7 @@ namespace HRManagement.ViewModels
                 return;
 
             _employeeRepository.Delete(PendingDelete.Employee.EmployeeId);
+            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted employee: {PendingDelete.Employee.FullName}");
             Employees.Remove(PendingDelete);
 
             PendingDelete = null;
