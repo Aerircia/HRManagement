@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HRManagement.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -18,9 +19,45 @@ namespace HRManagement.Views.Pages
     /// </summary>
     public partial class EmployeeEvaluationView : UserControl
     {
+        private bool _isViewLoaded;
+
         public EmployeeEvaluationView()
         {
             InitializeComponent();
         }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_isViewLoaded)
+                return;
+
+            _isViewLoaded = true;
+
+            if (DataContext is not EmployeeEvaluationViewModel viewModel)
+                return;
+
+            if (viewModel.RefreshCommand.CanExecute(null))
+            {
+                viewModel.RefreshCommand.Execute(null);
+            }
+        }
+
+        private void DepartmentComboBox_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            
+            if (!_isViewLoaded)
+                return;
+
+            if (DataContext is not EmployeeEvaluationViewModel viewModel)
+                return;
+
+            if (viewModel.SearchCommand.CanExecute(null))
+            {
+                viewModel.SearchCommand.Execute(null);
+            }
+        }
     }
 }
+

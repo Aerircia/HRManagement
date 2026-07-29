@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using HRManagement.Models;
+﻿using HRManagement.Models;
 using System.Collections.Generic;
 
 namespace HRManagement.Repositories.Interfaces
 {
     public interface IEmployeeEvaluationRepository
     {
+        /// <summary>
+        /// Lấy toàn bộ phòng ban trực tiếp từ bảng Department.
+        /// </summary>
+        IReadOnlyList<Department> GetAllDepartments();
+
         /// <summary>
         /// Lấy danh sách nhân viên kèm thống kê đánh giá
         /// trong tháng và năm được chọn.

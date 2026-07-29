@@ -90,6 +90,49 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
             BonusDate = (System.DateTime)reader["Bonus_Date"]
         };
     }
+    public IReadOnlyList<Department> GetAllDepartments()
+    {
+        var departments =
+            new List<Department>();
+
+        using var connection = Db.CreateConnection();
+        connection.Open();
+
+        const string sql = """
+            SELECT
+                Department_ID,
+                DepartmentName
+            FROM Department
+            ORDER BY DepartmentName ASC,
+                     Department_ID ASC;
+            """;
+
+        using var command =
+            new SqlCommand(sql, connection);
+
+        using var reader =
+            command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            departments.Add(
+                new Department
+                {
+                    DepartmentId =
+                        reader.GetInt32(
+                            reader.GetOrdinal(
+                                "Department_ID")),
+
+                    DepartmentName =
+                        GetRequiredString(
+                            reader,
+                            "DepartmentName")
+                });
+        }
+
+        return departments;
+    }
+
     public IReadOnlyList<EvaluationEmployeeItemModel> GetEmployees(
             int month,
             int year,
