@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using HRManagement.Models;
+﻿using HRManagement.Models;
 using HRManagement.Repositories;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace HRManagement.ViewModels
 {
@@ -29,6 +30,7 @@ namespace HRManagement.ViewModels
         private readonly IPayrollRepository _payrollRepository;
         private readonly IRequestFormRepository _requestFormRepository;
         private readonly SessionManager _sessionManager;
+        private readonly ILogService _logService;
 
         private Employee _employee;
         private Contract? _currentContract;
@@ -43,7 +45,8 @@ namespace HRManagement.ViewModels
             IEmployeeEvaluationRepository evaluationRepository,
             IPayrollRepository payrollRepository,
             IRequestFormRepository requestFormRepository,
-            SessionManager sessionManager)
+            SessionManager sessionManager,
+            ILogService logService)
         {
             _employeeRepository = employeeRepository;
             _departmentRepository = departmentRepository;
@@ -53,6 +56,7 @@ namespace HRManagement.ViewModels
             _payrollRepository = payrollRepository;
             _requestFormRepository = requestFormRepository;
             _sessionManager = sessionManager;
+            _logService = logService;
 
             EditProfileCommand = new RelayCommand(OnEditProfile);
             SaveProfileCommand = new RelayCommand(_ => SaveProfile());
@@ -447,7 +451,19 @@ namespace HRManagement.ViewModels
                 FormErrorMessage = "Full name and email are required.";
                 return;
             }
+            List<string> changes = new List<string>();
 
+            if (_employee.FullName != FormFullName.Trim())
+                changes.Add("Full Name");
+
+            if (_employee.Email != FormEmail.Trim())
+                changes.Add("Email");
+
+            if ((_employee.Phone ?? "") != (FormPhone ?? "").Trim())
+                changes.Add("Phone");
+
+            if (_employee.DateOfBirth != (FormDateOfBirth ?? _employee.DateOfBirth))
+                changes.Add("Date of Birth");
 
             _employee.FullName = FormFullName.Trim();
             _employee.Email = FormEmail.Trim();
@@ -457,7 +473,8 @@ namespace HRManagement.ViewModels
             _employeeRepository.Update(_employee);
 
             IsEditOpen = false;
-
+            string message = changes.Count > 0 ? "Updated: " + string.Join(", ", changes) : "Profile updated";
+            _logService.WriteLog(_sessionManager.CurrentUser!.Account.EmployeeId, message);
             // Re-read from the database so the page reflects exactly what was saved.
             LoadCurrentUser();
         }

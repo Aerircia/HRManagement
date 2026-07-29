@@ -1,6 +1,7 @@
-﻿using HRManagement.Utilities;
-using HRManagement.Models;
+﻿using HRManagement.Models;
+using HRManagement.Services;
 using HRManagement.Services.Interfaces;
+using HRManagement.Utilities;
 using HRManagement.Utilities;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -11,6 +12,8 @@ public class ManageSalariesViewModel : PageViewModel
 {
     private readonly IManageSalariesService
         _manageSalariesService;
+    private readonly ILogService _logService;
+    private readonly SessionManager _sessionManager;
 
     private readonly List<ManageSalariesItemModel>
         _allSalaries = new();
@@ -376,8 +379,12 @@ public class ManageSalariesViewModel : PageViewModel
 
     public ManageSalariesViewModel(
         IManageSalariesService
-            manageSalariesService)
+            manageSalariesService,
+        SessionManager sessionManager,
+        ILogService logService)
     {
+        _sessionManager = sessionManager;
+        _logService = logService;
         _manageSalariesService =
             manageSalariesService
             ?? throw new ArgumentNullException(
@@ -720,6 +727,7 @@ public class ManageSalariesViewModel : PageViewModel
             StatusMessage =
                 $"Payroll for {employeeName} in " +
                 $"{SelectedPeriod} was created successfully.";
+            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Created payroll for {employeeName} ({SelectedPeriod})");
         }
         catch (ArgumentException exception)
         {
@@ -768,7 +776,7 @@ public class ManageSalariesViewModel : PageViewModel
                         SelectedYear);
 
             ReloadSalaryData();
-
+            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Created {createdCount} payroll(s) for {SelectedPeriod}");
             StatusMessage =
                 createdCount == 0
                     ? $"No new payroll records were " +
@@ -837,7 +845,7 @@ public class ManageSalariesViewModel : PageViewModel
 
             ReloadAndSelectEmployee(
                 employeeId);
-
+            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted payroll for {employeeName} ({SelectedPeriod})");
             StatusMessage =
                 $"Payroll for {employeeName} in " +
                 $"{SelectedPeriod} was deleted successfully.";

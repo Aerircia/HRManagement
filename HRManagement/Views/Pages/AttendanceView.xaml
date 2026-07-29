@@ -98,6 +98,10 @@
                         <TextBlock Text=" OT" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource DayOffBgBrush}" Stroke="{StaticResource BorderBrush}" />
+                        <TextBlock Text=" Day Off" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
                         <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource NeutralBgBrush}" Stroke="{StaticResource BorderBrush}" />
                         <TextBlock Text=" Before hire date" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
                     </StackPanel>

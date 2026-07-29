@@ -221,17 +221,33 @@ public class AttendanceService : IAttendanceService
             Status = "OT"
         });
     }
-
+    public void ScheduleDayOff(int employeeId, DateTime startDate, DateTime endDate)
+    {
+        for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+        {
+            _attendanceRepository.UpsertAttendance(new Attendance
+            {
+                EmployeeId = employeeId,
+                CheckIn = date, // Used to correctly bucket the date in the repository
+                CheckOut = date,
+                Status = "Day Off"
+            });
+        }
+    }
     private static string ResolveStatus(AttendanceDayModel day, string? dbStatus)
     {
         if (!day.IsCurrentMonth)
             return string.Empty;
 
         var isOt = string.Equals(dbStatus, "OT", StringComparison.OrdinalIgnoreCase);
+        var isDayOff = string.Equals(dbStatus, "Day Off", StringComparison.OrdinalIgnoreCase);
         var hasRecord = day.CheckIn.HasValue || day.CheckOut.HasValue;
 
         if (isOt)
             return "OT";
+
+        if (isDayOff)
+            return "Day Off";
 
         if (day.IsWeekend)
             return hasRecord ? "OT" : "Weekend";

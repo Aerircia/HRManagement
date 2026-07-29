@@ -14,6 +14,7 @@ public class AttendanceStatusToBrushConverter : IValueConverter
             "Late" => "WarningBgBrush",
             "Absent" => "DangerBgBrush",
             "OT" => "OtBgBrush",
+            "Day Off" => "DayOffBgBrush",
             "Weekend" => "WeekendBgBrush",
             "Before Hire Date" => "NeutralBgBrush",
             _ => "CardBackgroundBrush"

@@ -721,7 +721,7 @@
                                   CellStyle="{StaticResource ManageSalaryDataGridCellStyle}"
                                   ColumnHeaderStyle="{StaticResource ManageSalaryColumnHeaderStyle}"
                                   HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Hidden"
                                   ScrollViewer.CanContentScroll="True">
 
                             <DataGrid.Columns>
@@ -867,7 +867,7 @@
             <Border Grid.Column="2"
                     Style="{StaticResource SectionCardBorderStyle}">
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                <ScrollViewer VerticalScrollBarVisibility="Hidden"
                               HorizontalScrollBarVisibility="Disabled">
 
                     <StackPanel>

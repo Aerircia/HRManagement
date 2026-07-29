@@ -2,6 +2,7 @@
 using HRManagement.Repositories;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
 using System.Collections.Generic;
@@ -38,17 +39,20 @@ namespace HRManagement.ViewModels
         private readonly IContractRepository _contractRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly SessionManager _sessionManager;
+        private readonly ILogService _logService;
 
         public override string Title => "Manage Contracts";
 
         public ManageContractsViewModel(
             IContractRepository contractRepository,
             IEmployeeRepository employeeRepository,
-            SessionManager sessionManager)
+            SessionManager sessionManager,
+            ILogService logService)
         {
             _contractRepository = contractRepository;
             _employeeRepository = employeeRepository;
             _sessionManager = sessionManager;
+            _logService = logService;
 
             Contracts = [];
             Employees = [];
@@ -331,6 +335,8 @@ namespace HRManagement.ViewModels
                 return;
             }
 
+            Contract? oldContract = null;
+            if (_formContractId != 0) oldContract = _contractRepository.GetCurrentByEmployeeId(_formContractId);
             var contract = new Contract
             {
                 ContractId = _formContractId,
@@ -348,6 +354,8 @@ namespace HRManagement.ViewModels
                 var newId = _contractRepository.Insert(contract);
                 contract.ContractId = newId;
                 Contracts.Add(ToRow(contract));
+                string employeeName = Employees.FirstOrDefault(x => x.Id == contract.EmployeeId)?.Name ?? "Unknown";
+                _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Added contract for {employeeName}");
             }
             else
             {
@@ -357,6 +365,24 @@ namespace HRManagement.ViewModels
                 {
                     var index = Contracts.IndexOf(existing);
                     Contracts[index] = ToRow(contract);
+                }
+                if (oldContract != null)
+                {
+                    List<string> changes = new();
+                    if (oldContract.EmployeeId != contract.EmployeeId) changes.Add("Employee");
+                    if (oldContract.RoleId != contract.RoleId) changes.Add("Role");
+                    if (oldContract.ContractType != contract.ContractType) changes.Add("Contract Type");
+                    if (oldContract.StartDate != contract.StartDate) changes.Add("Start Date");
+                    if (oldContract.EndDate != contract.EndDate) changes.Add("End Date");
+                    if (oldContract.Status != contract.Status) changes.Add("Status");
+                    if (oldContract.BaseSalary != contract.BaseSalary) changes.Add("Base Salary");
+
+                    string employeeName = Employees.FirstOrDefault(x => x.Id == contract.EmployeeId)?.Name ?? "Unknown";
+                    string message = changes.Count > 0
+                        ? $"Updated contract of {employeeName}: {string.Join(", ", changes)}"
+                        : $"Updated contract of {employeeName}";
+
+                    _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, message);
                 }
             }
 
@@ -381,7 +407,7 @@ namespace HRManagement.ViewModels
 
             _contractRepository.Delete(PendingDelete.Contract.ContractId);
             Contracts.Remove(PendingDelete);
-
+            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted contract of {PendingDelete.EmployeeName}");
             PendingDelete = null;
             IsDeleteConfirmOpen = false;
         }

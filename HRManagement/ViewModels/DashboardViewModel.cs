@@ -59,8 +59,9 @@ public class DashboardViewModel : PageViewModel
         GoToAttendanceCommand = new RelayCommand(_ => _navigationService.Navigate<AttendanceViewModel>());
         GoToRequestsCommand = new RelayCommand(_ => _navigationService.Navigate<RequestsViewModel>());
         GoToSalaryCommand = new RelayCommand(_ => _navigationService.Navigate<SalaryViewModel>());
-        CheckInCommand = new RelayCommand(_ => CheckIn(), _ => CanCheckInOut());
-        CheckOutCommand = new RelayCommand(_ => CheckOut(), _ => CanCheckInOut());
+        CheckInCommand = new RelayCommand(_ => CheckIn(), _ => CanCheckIn());
+        CheckOutCommand = new RelayCommand(_ => CheckOut(), _ => CanCheckOut());
+        GoToManageAttendancesCommand = new RelayCommand(_ => _navigationService.Navigate<ManageAttendancesViewModel>());
         GoToManageRequestsCommand = new RelayCommand(_ => _navigationService.Navigate<ManageRequestsViewModel>());
 
         Load();
@@ -96,6 +97,7 @@ public class DashboardViewModel : PageViewModel
     public ICommand CheckInCommand { get; }
     public ICommand CheckOutCommand { get; }
     public ICommand GoToManageRequestsCommand { get; }
+    public ICommand GoToManageAttendancesCommand { get; }
 
     // ===== Employee: Personal Stats =====
     private int _myLoggedHoursThisMonth;
@@ -310,8 +312,27 @@ public class DashboardViewModel : PageViewModel
         foreach (var announcement in _announcementRepository.GetActive())
             Announcements.Add(announcement);
     }
+    private bool CanCheckIn()
+    {
+        var employee = _sessionManager.CurrentUser?.Employee;
+        if (employee == null)
+            return false;
 
-    private bool CanCheckInOut() => _sessionManager.CurrentUser?.Employee != null;
+        return _attendanceService.CanCheckIn(
+            employee.EmployeeId,
+            employee.HireDate.Date);
+    }
+
+    private bool CanCheckOut()
+    {
+        var employee = _sessionManager.CurrentUser?.Employee;
+        if (employee == null)
+            return false;
+
+        return _attendanceService.CanCheckOut(
+            employee.EmployeeId,
+            employee.HireDate.Date);
+    }
 
     private void CheckIn()
     {
