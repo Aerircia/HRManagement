@@ -5,28 +5,37 @@ using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
-public class RequestService(IRequestFormRepository requestFormRepository, IAttendanceService attendanceService) : IRequestService
+public class RequestService(IRequestFormRepository requestFormRepository, 
+                            IAttendanceService attendanceService,
+                            ILogService logService,
+                            SessionManager sessionManager) : IRequestService
 {
     private readonly IRequestFormRepository _requestFormRepository = requestFormRepository;
     private readonly IAttendanceService _attendanceService = attendanceService;
+    private readonly ILogService _logService = logService;
+    private readonly SessionManager _sessionManager = sessionManager;
 
     public bool SubmitDayOffRequest(int employeeId, DateTime startDate, DateTime endDate, string reason)
     {
+        _logService.WriteLog(employeeId, "Day Off Request Submitted");
         return Submit(employeeId, "Day Off", reason, startDate, endDate);
     }
 
     public bool SubmitResignationRequest(int employeeId, DateTime lastWorkingDate, string reason)
     {
+        _logService.WriteLog(employeeId, "Resignation Request Submitted");
         return Submit(employeeId, "Resignation", reason, null, lastWorkingDate);
     }
 
     public bool SubmitOtherRequest(int employeeId, string subject, string description)
     {
+        _logService.WriteLog(employeeId, "Other Request Submitted");
         return Submit(employeeId, subject, description, null, null);
     }
 
     public bool SubmitOtRequest(int employeeId, DateTime date, TimeSpan startTime, TimeSpan endTime, string reason)
     {
+        _logService.WriteLog(employeeId, "OT Request Submitted");
         // Reuses the existing StartDate/EndDate columns to carry the OT
         // window: StartDate = date + start time, EndDate = date + end time.
         // ManageRequestsViewModel reads these back on approval to actually
@@ -72,12 +81,13 @@ public class RequestService(IRequestFormRepository requestFormRepository, IAtten
                 request.StartDate.Value.TimeOfDay,
                 request.EndDate.Value.TimeOfDay);
         }
-
+        _logService.WriteLog(_sessionManager.CurrentUser!.Account.EmployeeId, $"{request.RequestType} Request Approved");
         return true;
     }
 
     public bool RejectRequest(int requestId)
     {
+        _logService.WriteLog(_sessionManager.CurrentUser!.Account.EmployeeId, $"Request ID:{requestId} Rejected");
         return _requestFormRepository.UpdateStatus(requestId, "Rejected");
     }
 

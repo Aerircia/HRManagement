@@ -14,6 +14,56 @@
                    Margin="30"
                    Foreground="{StaticResource PrimaryTextBrush}"/>
 
+        <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Margin="30,0,30,20">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Activity log of system changes" Foreground="{StaticResource SecondaryTextBrush}" Margin="8,0,0,12" FontSize="13"/>
+
+                <Border Style="{StaticResource TableCardStyle}" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- subtle header row inside the card -->
+                        <Border Background="{StaticResource TableHeaderBrush}" CornerRadius="8" Padding="10" Grid.Row="0" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Time" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="0"/>
+                                <TextBlock Text="User ID" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="1"/>
+                                <TextBlock Text="Action" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="2"/>
+                            </Grid>
+                        </Border>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Logs}" AutoGenerateColumns="False" HeadersVisibility="None" RowBackground="Transparent" GridLinesVisibility="None" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" RowHeight="48" MaxHeight="420" ScrollViewer.VerticalScrollBarVisibility="Auto" AlternationCount="2" AlternatingRowBackground="{StaticResource InputBackgroundBrush}">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+                                    <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Time" Binding="{Binding TimeStamp, StringFormat=G}" ElementStyle="{StaticResource TableCellTextStyle}" Width="220"/>
+                                    <DataGridTextColumn Header="User ID" Binding="{Binding AccountId}" ElementStyle="{StaticResource TableCellTextStyle}" Width="120"/>
+                                    <DataGridTemplateColumn Header="Action" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Action}" TextWrapping="Wrap" Foreground="{StaticResource PrimaryTextBrush}" FontSize="13" MaxHeight="96"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                    </Grid>
+                </Border>
+
+                <!-- No pager: show all logs with DataGrid scrolling -->
+            </StackPanel>
+        </Border>
+
     </Grid>
 
 </UserControl>
