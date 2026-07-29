@@ -30,7 +30,6 @@
         </Style>
 
         <Style x:Key="QuickActionButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="56"/>
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -52,7 +51,7 @@
 
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
 
         <Grid Margin="28">
 
@@ -189,27 +188,28 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource DashCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Team Today's Check-ins" Style="{StaticResource DashCardTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}">
-                            <Run Text="{Binding TodayCheckedIn, Mode=OneWay}"/>
-                            <Run Text=" / " Foreground="{StaticResource SecondaryTextBrush}" FontSize="16"/>
-                            <Run Text="{Binding TodayTotalEmployees, Mode=OneWay}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="16"/>
-                        </TextBlock>
-                        <TextBlock Text="checked in today" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
-                    </StackPanel>
+                <Border Grid.Column="2" Style="{StaticResource DashCardStyle}" Padding="0">
+                    <Button Style="{StaticResource QuickActionButtonStyle}" Background="Transparent" BorderBrush="Transparent" Command="{Binding GoToManageAttendancesCommand}">
+                        <StackPanel>
+                            <TextBlock Text="Team Today's Check-ins" Style="{StaticResource DashCardTitleStyle}"/>
+                            <TextBlock Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}">
+                                <Run Text="{Binding TodayCheckedIn, Mode=OneWay}"/>
+                                <Run Text=" / " Foreground="{StaticResource SecondaryTextBrush}" FontSize="16"/>
+                                <Run Text="{Binding TodayTotalEmployees, Mode=OneWay}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="16"/>
+                            </TextBlock>
+                            <TextBlock Text="checked in today" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Button>
                 </Border>
 
-                <Border Grid.Column="4" Style="{StaticResource DashCardStyle}">
-                    <Grid>
+                <Border Grid.Column="4" Style="{StaticResource DashCardStyle}" Padding="0">
+                    <Button Style="{StaticResource QuickActionButtonStyle}" Background="Transparent" BorderBrush="Transparent" Command="{Binding GoToManageRequestsCommand}">
                         <StackPanel>
                             <TextBlock Text="Pending Team Requests" Style="{StaticResource DashCardTitleStyle}"/>
                             <TextBlock Text="{Binding PendingRequestsCount}" Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource WarningBrush}"/>
                             <TextBlock Text="awaiting your review" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Button Content="Review" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding GoToManageRequestsCommand}" Height="32" Padding="16,0" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-                    </Grid>
+                    </Button>
                 </Border>
             </Grid>
 

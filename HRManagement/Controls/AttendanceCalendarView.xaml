@@ -61,7 +61,7 @@
              many week-rows the visible month needs, so the card size never jumps
              between a 4-row and a 6-row month. The ScrollViewer only kicks in if
              a 6-row month can't fit the available vertical space. -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Days}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

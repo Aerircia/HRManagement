@@ -247,7 +247,7 @@
                 </Border>
 
                 <!--Dashboard-->
-                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Hidden">
                     <StackPanel>
 
                         <!-- Stat: Attendance / Leave Balance / Performance -->

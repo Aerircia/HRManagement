@@ -579,7 +579,7 @@
                               SelectedItem="{Binding SelectedMonth,
                                                     Mode=TwoWay,
                                                     UpdateSourceTrigger=PropertyChanged}"
-                              Style="{StaticResource EvaluationComboBoxStyle}" />
+                              Style="{StaticResource ModernComboBox}" />
 
                 </StackPanel>
 
@@ -594,7 +594,7 @@
                               SelectedItem="{Binding SelectedYear,
                                                     Mode=TwoWay,
                                                     UpdateSourceTrigger=PropertyChanged}"
-                              Style="{StaticResource EvaluationComboBoxStyle}" />
+                              Style="{StaticResource ModernComboBox}" />
 
                 </StackPanel>
 
@@ -610,7 +610,7 @@
                                                     Mode=TwoWay,
                                                     UpdateSourceTrigger=PropertyChanged}"
                               DisplayMemberPath="DepartmentName"
-                              Style="{StaticResource EvaluationComboBoxStyle}" />
+                              Style="{StaticResource ModernComboBox}" />
 
                 </StackPanel>
 
@@ -797,7 +797,7 @@
 
                     <!-- Khi đã chọn nhân viên -->
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden"
                                   HorizontalScrollBarVisibility="Disabled">
 
                         <Grid Style="{StaticResource EmployeeDetailContentStyle}"
@@ -1182,11 +1182,16 @@
 
                                                         <DataTemplate>
 
-                                                            <Border Style="{StaticResource EvaluationTypeBadgeStyle}">
+                                                            <Border Style="{StaticResource EvaluationTypeBadgeStyle}"
+                                                                    Opacity="0.75"
+                                                                    CornerRadius="10"
+                                                                    Height="26"
+                                                                    Width="86">
 
                                                                 <TextBlock Text="{Binding BonusType,
                                                                                           Mode=OneWay}"
                                                                            Foreground="White"
+                                                                           HorizontalAlignment="Center"
                                                                            FontSize="12"
                                                                            FontWeight="SemiBold" />
 

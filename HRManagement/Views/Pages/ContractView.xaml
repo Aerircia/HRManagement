@@ -43,7 +43,7 @@
 
     <Grid>
         <!-- ============ Page content ============ -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
 
             <Grid Margin="28" MaxWidth="850" HorizontalAlignment="Center">
                 <Grid.RowDefinitions>

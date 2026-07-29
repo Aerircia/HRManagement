@@ -193,7 +193,7 @@
 
                 <!-- Rows -->
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
 
                     <ItemsControl ItemsSource="{Binding Requests}">
 
