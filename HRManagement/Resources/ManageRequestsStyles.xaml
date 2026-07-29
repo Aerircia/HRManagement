@@ -7,19 +7,26 @@
     </ResourceDictionary.MergedDictionaries>
 
     <!-- Stat cards -->
+    <!-- Soft shadow + larger radius to match the KPI cards in the reference
+         dashboards (Total/Pending/Approved/Rejected style tiles). -->
 
     <Style x:Key="StatCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="CornerRadius" Value="16"/>
         <Setter Property="Padding" Value="18,16"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="18" ShadowDepth="3" Opacity="0.06" Direction="270"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="StatIconBadgeStyle" TargetType="Border">
-        <Setter Property="Width" Value="40"/>
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Width" Value="42"/>
+        <Setter Property="Height" Value="42"/>
+        <Setter Property="CornerRadius" Value="13"/>
     </Style>
 
     <!-- Status filter chips -->
@@ -71,16 +78,15 @@
     </Style>
 
     <!-- Table -->
-    <!-- TableHeaderTextStyle now lives in Resources/TableStyles.xaml (shared
-         across all table views); kept out of this file to avoid a duplicate
-         resource key now that both dictionaries are merged in App.xaml. -->
+    <!-- TableHeaderTextStyle lives in Resources/TableStyles.xaml (shared
+         across all table views). -->
 
     <!-- Row action buttons -->
 
     <Style x:Key="RowActionButtonBaseStyle" TargetType="Button">
 
-        <Setter Property="Width" Value="30"/>
-        <Setter Property="Height" Value="30"/>
+        <Setter Property="Width" Value="32"/>
+        <Setter Property="Height" Value="32"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="BorderThickness" Value="0"/>
 
@@ -90,7 +96,7 @@
 
                     <Border x:Name="Border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="15">
+                            CornerRadius="16">
 
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
 

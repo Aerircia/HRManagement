@@ -6,10 +6,10 @@
 
     <!-- DropShadow Effect for Floating Popup -->
     <DropShadowEffect x:Key="PopupShadow" 
-                      BlurRadius="12" 
-                      ShadowDepth="4" 
-                      Opacity="0.08" 
-                      Color="#000000" />
+                      BlurRadius="20" 
+                      ShadowDepth="6" 
+                      Opacity="0.10" 
+                      Color="#1B2559" />
 
     <!-- ======================================================= -->
     <!--  ComboBoxItem Style (Hover, Selected, Rounded Highlight)-->
@@ -35,7 +35,7 @@
                         </Trigger>
                         <!-- Selected State -->
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
@@ -51,7 +51,7 @@
     <Style x:Key="ModernComboBox" TargetType="ComboBox">
         <Setter Property="Height" Value="42"/>
         <Setter Property="Padding" Value="14,0"/>
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
@@ -133,7 +133,7 @@
                                     Background="{DynamicResource CardBackgroundBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="12"
+                                    CornerRadius="14"
                                     Effect="{StaticResource PopupShadow}">
                                 <ScrollViewer Margin="0,4"
                                               SnapsToDevicePixels="True"

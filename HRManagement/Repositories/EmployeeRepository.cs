@@ -118,6 +118,90 @@ public class EmployeeRepository : RepositoryBase, IEmployeeRepository
         command.ExecuteNonQuery();
     }
 
+    public void DeleteWithRelatedData(int id)
+    {
+        using var connection = Db.CreateConnection();
+
+        connection.Open();
+
+        using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            // Find the account (if any) tied to this employee, so we can
+            // clean up rows that reference the Account rather than the
+            // Employee directly (SystemLog, Announcement.PostedBy).
+            int? accountId = null;
+
+            const string selectAccountSql = """
+                SELECT Account_ID
+                FROM Account
+                WHERE Employee_ID = @EmployeeId
+                """;
+
+            using (var selectCommand = new SqlCommand(selectAccountSql, connection, transaction))
+            {
+                selectCommand.Parameters.AddWithValue("@EmployeeId", id);
+
+                var result = selectCommand.ExecuteScalar();
+
+                if (result != null && result != DBNull.Value)
+                    accountId = (int)result;
+            }
+
+            // Payroll references both Employee_ID and Evaluation_ID, so it
+            // must go before EmployeeEvaluation.
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM Payroll WHERE Employee_ID = @EmployeeId", id);
+
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM EmployeeEvaluation WHERE Employee_ID = @EmployeeId", id);
+
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM Attendance WHERE Employee_ID = @EmployeeId", id);
+
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM RequestForm WHERE Employee_ID = @EmployeeId", id);
+
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM Contract WHERE Employee_ID = @EmployeeId", id);
+
+            if (accountId.HasValue)
+            {
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM SystemLog WHERE Account_ID = @AccountId", accountId.Value, "@AccountId");
+
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM Announcement WHERE PostedBy = @AccountId", accountId.Value, "@AccountId");
+
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM Account WHERE Account_ID = @AccountId", accountId.Value, "@AccountId");
+            }
+
+            ExecuteDelete(connection, transaction,
+                "DELETE FROM Employee WHERE EmployeeID = @EmployeeId", id);
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    private static void ExecuteDelete(
+        SqlConnection connection,
+        SqlTransaction transaction,
+        string sql,
+        int idValue,
+        string parameterName = "@EmployeeId")
+    {
+        using var command = new SqlCommand(sql, connection, transaction);
+        command.Parameters.AddWithValue(parameterName, idValue);
+        command.ExecuteNonQuery();
+    }
+
     private static void AddEmployeeParameters(SqlCommand command, Employee employee)
     {
         command.Parameters.AddWithValue("@FullName", employee.FullName);

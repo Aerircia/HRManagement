@@ -1,8 +1,4 @@
-﻿using HRManagement.Models;
-using HRManagement.Repositories;
-using HRManagement.Repositories.Interfaces;
-using HRManagement.Services;
-using HRManagement.Services.Interfaces;
+﻿using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,57 +9,33 @@ using System.Windows.Data;
 
 namespace HRManagement.ViewModels
 {
-
     public class ManageProfilesViewModel : PageViewModel
     {
-      
-        private static readonly List<IdNamePair> Roles = new()
-        {
-            new IdNamePair(1, "Admin"),
-            new IdNamePair(2, "Manager"),
-            new IdNamePair(3, "Employee")
-        };
-
-        public static readonly List<string> StatusOptions = new() { "Active", "Inactive", "On Leave" };
-
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly IDepartmentRepository _departmentRepository;
-        private readonly SessionManager _sessionManager;
-        private readonly ILogService _logService;
-
-        private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 }; // Admin, Manager
+        private readonly IManageProfilesService _manageProfilesService;
 
         public override string Title => "Manage Profiles";
 
-        public ManageProfilesViewModel(
-            IEmployeeRepository employeeRepository,
-            IDepartmentRepository departmentRepository,
-            SessionManager sessionManager,
-            ILogService logService)
+        public ManageProfilesViewModel(IManageProfilesService manageProfilesService)
         {
-            _employeeRepository = employeeRepository;
-            _departmentRepository = departmentRepository;
-            _sessionManager = sessionManager;
-            _logService = logService;
+            _manageProfilesService = manageProfilesService;
 
-            Employees = new ObservableCollection<EmployeeRow>();
+            Employees = new ObservableCollection<EmployeeProfileItemModel>();
             Departments = new ObservableCollection<IdNamePair>();
-            RoleOptions = Roles;
+            RoleOptions = _manageProfilesService.GetRoleOptions();
             StatusOptionsList = StatusOptions;
 
             EmployeesView = CollectionViewSource.GetDefaultView(Employees);
             EmployeesView.Filter = FilterEmployee;
 
             AddCommand = new RelayCommand(_ => OpenAddForm());
-            EditCommand = new RelayCommand(param => OpenEditForm(param as EmployeeRow));
-            DeleteCommand = new RelayCommand(param => RequestDelete(param as EmployeeRow));
+            EditCommand = new RelayCommand(param => OpenEditForm(param as EmployeeProfileItemModel));
+            DeleteCommand = new RelayCommand(param => RequestDelete(param as EmployeeProfileItemModel));
             SaveCommand = new RelayCommand(_ => SaveForm());
             CancelCommand = new RelayCommand(_ => CloseForm());
             ConfirmDeleteCommand = new RelayCommand(_ => ConfirmDelete());
             CancelDeleteCommand = new RelayCommand(_ => CancelDelete());
 
-            var currentRoleId = _sessionManager.CurrentUser?.Employee?.RoleId;
-            HasAccess = currentRoleId.HasValue && AllowedRoleIds.Contains(currentRoleId.Value);
+            HasAccess = _manageProfilesService.CurrentUserHasAccess();
 
             if (HasAccess)
             {
@@ -72,6 +44,8 @@ namespace HRManagement.ViewModels
             }
         }
 
+        public static readonly List<string> StatusOptions = new() { "Active", "Inactive", "On Leave" };
+
         //Access control
 
         public bool HasAccess { get; }
@@ -79,7 +53,7 @@ namespace HRManagement.ViewModels
 
         //List
 
-        public ObservableCollection<EmployeeRow> Employees { get; }
+        public ObservableCollection<EmployeeProfileItemModel> Employees { get; }
         public ICollectionView EmployeesView { get; }
         public ObservableCollection<IdNamePair> Departments { get; }
         public List<IdNamePair> RoleOptions { get; }
@@ -189,6 +163,45 @@ namespace HRManagement.ViewModels
 
         public bool HasFormError => !string.IsNullOrWhiteSpace(FormErrorMessage);
 
+        // Account provisioning (Add Employee form, and Edit form for an
+        // existing employee who doesn't have a login account yet)
+
+        private bool _isNewEmployee = true;
+
+        private bool _formHasExistingAccount;
+        public bool FormHasExistingAccount
+        {
+            get => _formHasExistingAccount;
+            set
+            {
+                if (SetProperty(ref _formHasExistingAccount, value))
+                    OnPropertyChanged(nameof(CanCreateAccount));
+            }
+        }
+
+        public bool CanCreateAccount => _isNewEmployee || !FormHasExistingAccount;
+
+        private bool _formCreateAccount = true;
+        public bool FormCreateAccount
+        {
+            get => _formCreateAccount;
+            set => SetProperty(ref _formCreateAccount, value);
+        }
+
+        private string _formAccountUsername = string.Empty;
+        public string FormAccountUsername
+        {
+            get => _formAccountUsername;
+            set => SetProperty(ref _formAccountUsername, value);
+        }
+
+        private string _formAccountPassword = string.Empty;
+        public string FormAccountPassword
+        {
+            get => _formAccountPassword;
+            set => SetProperty(ref _formAccountPassword, value);
+        }
+
         //Delete confirmation overlay 
 
         private bool _isDeleteConfirmOpen;
@@ -198,8 +211,8 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _isDeleteConfirmOpen, value);
         }
 
-        private EmployeeRow? _pendingDelete;
-        public EmployeeRow? PendingDelete
+        private EmployeeProfileItemModel? _pendingDelete;
+        public EmployeeProfileItemModel? PendingDelete
         {
             get => _pendingDelete;
             set => SetProperty(ref _pendingDelete, value);
@@ -213,39 +226,20 @@ namespace HRManagement.ViewModels
         private void LoadDepartments()
         {
             Departments.Clear();
-            foreach (var department in _departmentRepository.GetAll())
-                Departments.Add(new IdNamePair(department.DepartmentId, department.DepartmentName));
+            foreach (var department in _manageProfilesService.GetDepartments())
+                Departments.Add(department);
         }
 
         private void LoadEmployees()
         {
             Employees.Clear();
-            foreach (var employee in _employeeRepository.GetAll())
-                Employees.Add(ToRow(employee));
-        }
-
-        private EmployeeRow ToRow(Employee employee)
-        {
-            var departmentName = Departments.FirstOrDefault(d => d.Id == employee.DepartmentId)?.Name
-                ?? $"Department #{employee.DepartmentId}";
-            var roleName = Roles.FirstOrDefault(r => r.Id == employee.RoleId)?.Name ?? "Employee";
-
-            return new EmployeeRow
-            {
-                Employee = employee,
-                FullName = employee.FullName,
-                Email = employee.Email,
-                Phone = string.IsNullOrWhiteSpace(employee.Phone) ? "—" : employee.Phone,
-                DepartmentName = departmentName,
-                RoleName = roleName,
-                Status = employee.Status,
-                HireDateDisplay = employee.HireDate.ToString("MMM dd, yyyy")
-            };
+            foreach (var employee in _manageProfilesService.GetEmployees())
+                Employees.Add(employee);
         }
 
         private bool FilterEmployee(object obj)
         {
-            if (obj is not EmployeeRow row)
+            if (obj is not EmployeeProfileItemModel row)
                 return false;
 
             if (string.IsNullOrWhiteSpace(SearchText))
@@ -262,6 +256,7 @@ namespace HRManagement.ViewModels
         private void OpenAddForm()
         {
             _formEmployeeId = 0;
+            _isNewEmployee = true;
             FormTitle = "Add Employee";
             FormFullName = string.Empty;
             FormEmail = string.Empty;
@@ -272,10 +267,17 @@ namespace HRManagement.ViewModels
             FormSelectedRole = RoleOptions.FirstOrDefault(r => r.Id == 3); // default: Employee
             FormSelectedDepartment = Departments.FirstOrDefault();
             FormErrorMessage = null;
+
+            FormHasExistingAccount = false;
+            FormCreateAccount = true;
+            FormAccountUsername = string.Empty;
+            FormAccountPassword = string.Empty;
+            OnPropertyChanged(nameof(CanCreateAccount));
+
             IsFormOpen = true;
         }
 
-        private void OpenEditForm(EmployeeRow? row)
+        private void OpenEditForm(EmployeeProfileItemModel? row)
         {
             if (row?.Employee == null)
                 return;
@@ -283,6 +285,7 @@ namespace HRManagement.ViewModels
             var employee = row.Employee;
 
             _formEmployeeId = employee.EmployeeId;
+            _isNewEmployee = false;
             FormTitle = "Edit Employee";
             FormFullName = employee.FullName;
             FormEmail = employee.Email;
@@ -293,6 +296,13 @@ namespace HRManagement.ViewModels
             FormSelectedRole = RoleOptions.FirstOrDefault(r => r.Id == employee.RoleId);
             FormSelectedDepartment = Departments.FirstOrDefault(d => d.Id == employee.DepartmentId);
             FormErrorMessage = null;
+
+            FormHasExistingAccount = row.HasAccount;
+            FormCreateAccount = !row.HasAccount;
+            FormAccountUsername = string.Empty;
+            FormAccountPassword = string.Empty;
+            OnPropertyChanged(nameof(CanCreateAccount));
+
             IsFormOpen = true;
         }
 
@@ -303,75 +313,51 @@ namespace HRManagement.ViewModels
 
         private void SaveForm()
         {
-            if (string.IsNullOrWhiteSpace(FormFullName) || string.IsNullOrWhiteSpace(FormEmail))
-            {
-                FormErrorMessage = "Full name and email are required.";
-                return;
-            }
-
-            if (FormSelectedRole == null || FormSelectedDepartment == null)
-            {
-                FormErrorMessage = "Role and department are required.";
-                return;
-            }
-
-            Employee? oldEmployee = null;
-            if (_formEmployeeId != 0) oldEmployee = _employeeRepository.GetById(_formEmployeeId);
-            var employee = new Employee
+            var input = new EmployeeProfileInput
             {
                 EmployeeId = _formEmployeeId,
-                FullName = FormFullName.Trim(),
-                Email = FormEmail.Trim(),
-                Phone = string.IsNullOrWhiteSpace(FormPhone) ? null : FormPhone.Trim(),
-                DateOfBirth = FormDateOfBirth ?? DateTime.Today.AddYears(-25),
-                HireDate = FormHireDate ?? DateTime.Today,
+                FullName = FormFullName,
+                Email = FormEmail,
+                Phone = FormPhone,
+                DateOfBirth = FormDateOfBirth,
+                HireDate = FormHireDate,
                 Status = FormStatus,
-                RoleId = FormSelectedRole.Id,
-                DepartmentId = FormSelectedDepartment.Id
+                RoleId = FormSelectedRole?.Id ?? 0,
+                DepartmentId = FormSelectedDepartment?.Id ?? 0,
+                CreateAccount = CanCreateAccount && FormCreateAccount,
+                AccountUsername = FormAccountUsername,
+                AccountPassword = FormAccountPassword
             };
 
-            if (_formEmployeeId == 0)
+            try
             {
-                var newId = _employeeRepository.Insert(employee);
-                _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Added employee: {employee.FullName}");
-                employee.EmployeeId = newId;
-                Employees.Add(ToRow(employee));
+                if (_formEmployeeId == 0)
+                {
+                    var saved = _manageProfilesService.AddEmployee(input);
+                    Employees.Add(saved);
+                }
+                else
+                {
+                    var saved = _manageProfilesService.UpdateEmployee(input);
+                    var existing = Employees.FirstOrDefault(e => e.Employee.EmployeeId == _formEmployeeId);
+                    if (existing != null)
+                    {
+                        var index = Employees.IndexOf(existing);
+                        Employees[index] = saved;
+                    }
+                }
+
+                IsFormOpen = false;
             }
-            else
+            catch (Exception ex)
             {
-                _employeeRepository.Update(employee);
-                var existing = Employees.FirstOrDefault(e => e.Employee.EmployeeId == _formEmployeeId);
-                if (existing != null)
-                {
-                    var index = Employees.IndexOf(existing);
-                    Employees[index] = ToRow(employee);
-                }
-                if (oldEmployee != null)
-                {
-                    List<string> changes = new();
-                    if (oldEmployee.FullName != employee.FullName) changes.Add("Full Name");
-                    if (oldEmployee.Email != employee.Email) changes.Add("Email");
-                    if ((oldEmployee.Phone ?? "") != (employee.Phone ?? "")) changes.Add("Phone");
-                    if (oldEmployee.DepartmentId != employee.DepartmentId) changes.Add("Department");
-                    if (oldEmployee.RoleId != employee.RoleId) changes.Add("Role");
-                    if (oldEmployee.Status != employee.Status) changes.Add("Status");
-                    if (oldEmployee.HireDate != employee.HireDate) changes.Add("Hire Date");
-                    if (oldEmployee.DateOfBirth != employee.DateOfBirth) changes.Add("Date Of Birth");
-
-                    string message = changes.Count > 0
-                        ? $"Updated employee {employee.FullName}: {string.Join(", ", changes)}"
-                        : $"Updated employee {employee.FullName}";
-
-                    _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, message);
-                }
+                FormErrorMessage = ex.Message;
             }
-
-            IsFormOpen = false;
         }
 
         //Delete Employee
 
-        private void RequestDelete(EmployeeRow? row)
+        private void RequestDelete(EmployeeProfileItemModel? row)
         {
             if (row == null)
                 return;
@@ -385,12 +371,16 @@ namespace HRManagement.ViewModels
             if (PendingDelete == null)
                 return;
 
-            _employeeRepository.Delete(PendingDelete.Employee.EmployeeId);
-            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted employee: {PendingDelete.Employee.FullName}");
-            Employees.Remove(PendingDelete);
-
-            PendingDelete = null;
-            IsDeleteConfirmOpen = false;
+            try
+            {
+                _manageProfilesService.DeleteEmployee(PendingDelete.Employee.EmployeeId);
+                Employees.Remove(PendingDelete);
+            }
+            finally
+            {
+                PendingDelete = null;
+                IsDeleteConfirmOpen = false;
+            }
         }
 
         private void CancelDelete()
@@ -398,30 +388,5 @@ namespace HRManagement.ViewModels
             PendingDelete = null;
             IsDeleteConfirmOpen = false;
         }
-    }
-
-
-    public class IdNamePair
-    {
-        public IdNamePair(int id, string name)
-        {
-            Id = id;
-            Name = name;
-        }
-
-        public int Id { get; }
-        public string Name { get; }
-    }
-
-    public class EmployeeRow
-    {
-        public Employee Employee { get; set; } = null!;
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string DepartmentName { get; set; } = string.Empty;
-        public string RoleName { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string HireDateDisplay { get; set; } = string.Empty;
     }
 }
