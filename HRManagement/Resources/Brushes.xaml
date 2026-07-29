@@ -2,83 +2,130 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <!--
+        ============================================================
+        ENERPIZE-STYLE LIGHT THEME - "White / Light-Blue" token set
+        ============================================================
+        Palette reference: soft white/light-blue admin dashboards
+        (see design refs: Enerpize/Folkd/Checkdo style dashboards).
+
+        Design tokens:
+          Brand blue   #3E63DD  (vivid but not neon - reads as "product blue")
+          Brand deep   #2947B8  (hover/pressed)
+          Brand tint   #EEF2FF  (selected/soft backgrounds)
+          Surface      #FFFFFF  (cards)
+          Canvas       #F5F7FB  (window/app background - cool near-white)
+          Ink          #1B2559  (primary text - deep navy, not pure black)
+          Muted ink    #8A93B8  (secondary text)
+          Hairline     #E7EBF5  (borders/dividers)
+
+        Status colors kept close to the original app (green/amber/red/violet)
+        but slightly desaturated to sit quietly against the lighter canvas.
+    -->
+
     <!-- ========= Brand ========= -->
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#2E5BFF"/>
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1B49FF"/>
-    <SolidColorBrush x:Key="PrimaryLightBrush" Color="#4F83FF"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#3E63DD"/>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#2947B8"/>
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="#6C8AF0"/>
 
+    <!-- Soft brand tint, used for selected pills / icon badges over white -->
+    <SolidColorBrush x:Key="PrimaryTintBrush" Color="#EEF2FF"/>
+
+    <!-- Sidebar is now a clean off-white surface (matches reference UIs),
+         not a dark/blue gradient. Kept as a LinearGradientBrush (same key
+         + type) so Sidebar.xaml's Background binding keeps working as-is,
+         but the gradient is now a near-imperceptible vertical hairline
+         wash rather than a bold brand fill. -->
     <LinearGradientBrush x:Key="SidebarBackgroundBrush"
                          StartPoint="0,0"
                          EndPoint="0,1">
-        <GradientStop Color="#4F83FF" Offset="0"/>
-        <GradientStop Color="#2E5BFF" Offset="0.45"/>
-        <GradientStop Color="#1B49FF" Offset="1"/>
+        <GradientStop Color="#FFFFFF" Offset="0"/>
+        <GradientStop Color="#FCFDFF" Offset="0.6"/>
+        <GradientStop Color="#F8FAFE" Offset="1"/>
     </LinearGradientBrush>
 
-    <!-- ========= Accent ========= -->
+    <!-- ========= Accent (secondary brand - warm, used sparingly) ========= -->
 
-    <SolidColorBrush x:Key="AccentBrush" Color="#FF9F1A"/>
-    <SolidColorBrush x:Key="AccentDarkBrush" Color="#E58A00"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="#D88F0F"/>
 
     <!-- ========= Background ========= -->
 
-    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F4F7FE"/>
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F5F7FB"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F0F3FA"/>
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F3F5FA"/>
 
     <!-- ========= Borders ========= -->
 
-    <SolidColorBrush x:Key="BorderBrush" Color="#E9EDF7"/>
-    <SolidColorBrush x:Key="DividerBrush" Color="#E2E8F5"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#E7EBF5"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="#EDF0F8"/>
 
     <!-- ========= Text ========= -->
 
-    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#2B3674"/>
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A3AED0"/>
-    <SolidColorBrush x:Key="HintTextBrush" Color="#B9C3E1"/>
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1B2559"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#8A93B8"/>
+    <SolidColorBrush x:Key="HintTextBrush" Color="#B7BEDA"/>
 
     <SolidColorBrush x:Key="WhiteBrush" Color="#FFFFFF"/>
 
-    <!-- ========= Sidebar ========= -->
+    <!-- ========= Sidebar (light surface, dark text, blue active state) ========= -->
+    <!-- Sidebar now sits on the same white/light-blue language as the rest
+         of the app (see reference dashboards), with a thin right-hand
+         hairline border (applied in Sidebar.xaml's parent Grid via
+         BorderBrush already present in MainWindow.xaml) separating it from
+         the canvas. -->
 
-    <SolidColorBrush x:Key="SidebarTextBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#5B6489"/>
 
-    <SolidColorBrush x:Key="SidebarHoverBrush"
-                     Color="#14FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#F3F5FC"/>
 
-    <SolidColorBrush x:Key="SidebarPressedBrush"
-                     Color="#20FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarPressedBrush" Color="#E9EDFB"/>
 
-    <SolidColorBrush x:Key="SidebarSelectedBrush"
-                     Color="#18FFFFFF"/>
+    <!-- Selected nav item: soft brand-tint pill instead of translucent white
+         (translucent white only worked against a dark sidebar). -->
+    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#EEF2FF"/>
+
+    <!-- Text color used on the active/selected nav item (blue-on-tint,
+         instead of white-on-glass). Sidebar.xaml's item icons/text still
+         bind to SidebarTextBrush by default; this key is available for
+         future selected-state styling without another breaking change. -->
+    <SolidColorBrush x:Key="SidebarSelectedTextBrush" Color="#3E63DD"/>
 
     <!-- ========= Status ========= -->
 
-    <SolidColorBrush x:Key="SuccessBrush" Color="#05CD99"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFB547"/>
-    <SolidColorBrush x:Key="DangerBrush" Color="#EE5D50"/>
-    <SolidColorBrush x:Key="OtBrush" Color="#8B5CF6"/>
-    <SolidColorBrush x:Key="WeekendBrush" Color="#A3AED0"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#12B76A"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#F04438"/>
+    <SolidColorBrush x:Key="OtBrush" Color="#7C5CFC"/>
+    <SolidColorBrush x:Key="WeekendBrush" Color="#8A93B8"/>
 
     <!-- ========= DataGrid ========= -->
 
-    <SolidColorBrush x:Key="TableHeaderBrush" Color="#F4F7FE"/>
-    <SolidColorBrush x:Key="RowHoverBrush" Color="#F7F9FF"/>
-    <SolidColorBrush x:Key="RowSelectedBrush" Color="#E9F0FF"/>
+    <SolidColorBrush x:Key="TableHeaderBrush" Color="#F7F9FD"/>
+    <SolidColorBrush x:Key="RowHoverBrush" Color="#F6F8FE"/>
+    <SolidColorBrush x:Key="RowSelectedBrush" Color="#EBF0FF"/>
 
     <!-- ========= Buttons ========= -->
 
-    <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#2E5BFF"/>
-    <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="#1A46E5"/>
+    <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#3E63DD"/>
+    <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="#3253C3"/>
 
-    <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#FF9F1A"/>
-    <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#E58A00"/>
+    <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#D88F0F"/>
 
-    <!-- Stat Badge Soft Tints (Light Mode) -->
-    <SolidColorBrush x:Key="PrimaryBadgeBrush" Color="#1F2E5BFF"/>
-    <SolidColorBrush x:Key="WarningBadgeBrush" Color="#1FFF9F1A"/>
-    <SolidColorBrush x:Key="SuccessBadgeBrush" Color="#1F05CD99"/>
-    <SolidColorBrush x:Key="DangerBadgeBrush" Color="#1FEE5D50"/>
+    <!-- Stat Badge Soft Tints (Light Mode) - flat pastel fills (not alpha
+         overlays) so they render identically over any card background,
+         matching the pill/badge look in the reference dashboards. -->
+    <SolidColorBrush x:Key="PrimaryBadgeBrush" Color="#EAF0FE"/>
+    <SolidColorBrush x:Key="WarningBadgeBrush" Color="#FDF1DF"/>
+    <SolidColorBrush x:Key="SuccessBadgeBrush" Color="#E4F8EE"/>
+    <SolidColorBrush x:Key="DangerBadgeBrush" Color="#FDEAE8"/>
+
+    <!-- ========= Shadows (shared DropShadow color/opacity tokens) ========= -->
+    <!-- Centralized so TableStyles/ProfileView/DashboardView card shadows
+         share one soft, cool-toned shadow instead of each file picking a
+         slightly different color/opacity by hand. -->
+    <Color x:Key="CardShadowColor">#1A2B3674</Color>
 
 </ResourceDictionary>

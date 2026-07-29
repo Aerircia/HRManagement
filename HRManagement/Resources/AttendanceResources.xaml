@@ -21,15 +21,18 @@
 
     <!-- ========= Attendance status fills ========= -->
     <!-- Looked up by key from AttendanceStatusToBrushConverter; also used
-         directly by legend swatches so the two never drift out of sync. -->
+         directly by legend swatches so the two never drift out of sync.
+         Colors updated to the softer, slightly desaturated status palette
+         (see Brushes.xaml) so calendar cells read calmly against the new
+         light canvas instead of the previous saturated fills. -->
 
-    <SolidColorBrush x:Key="SuccessBgBrush" Color="#05CD99"/>
-    <SolidColorBrush x:Key="WarningBgBrush" Color="#FFA754"/>
-    <SolidColorBrush x:Key="DangerBgBrush" Color="#F26D6D"/>
-    <SolidColorBrush x:Key="OtBgBrush" Color="#8E6FE0"/>
+    <SolidColorBrush x:Key="SuccessBgBrush" Color="#12B76A"/>
+    <SolidColorBrush x:Key="WarningBgBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="DangerBgBrush" Color="#F04438"/>
+    <SolidColorBrush x:Key="OtBgBrush" Color="#7C5CFC"/>
     <SolidColorBrush x:Key="DayOffBgBrush" Color="#63ADD0"/>
-    <SolidColorBrush x:Key="WeekendBgBrush" Color="#F4F7FE"/>
-    <SolidColorBrush x:Key="NeutralBgBrush" Color="#F4F7FE"/>
+    <SolidColorBrush x:Key="WeekendBgBrush" Color="#F3F5FA"/>
+    <SolidColorBrush x:Key="NeutralBgBrush" Color="#F3F5FA"/>
 
     <SolidColorBrush x:Key="StatusHeaderTextBrush" Color="#FFFFFF"/>
 
@@ -38,12 +41,12 @@
          the look of icon buttons used elsewhere in the shell (e.g. sidebar). -->
 
     <Style x:Key="CalendarNavButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="30" />
-        <Setter Property="Height" Value="30" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-        <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+        <Setter Property="Background" Value="{StaticResource PrimaryTintBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -51,7 +54,7 @@
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Bd"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="15"
+                            CornerRadius="16"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
@@ -59,7 +62,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">

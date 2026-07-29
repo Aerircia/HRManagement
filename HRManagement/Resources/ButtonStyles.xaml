@@ -3,6 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Primary Button -->
+    <!-- Pill button with a soft brand-colored drop shadow (matches the
+         "Add Employee" / "+ Create" CTAs in the reference dashboards)
+         instead of a flat fill with no elevation. -->
 
     <Style x:Key="PrimaryButtonStyle"
            TargetType="Button">
@@ -44,6 +47,10 @@
                             Background="{TemplateBinding Background}"
                             CornerRadius="21">
 
+                        <Border.Effect>
+                            <DropShadowEffect Color="#3E63DD" BlurRadius="16" ShadowDepth="4" Opacity="0.28" Direction="270"/>
+                        </Border.Effect>
+
                         <ContentPresenter
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
@@ -58,6 +65,108 @@
                             <Setter TargetName="Border"
                                     Property="Background"
                                     Value="{StaticResource PrimaryButtonHoverBrush}"/>
+
+                        </Trigger>
+
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+
+                            <Setter TargetName="Border"
+                                    Property="Opacity"
+                                    Value="0.88"/>
+
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+
+                            <Setter TargetName="Border"
+                                    Property="Opacity"
+                                    Value="0.45"/>
+
+                            <Setter TargetName="Border"
+                                    Property="Effect"
+                                    Value="{x:Null}"/>
+
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+
+        </Setter>
+
+    </Style>
+
+
+    <!-- Secondary Button -->
+    <!-- Outline style (white fill, brand-colored border/text) rather than a
+         solid orange fill - reads as a calmer "second-priority" action next
+         to the primary blue pill, matching reference dashboards where the
+         secondary/ghost button is outlined, not another loud color. -->
+
+    <Style x:Key="SecondaryButtonStyle"
+           TargetType="Button">
+
+        <Setter Property="Foreground"
+                Value="{StaticResource PrimaryBrush}"/>
+
+        <Setter Property="Background"
+                Value="{StaticResource CardBackgroundBrush}"/>
+
+        <Setter Property="BorderBrush"
+                Value="{StaticResource BorderBrush}"/>
+
+        <Setter Property="BorderThickness"
+                Value="1"/>
+
+        <Setter Property="FontSize"
+                Value="14"/>
+
+        <Setter Property="FontWeight"
+                Value="SemiBold"/>
+
+        <Setter Property="Height"
+                Value="42"/>
+
+        <Setter Property="Cursor"
+                Value="Hand"/>
+
+        <Setter Property="Padding"
+                Value="30,0"/>
+
+        <Setter Property="Template">
+
+            <Setter.Value>
+
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="21">
+
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+
+                            <Setter TargetName="Border"
+                                    Property="Background"
+                                    Value="{StaticResource PrimaryTintBrush}"/>
+
+                            <Setter TargetName="Border"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource PrimaryBrush}"/>
 
                         </Trigger>
 
@@ -90,82 +199,6 @@
     </Style>
 
 
-    <!-- Secondary Button -->
-
-    <Style x:Key="SecondaryButtonStyle"
-           TargetType="Button">
-
-        <Setter Property="Foreground"
-                Value="{StaticResource WhiteBrush}"/>
-
-        <Setter Property="Background"
-                Value="{StaticResource SecondaryButtonBrush}"/>
-
-        <Setter Property="BorderThickness"
-                Value="0"/>
-
-        <Setter Property="FontSize"
-                Value="14"/>
-
-        <Setter Property="FontWeight"
-                Value="SemiBold"/>
-
-        <Setter Property="Height"
-                Value="42"/>
-
-        <Setter Property="Cursor"
-                Value="Hand"/>
-
-        <Setter Property="Padding"
-                Value="30,0"/>
-
-        <Setter Property="Template">
-
-            <Setter.Value>
-
-                <ControlTemplate TargetType="Button">
-
-                    <Border x:Name="Border"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="21">
-
-                        <ContentPresenter
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-
-                    </Border>
-
-                    <ControlTemplate.Triggers>
-
-                        <Trigger Property="IsMouseOver"
-                                 Value="True">
-
-                            <Setter TargetName="Border"
-                                    Property="Background"
-                                    Value="{StaticResource SecondaryButtonHoverBrush}"/>
-
-                        </Trigger>
-
-                        <Trigger Property="IsPressed"
-                                 Value="True">
-
-                            <Setter TargetName="Border"
-                                    Property="Opacity"
-                                    Value="0.85"/>
-
-                        </Trigger>
-
-                    </ControlTemplate.Triggers>
-
-                </ControlTemplate>
-
-            </Setter.Value>
-
-        </Setter>
-
-    </Style>
-
-
     <!-- Window Circle Button (Minimize) -->
 
     <Style x:Key="WindowCircleButtonStyle"
@@ -181,10 +214,10 @@
                 Value="Hand"/>
 
         <Setter Property="Background"
-                Value="#30FFFFFF"/>
+                Value="#14000000"/>
 
         <Setter Property="Foreground"
-                Value="{StaticResource WhiteBrush}"/>
+                Value="{StaticResource PrimaryTextBrush}"/>
 
         <Setter Property="BorderThickness"
                 Value="0"/>
@@ -215,7 +248,7 @@
 
                             <Setter TargetName="Border"
                                     Property="Background"
-                                    Value="#55FFFFFF"/>
+                                    Value="#22000000"/>
 
                         </Trigger>
 
@@ -274,7 +307,7 @@
 
                             <Setter TargetName="Border"
                                     Property="Background"
-                                    Value="#D94343"/>
+                                    Value="#D63C30"/>
 
                         </Trigger>
 
@@ -296,6 +329,14 @@
         </Setter>
 
     </Style>
+
+    <!-- Sidebar Navigation Button -->
+    <!-- Selected/hover states now render as a soft blue pill with blue text
+         (SidebarSelectedBrush/SidebarSelectedTextBrush) since the sidebar
+         itself is now a light surface, not a dark gradient. The style still
+         only changes Background via triggers (as before) so it keeps
+         working even though Sidebar.xaml doesn't currently set IsSelected
+         itself - hover/pressed feedback alone reads correctly on light. -->
 
     <Style x:Key="NavigationButtonStyle"
        TargetType="Button">
@@ -366,7 +407,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="{StaticResource SidebarPressedBrush}"/>
+                                Value="{StaticResource SidebarSelectedBrush}"/>
 
                         </Trigger>
 
@@ -422,7 +463,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="#EEF2F7"/>
+                                Value="{StaticResource InputBackgroundBrush}"/>
 
                         </Trigger>
 
@@ -431,7 +472,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="#DCE5F2"/>
+                                Value="{StaticResource PrimaryTintBrush}"/>
 
                         </Trigger>
 

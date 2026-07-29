@@ -48,11 +48,12 @@ public partial class App : Application
         services.AddSingleton<ISettingService, SettingService>();
         services.AddSingleton<IDashboardService, DashboardService>();
         services.AddSingleton<ILogService, LogService>();
-        services.AddSingleton<IManageSalariesService,ManageSalariesService>();
-        services.AddSingleton<IEmployeeEvaluationService,EmployeeEvaluationService>();
+        services.AddSingleton<IManageSalariesService, ManageSalariesService>();
+        services.AddSingleton<IEmployeeEvaluationService, EmployeeEvaluationService>();
+        services.AddSingleton<IManageProfilesService, ManageProfilesService>();
 
         // Repositories
-        services.AddSingleton<IManageSalariesRepository,ManageSalariesRepository>();
+        services.AddSingleton<IManageSalariesRepository, ManageSalariesRepository>();
         services.AddSingleton<ISalaryRepository, SalaryRepository>();
         services.AddSingleton<IAccountRepository, AccountRepository>();
         services.AddSingleton<IEmployeeRepository, EmployeeRepository>();

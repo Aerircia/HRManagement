@@ -6,26 +6,34 @@
         Unified table visuals for: ContractsView, ManageProfilesView, RequestsView,
         ManageRequestsView, ManageAttendancesView (employee list).
 
-        This dictionary standardizes the *look* of tables app-wide (card chrome,
-        header row, row hover/selected/divider, empty-state text, row action
-        buttons, status pills) without forcing every table onto the same control.
-        DataGrid-based tables (Contracts, Manage Profiles, Manage Attendances) and
-        ItemsControl-based tables (Requests, Manage Requests) both consume these
-        keys so they render consistently side by side.
+        Modernized to match the reference dashboards: soft shadow instead of
+        a hard 1px border as the primary separation cue (border kept, but
+        lighter, as a secondary hairline), larger radius, airier row height
+        expectations, and flat pastel status pills.
 
-        Merge this once at the app level (App.xaml) alongside the other shared
-        dictionaries, then remove the per-view duplicated copies of these styles.
+        This dictionary standardizes the *look* of tables app-wide (card
+        chrome, header row, row hover/selected/divider, empty-state text,
+        row action buttons, status pills) without forcing every table onto
+        the same control. DataGrid-based tables (Contracts, Manage Profiles,
+        Manage Attendances) and ItemsControl-based tables (Requests, Manage
+        Requests) both consume these keys so they render consistently side
+        by side.
+
+        Merged once at the app level (App.xaml) alongside the other shared
+        dictionaries.
     -->
 
     <!-- ========= Shared table card container ========= -->
-    <!-- Wraps every table (DataGrid or ItemsControl) in the same card chrome.
-         Use Padding="0" on the Border when the table renders its own header
-         row background edge-to-edge (all current tables do). -->
     <Style x:Key="TableCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="22" ShadowDepth="3" Opacity="0.06" Direction="270"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Slightly heavier card used behind forms/search bars/stat groupings that
@@ -34,21 +42,18 @@
          Contracts/Manage Profiles cards previously each redefined locally). -->
     <Style x:Key="SurfaceCardStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
-        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="Padding" Value="22"/>
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#1A2B3674" BlurRadius="18" ShadowDepth="4" Opacity="0.12" Direction="270"/>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="20" ShadowDepth="4" Opacity="0.08" Direction="270"/>
             </Setter.Value>
         </Setter>
     </Style>
 
     <!-- ========= Table header row text (ItemsControl-based tables) ========= -->
-    <!-- Matches ManageRequestsStyles.xaml's original TableHeaderTextStyle so
-         Requests/Manage Requests keep their exact current look; kept here too
-         so every table style lives in one place going forward. -->
     <Style x:Key="TableHeaderTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="11.5"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -70,13 +75,10 @@
     </Style>
 
     <!-- ========= DataGrid header/row/cell (DataGrid-based tables) ========= -->
-    <!-- Column header: same padding/foreground/weight as the header text style
-         above, so a DataGrid table and an ItemsControl table look identical
-         when placed in the same page. -->
     <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="11.5"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="16,14"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -121,11 +123,14 @@
     </Style>
 
     <!-- ========= Status pill (Contracts / Manage Profiles) ========= -->
+    <!-- Flat pastel background by default (InputBackgroundBrush) - pages
+         that bind per-status colors (e.g. via StatusToBrushConverter) can
+         still override Background/Foreground on the instance as before. -->
     <Style x:Key="StatusPillStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="10,5"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryBadgeBrush}"/>
     </Style>
 
     <!-- ========= Row action icon buttons (edit/delete - Contracts, Manage Profiles) ========= -->
@@ -138,7 +143,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Border" CornerRadius="8" Background="{TemplateBinding Background}">
+                    <Border x:Name="Border" CornerRadius="9" Background="{TemplateBinding Background}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -162,7 +167,9 @@
     <!-- ========= Table toolbar search box (Contracts, Manage Profiles, Manage Requests) ========= -->
     <Style x:Key="TableSearchBoxContainerStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
-        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="14,0"/>
         <Setter Property="Height" Value="48"/>
     </Style>

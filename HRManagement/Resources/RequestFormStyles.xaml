@@ -30,7 +30,7 @@
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
                             <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                         </Trigger>
 
@@ -59,7 +59,7 @@
         <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="CornerRadius" Value="10"/>
     </Style>
 
     <Style x:Key="FieldTextBoxStyle" TargetType="TextBox">
@@ -82,9 +82,14 @@
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="20" ShadowDepth="4" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Vertical category list button (Requests page, right column) -->
@@ -105,7 +110,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="12">
+                            CornerRadius="14">
 
                         <ContentPresenter HorizontalAlignment="Left"
                                            VerticalAlignment="Center"
@@ -116,7 +121,7 @@
                     <ControlTemplate.Triggers>
 
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
                             <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                         </Trigger>
 
@@ -139,8 +144,13 @@
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="20" ShadowDepth="4" Opacity="0.08" Direction="270"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="PaperIntroTextStyle" TargetType="TextBlock">
