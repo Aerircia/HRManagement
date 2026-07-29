@@ -97,6 +97,10 @@ public class AttendanceDayViewModel : ViewModelBase
             if (!IsCurrentMonth || IsBeforeHireDate)
                 return false;
 
+            // Hide times for Day Off
+            if (string.Equals(Status, "Day Off", StringComparison.OrdinalIgnoreCase))
+                return false;
+
             var isOt = string.Equals(Status, "OT", StringComparison.OrdinalIgnoreCase);
             var hasRecord = CheckIn.HasValue || CheckOut.HasValue;
 

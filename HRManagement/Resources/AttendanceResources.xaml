@@ -27,6 +27,7 @@
     <SolidColorBrush x:Key="WarningBgBrush" Color="#FFA754"/>
     <SolidColorBrush x:Key="DangerBgBrush" Color="#F26D6D"/>
     <SolidColorBrush x:Key="OtBgBrush" Color="#8E6FE0"/>
+    <SolidColorBrush x:Key="DayOffBgBrush" Color="#63ADD0"/>
     <SolidColorBrush x:Key="WeekendBgBrush" Color="#F4F7FE"/>
     <SolidColorBrush x:Key="NeutralBgBrush" Color="#F4F7FE"/>
 

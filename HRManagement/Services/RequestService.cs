@@ -81,6 +81,16 @@ public class RequestService(IRequestFormRepository requestFormRepository,
                 request.StartDate.Value.TimeOfDay,
                 request.EndDate.Value.TimeOfDay);
         }
+        // Handle Day Off approval
+        else if (string.Equals(request.RequestType, "Day Off", StringComparison.OrdinalIgnoreCase)
+                 && request.StartDate.HasValue && request.EndDate.HasValue)
+        {
+            _attendanceService.ScheduleDayOff(
+                request.EmployeeId,
+                request.StartDate.Value.Date,
+                request.EndDate.Value.Date);
+        }
+
         _logService.WriteLog(_sessionManager.CurrentUser!.Account.EmployeeId, $"{request.RequestType} Request Approved");
         return true;
     }
