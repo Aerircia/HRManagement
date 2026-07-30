@@ -6,61 +6,22 @@
              xmlns:utilities="clr-namespace:HRManagement.Utilities"
              mc:Ignorable="d"
              d:DesignWidth="1240" d:DesignHeight="820"
-             Background="{StaticResource WindowBackgroundBrush}">
+             Background="{DynamicResource WindowBackgroundBrush}">
 
     <UserControl.Resources>
 
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
         <!--
-            CardStyle -> SurfaceCardStyle, StatusPillStyle, RowIconButtonStyle, and
-            GridCellTextStyle -> TableCellTextStyle now come from the shared
-            Resources/TableStyles.xaml (merged in App.xaml) so this page matches
-            Manage Profiles, Requests, Manage Requests, and Manage Attendances.
-            Only styles specific to this page's Add/Edit form remain local.
+            CardStyle -> SurfaceCardStyle, StatusPillStyle, RowIconButtonStyle,
+            GridCellTextStyle -> TableCellTextStyle, and FormLabelStyle /
+            FormTextBoxStyle / FormComboBoxStyle / FormDatePickerStyle all now
+            come from shared dictionaries (Resources/TableStyles.xaml,
+            Resources/FormStyles.xaml, merged in App.xaml) so this page matches
+            Manage Profiles, Requests, Manage Requests, Manage Attendances, and
+            the other Add/Edit forms (Manage Announcements, Profile). No
+            page-local style overrides remain here.
         -->
-
-        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="12,0"
-                                          VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
 
     </UserControl.Resources>
 
@@ -88,10 +49,10 @@
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="Manage Contracts"
                                FontSize="24" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <TextBlock Text="Manage employee contracts and salary terms"
                                FontSize="13"
-                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Margin="0,4,0,0"/>
                 </StackPanel>
 
@@ -104,7 +65,7 @@
 
             <!-- Search -->
             <Border Grid.Row="2"
-                    Background="{StaticResource CardBackgroundBrush}"
+                    Background="{DynamicResource CardBackgroundBrush}"
                     CornerRadius="14"
                     Padding="14,0"
                     Height="48"
@@ -116,14 +77,14 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
-                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBox Grid.Column="1"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              BorderThickness="0"
                              Background="Transparent"
                              VerticalContentAlignment="Center"
-                             Foreground="{StaticResource PrimaryTextBrush}"
+                             Foreground="{DynamicResource PrimaryTextBrush}"
                              Tag="Search by employee or contract type..."/>
                 </Grid>
             </Border>
@@ -174,7 +135,7 @@
                                 <DataTemplate>
                                     <Border Style="{StaticResource StatusPillStyle}">
                                         <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                                   Foreground="{DynamicResource PrimaryBrush}"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -191,13 +152,13 @@
                                                 Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
                                             <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets"
-                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                                       Foreground="{DynamicResource PrimaryBrush}"/>
                                         </Button>
                                         <Button Style="{StaticResource RowIconButtonStyle}"
                                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
                                             <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"
-                                                       Foreground="{StaticResource DangerBrush}"/>
+                                                       Foreground="{DynamicResource DangerBrush}"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>
@@ -220,30 +181,30 @@
 
             <Border Width="64" Height="64"
                     CornerRadius="32"
-                    Background="{StaticResource InputBackgroundBrush}"
+                    Background="{DynamicResource InputBackgroundBrush}"
                     HorizontalAlignment="Center"
                     Margin="0,0,0,16">
                 <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="26"
-                           Foreground="{StaticResource DangerBrush}"
+                           Foreground="{DynamicResource DangerBrush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
 
             <TextBlock Text="Access restricted"
                        FontSize="18" FontWeight="Bold"
                        HorizontalAlignment="Center"
-                       Foreground="{StaticResource PrimaryTextBrush}"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
                        Margin="0,0,0,8"/>
 
             <TextBlock Text="Manage Contracts is only available to Admin and Manager accounts. Contact your administrator if you believe this is a mistake."
                        FontSize="13"
                        TextAlignment="Center"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                       Foreground="{DynamicResource SecondaryTextBrush}"/>
 
         </StackPanel>
 
         <!--Add / Edit overlay  -->
-        <Grid Background="#66000000"
+        <Grid Style="{StaticResource ModalScrimStyle}"
               Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVisibility}}">
 
             <Border Style="{StaticResource SurfaceCardStyle}"
@@ -256,11 +217,11 @@
 
                     <TextBlock Text="{Binding FormTitle}"
                                FontSize="18" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                Margin="0,0,0,18"/>
 
                     <TextBlock Text="{Binding FormErrorMessage}"
-                               Foreground="{StaticResource DangerBrush}"
+                               Foreground="{DynamicResource DangerBrush}"
                                FontSize="12"
                                Margin="0,0,0,10"
                                TextWrapping="Wrap"
@@ -351,7 +312,7 @@
         </Grid>
 
         <!-- Delete confirmation overlay  -->
-        <Grid Background="#66000000"
+        <Grid Style="{StaticResource ModalScrimStyle}"
               Visibility="{Binding IsDeleteConfirmOpen, Converter={StaticResource BoolToVisibility}}">
 
             <Border Style="{StaticResource SurfaceCardStyle}"
@@ -362,10 +323,10 @@
                 <StackPanel>
                     <TextBlock Text="Remove contract?"
                                FontSize="16" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                Margin="0,0,0,8"/>
 
-                    <TextBlock Foreground="{StaticResource SecondaryTextBrush}"
+                    <TextBlock Foreground="{DynamicResource SecondaryTextBrush}"
                                FontSize="13"
                                TextWrapping="Wrap"
                                Margin="0,0,0,20">
@@ -387,7 +348,7 @@
                                 Command="{Binding CancelDeleteCommand}"/>
                         <Button Grid.Column="2" Content="Delete"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Background="{StaticResource DangerBrush}"
+                                Background="{DynamicResource DangerBrush}"
                                 Command="{Binding ConfirmDeleteCommand}"/>
                     </Grid>
 

@@ -1,0 +1,108 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        ============================================================
+        Shell layout styles: TitleBar / Sidebar / TopBar
+        ============================================================
+        Introduced to support the collapsible sidebar redesign
+        (light-blue/white "Enerpize" style shell). Kept separate from
+        ButtonStyles.xaml / Brushes.xaml so shell-specific chrome
+        (widths, collapse rail, search box, nav section headers)
+        doesn't get mixed into the general-purpose style dictionaries.
+        Colors are still pulled from the existing Brushes.xaml /
+        DarkBrushes.xaml tokens (PrimaryBrush, SidebarSelectedBrush,
+        etc.) so the shell always matches the current theme.
+    -->
+
+    <!-- ========= Sidebar widths ========= -->
+    <!-- Bound by MainWindow.xaml's sidebar ColumnDefinition and by the
+         Sidebar's own content so everything resizes together. -->
+    <sys:Double x:Key="SidebarExpandedWidth">240</sys:Double>
+    <sys:Double x:Key="SidebarCollapsedWidth">76</sys:Double>
+
+    <!-- ========= TitleBar (app icon + name) ========= -->
+
+    <Style x:Key="AppLogoBadgeStyle" TargetType="Border">
+        <Setter Property="Width" Value="26"/>
+        <Setter Property="Height" Value="26"/>
+        <Setter Property="CornerRadius" Value="7"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+    </Style>
+
+    <Style x:Key="AppNameTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ========= Sidebar collapse toggle button (top-right of sidebar) ========= -->
+
+    <Style x:Key="SidebarCollapseButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========= Sidebar section header (e.g. "MENU", "MANAGEMENT") ========= -->
+
+    <Style x:Key="SidebarSectionHeaderStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+        <Setter Property="Margin" Value="12,16,0,8"/>
+    </Style>
+
+    <!-- ========= TopBar search box ========= -->
+
+    <Style x:Key="TopBarSearchContainerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="14,0"/>
+    </Style>
+
+    <Style x:Key="TopBarSearchTextBoxStyle" TargetType="TextBox">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <!-- Placeholder text shown over the search TextBox when it's empty.
+         Bound via a DataTrigger on the TextBox's own Text in TopBar.xaml. -->
+    <Style x:Key="TopBarSearchPlaceholderStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+</ResourceDictionary>

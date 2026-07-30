@@ -6,18 +6,21 @@
              xmlns:local="clr-namespace:HRManagement.Controls"
              mc:Ignorable="d"
              Background="Transparent"
-             d:DesignWidth="700" d:DesignHeight="600">
+             d:DesignWidth="700" d:DesignHeight="640">
 
     <!--
         Single reusable calendar: month navigation + weekday header + the
-        7-column day grid. DataContext must be an AttendanceViewModel
-        (CurrentMonth, Days, PrevMonthCommand, NextMonthCommand).
+        7-column day grid + a bottom status legend. DataContext must be an
+        AttendanceViewModel (CurrentMonth, Days, PrevMonthCommand,
+        NextMonthCommand).
 
         Both AttendanceView (the logged-in user's own calendar) and
         ManageAttendancesView (an admin/manager viewing another employee's
         calendar via ChildAttendanceViewModel) embed this control instead
         of each keeping their own copy of the DataTemplate, so there is
-        exactly one place that defines what a calendar cell looks like.
+        exactly one place that defines what a calendar cell looks like -
+        and, as of the attendance redesign, one place that defines the
+        legend too (previously duplicated/owned by AttendanceView.xaml).
 
         Resources (StatusToBrushConverter, BoolToVisibility, brushes, etc.)
         come from AttendanceResources.xaml, merged once at the app level
@@ -30,6 +33,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Month navigation -->
@@ -39,7 +43,7 @@
                     Command="{Binding PrevMonthCommand}" />
             <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}"
                        FontWeight="Bold" FontSize="16"
-                       Foreground="{StaticResource PrimaryTextBrush}"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
                        VerticalAlignment="Center" Margin="16,0" />
             <Button Content="&#xE76C;" FontFamily="Segoe MDL2 Assets"
                     Style="{StaticResource CalendarNavButtonStyle}"
@@ -48,13 +52,13 @@
 
         <!-- Days of week header -->
         <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
-            <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
-            <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource SecondaryTextBrush}" />
+            <TextBlock Text="Mon" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Tue" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Wed" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Thu" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Fri" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Sat" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="Sun" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
         </UniformGrid>
 
         <!-- Calendar grid: every cell gets the SAME fixed height regardless of how
@@ -80,7 +84,7 @@
                                 Background="{Binding Status, Converter={StaticResource AttendanceStatusToBrushConverter}}">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
                                     <Setter Property="Opacity" Value="1" />
                                     <Style.Triggers>
                                         <!-- Leading/trailing days from adjacent months: subdued placeholder -->
@@ -98,7 +102,7 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <!-- Date number -->
+                                <!-- Row 0: Date number -->
                                 <TextBlock Grid.Row="0"
                                            Text="{Binding Date, StringFormat='dd/MM'}"
                                            FontWeight="Bold" FontSize="13">
@@ -107,29 +111,39 @@
                                             <Setter Property="Foreground" Value="White" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding HasStatus}" Value="False">
-                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Weekend">
-                                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
-                                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
 
-                                <!-- Check-in / Check-out -->
+                                <!-- Row 1: Hours worked (dominant content), with a smaller
+                                     HH:mm-HH:mm range beneath it. Only shown when the day
+                                     actually has both a check-in and check-out and isn't a
+                                     plain weekend/before-hire day (see ShouldShowWorkedHours). -->
                                 <StackPanel Grid.Row="1" VerticalAlignment="Center"
-                                            Visibility="{Binding ShouldShowTimes, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{Binding CheckIn, StringFormat='In: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
-                                    <TextBlock Text="{Binding CheckOut, StringFormat='Out: {0:HH:mm}'}" FontSize="11" Foreground="White" Opacity="0.95" />
+                                            Visibility="{Binding ShouldShowWorkedHours, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding WorkedHoursDisplay}"
+                                               FontSize="16" FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Left" />
+                                    <TextBlock FontSize="10" Foreground="White" Opacity="0.9">
+                                        <Run Text="{Binding CheckIn, StringFormat='{}{0:HH:mm}', Mode=OneWay}"/>
+                                        <Run Text="–"/>
+                                        <Run Text="{Binding CheckOut, StringFormat='{}{0:HH:mm}', Mode=OneWay}"/>
+                                    </TextBlock>
                                 </StackPanel>
 
-                                <!-- Status label -->
+                                <!-- Row 2: Status word -->
                                 <TextBlock Grid.Row="2"
-                                           Text="{Binding DisplayStatus}"
+                                           Text="{Binding DisplayStatusWord}"
                                            FontSize="11" FontWeight="SemiBold"
                                            TextTrimming="CharacterEllipsis">
                                     <TextBlock.Style>
@@ -137,10 +151,10 @@
                                             <Setter Property="Foreground" Value="White" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Status}" Value="Weekend">
-                                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Before Hire Date">
-                                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding HasStatus}" Value="False">
                                                     <Setter Property="Foreground" Value="Transparent" />
@@ -155,5 +169,47 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+
+        <!-- Bottom legend: moved here from AttendanceView.xaml so both consumers
+             (AttendanceView, ManageAttendancesView) get it automatically since
+             this control is shared. Reuses the same status brushes as the cells
+             themselves (AttendanceStatusToBrushConverter's keys) - no new colors. -->
+        <UniformGrid Grid.Row="3" Rows="1" Margin="0,14,0,0" HorizontalAlignment="Center">
+            <UniformGrid.Resources>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Orientation" Value="Horizontal"/>
+                    <Setter Property="Margin" Value="10,0"/>
+                </Style>
+            </UniformGrid.Resources>
+
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource SuccessBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Ontime" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource WarningBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Late" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource DangerBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Absent" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource WeekendBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Weekend" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource OtBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" OT" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource DayOffBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Day Off" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+            <StackPanel>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource NeutralBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text=" Before hire date" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
+            </StackPanel>
+        </UniformGrid>
     </Grid>
 </UserControl>

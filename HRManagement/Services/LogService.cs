@@ -1,31 +1,60 @@
-using HRManagement.Data;
+using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
-using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HRManagement.Services;
 
 public class LogService : ILogService
 {
-    private readonly DatabaseContext _db = new();
+    private readonly ISystemLogRepository _repo;
+
+    // Use Dependency Injection instead of creating new instances[cite: 1]
+    public LogService(ISystemLogRepository repo)
+    {
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+    }
 
     public void WriteLog(int accountId, string action)
     {
         try
         {
-            using var conn = _db.CreateConnection();
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-            // use the actual column names in the database
-            cmd.CommandText = "INSERT INTO [dbo].[SystemLog] ([Account_ID], [Action], [TimeStamp]) VALUES (@accountId, @action, @ts)";
-            cmd.Parameters.AddWithValue("@accountId", accountId);
-            cmd.Parameters.AddWithValue("@action", action ?? string.Empty);
-            cmd.Parameters.AddWithValue("@ts", DateTime.UtcNow);
-            cmd.ExecuteNonQuery();
+            _repo.AddLog(accountId, action, DateTime.UtcNow);
         }
         catch
         {
-            // fail silently for now - preserve existing app stability
+            // fail silently for now - preserve existing app stability[cite: 1]
+        }
+    }
+
+    public List<SystemLog> GetLogs()
+    {
+        try
+        {
+            return _repo.GetLogs() ?? new List<SystemLog>();
+        }
+        catch
+        {
+            return new List<SystemLog>();
+        }
+    }
+
+    public void EnsureSeeded()
+    {
+        // Moved the seeding logic out of the ViewModel
+        try
+        {
+            var logs = GetLogs();
+            if (!logs.Any())
+            {
+                WriteLog(0, "Application initialized - sample log");
+            }
+        }
+        catch
+        {
+            // ignore[cite: 4]
         }
     }
 }

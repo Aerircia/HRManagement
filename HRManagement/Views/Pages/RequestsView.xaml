@@ -33,7 +33,7 @@
                 <fa:IconBlock Icon="ArrowLeft"
                               Width="16"
                               Height="16"
-                              Foreground="{StaticResource PrimaryTextBrush}"/>
+                              Foreground="{DynamicResource PrimaryTextBrush}"/>
 
             </Button>
 
@@ -42,7 +42,7 @@
                        FontSize="30"
                        FontWeight="Bold"
                        VerticalAlignment="Center"
-                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                       Foreground="{DynamicResource PrimaryTextBrush}"/>
 
         </Grid>
 
@@ -51,11 +51,11 @@
         <StackPanel Grid.Row="1" Margin="0,0,0,10">
 
             <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="{StaticResource DangerBrush}"
+                       Foreground="{DynamicResource DangerBrush}"
                        Visibility="{Binding ShowErrorMessage, Converter={StaticResource BoolToVisibility}}"/>
 
             <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="{StaticResource SuccessBrush}"
+                       Foreground="{DynamicResource SuccessBrush}"
                        Visibility="{Binding ShowSuccessMessage, Converter={StaticResource BoolToVisibility}}"/>
 
         </StackPanel>
@@ -128,12 +128,12 @@
                                                        TextWrapping="Wrap"
                                                        VerticalAlignment="Center"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                                        Margin="20,10,10,10"/>
 
                                             <TextBlock Grid.Column="1"
                                                        VerticalAlignment="Center"
-                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                                        Margin="0,10">
                                                 <TextBlock.Text>
                                                     <MultiBinding Converter="{StaticResource RequestDateRangeConverter}">
@@ -148,13 +148,13 @@
                                                        Text="{Binding Content}"
                                                        TextWrapping="Wrap"
                                                        VerticalAlignment="Center"
-                                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                                        Margin="0,10,10,10"/>
 
                                             <TextBlock Grid.Column="3"
                                                        Text="{Binding SubmitDate, StringFormat='MMM dd, yyyy'}"
                                                        VerticalAlignment="Center"
-                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
 
                                             <Grid Grid.Column="4" HorizontalAlignment="Left">
 
@@ -207,8 +207,8 @@
                             CommandParameter="DayOff">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="CalendarDay" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Ask for Day Off" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            <fa:IconBlock Icon="CalendarDay" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Ask for Day Off" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
                     </Button>
@@ -218,8 +218,8 @@
                             CommandParameter="Resignation">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="DoorOpen" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Resignation" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            <fa:IconBlock Icon="DoorOpen" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Resignation" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
                     </Button>
@@ -229,8 +229,8 @@
                             CommandParameter="OT">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="Clock" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Ask for OT" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            <fa:IconBlock Icon="Clock" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Ask for OT" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
                     </Button>
@@ -240,8 +240,8 @@
                             CommandParameter="Other">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="Question" Width="22" Height="22" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Other Request" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            <fa:IconBlock Icon="Question" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Other Request" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
 
                     </Button>
@@ -255,7 +255,7 @@
 
                     <StackPanel>
 
-                        <TextBlock Text="Day Off Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+                        <TextBlock Text="Day Off Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
                         <TextBlock Style="{StaticResource PaperIntroTextStyle}"
                                    Text="Please schedule day-off requests as far in advance as possible. Approval is based on business needs, and priority is given to whoever submits first when multiple employees request the same dates."/>
@@ -279,12 +279,12 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Starting Date" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Starting Date" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
                                 <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffStartDate}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Back to Work On" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Back to Work On" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
                                 <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffEndDate}"/>
                             </StackPanel>
 
@@ -303,7 +303,7 @@
 
                     <StackPanel>
 
-                        <TextBlock Text="Resignation Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+                        <TextBlock Text="Resignation Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
                         <TextBlock Style="{StaticResource PaperIntroTextStyle}"
                                    Text="Please provide as much notice as possible so we can plan for a smooth transition. Your manager will review this request and follow up with next steps."/>
@@ -336,7 +336,7 @@
 
                     <StackPanel>
 
-                        <TextBlock Text="OT Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+                        <TextBlock Text="OT Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
                         <TextBlock Style="{StaticResource PaperIntroTextStyle}"
                                    Text="Ask permission to work overtime on a specific day. Once approved, the OT hours will automatically appear on your Attendance calendar for that day."/>
@@ -365,13 +365,13 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Start Time (HH:mm)" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Start Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
                                 <TextBox Style="{StaticResource PaperInputLineStyle}"
                                          Text="{Binding OtStartTime, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="End Time (HH:mm)" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="End Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
                                 <TextBox Style="{StaticResource PaperInputLineStyle}"
                                          Text="{Binding OtEndTime, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
@@ -391,7 +391,7 @@
 
                     <StackPanel>
 
-                        <TextBlock Text="Other Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource PrimaryTextBrush}"/>
+                        <TextBlock Text="Other Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
                         <TextBlock Style="{StaticResource PaperIntroTextStyle}"
                                    Text="Use this form for any request that doesn't fit the categories above. Please provide a clear subject and description so it can be reviewed quickly."/>

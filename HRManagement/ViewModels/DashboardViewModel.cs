@@ -9,7 +9,9 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace HRManagement.ViewModels;
 
@@ -189,6 +191,17 @@ public class DashboardViewModel : PageViewModel
 
     private void InitializeChartSeries()
     {
+        PayoutSeries.Clear();
+
+        // LiveCharts renders through SkiaSharp, which is entirely outside
+        // WPF's resource system - StaticResource/DynamicResource bindings
+        // in XAML never reach it. Colors have to be resolved from the
+        // current theme's brush dictionary here in code and re-applied
+        // any time the theme could have changed (see RefreshChartTheme).
+        var primaryColor = ResolveThemeColor("PrimaryBrush", 0x3E, 0x63, 0xDD);
+        var accentColor = ResolveThemeColor("AccentBrush", 0xFF, 0x99, 0x00);
+        var axisTextColor = ResolveThemeColor("SecondaryTextBrush", 0x8A, 0x93, 0xB8);
+
         // Line 1: Personal Payout
         PayoutSeries.Add(new LineSeries<decimal>
         {
@@ -196,7 +209,9 @@ public class DashboardViewModel : PageViewModel
             Values = _myPayoutValues,
             GeometrySize = 10,
             LineSmoothness = 0.6,
-            Fill = null // Transparent fill for clear multi-line view
+            Fill = null, // Transparent fill for clear multi-line view
+            Stroke = new SolidColorPaint(primaryColor) { StrokeThickness = 3 },
+            GeometryStroke = new SolidColorPaint(primaryColor) { StrokeThickness = 3 }
         });
 
         // Line 2: Team/Org Payout
@@ -209,10 +224,48 @@ public class DashboardViewModel : PageViewModel
                 GeometrySize = 10,
                 LineSmoothness = 0.6,
                 Fill = null,
-                Stroke = new SolidColorPaint(new SKColor(0xFF, 0x99, 0x00)) { StrokeThickness = 3 },
-                GeometryStroke = new SolidColorPaint(new SKColor(0xFF, 0x99, 0x00)) { StrokeThickness = 3 }
+                Stroke = new SolidColorPaint(accentColor) { StrokeThickness = 3 },
+                GeometryStroke = new SolidColorPaint(accentColor) { StrokeThickness = 3 }
             });
         }
+
+        // Axis label color also has to be set explicitly - Labeler only
+        // controls the text format, not its paint, so it silently stayed
+        // on LiveCharts' own default (dark) color regardless of theme.
+        PayoutXAxes = new Axis[]
+        {
+            new Axis { Labels = MonthLabels, LabelsPaint = new SolidColorPaint(axisTextColor) }
+        };
+
+        PayoutYAxes = new Axis[]
+        {
+            new Axis { Labeler = v => v.ToString("N0"), LabelsPaint = new SolidColorPaint(axisTextColor) }
+        };
+    }
+
+    // Resolves a themed WPF brush's color into a SkiaSharp color LiveCharts
+    // can consume. Falls back to a hardcoded color if the key can't be
+    // found (e.g. design-time), so the chart never throws.
+    private static SKColor ResolveThemeColor(string resourceKey, byte fallbackR, byte fallbackG, byte fallbackB)
+    {
+        if (Application.Current?.TryFindResource(resourceKey) is SolidColorBrush brush)
+        {
+            var c = brush.Color;
+            return new SKColor(c.R, c.G, c.B, c.A);
+        }
+
+        return new SKColor(fallbackR, fallbackG, fallbackB);
+    }
+
+    // Re-resolves chart colors from the current theme and rebuilds the
+    // series/axes in place. DashboardViewModel is registered AddTransient
+    // (see App.xaml.cs), so simply navigating away from and back to
+    // Dashboard after a theme toggle already picks up new colors via a
+    // fresh instance - this method exists for the case where the view is
+    // still on screen (or as a hook for wiring to a theme-changed event).
+    public void RefreshChartTheme()
+    {
+        InitializeChartSeries();
     }
 
     private void LoadEmployeeView(Employee employee)

@@ -7,160 +7,280 @@
         xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
         mc:Ignorable="d"
         Title="HR Management"
-        Width="900"
-        Height="560"
+        Width="960"
+        Height="600"
         WindowStyle="None"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         AllowsTransparency="True">
 
-    <Border CornerRadius="12"
-            Background="{StaticResource SidebarBackgroundBrush}"
-            MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <!--
+        Split-panel SSO layout matching the reference design:
+          - Left: white panel, logo + "Welcome back!" copy.
+          - Right: diagonal blue gradient panel with a wavy divider and a
+            floating white "Sign in" card, plus faint outline icons in the
+            background (drawn as simple opacity-reduced glyphs to match the
+            reference's decorative key/lock/mail icons) and a copyright line.
 
-        <Grid>
+        All colors/gradients/styles come from Resources/Brushes.xaml and the
+        new Resources/LoginStyles.xaml (merged in App.xaml) - nothing here
+        is a page-local <Style>.
+    -->
 
-            <!-- Top Buttons -->
+    <Border x:Name="RootBorder"
+            CornerRadius="16"
+            Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
 
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="0,12,12,0">
+        <!-- Window is ResizeMode="NoResize" with a fixed 960x600 size, so the
+             clip rect below can be a fixed value (matches Width/Height minus
+             the 1px BorderThickness on each side) instead of needing a
+             SizeChanged handler or a Rect data-binding (Rect isn't a
+             DependencyObject, so its X/Width/etc. can't be bound directly). -->
+        <Grid MouseLeftButtonDown="Window_MouseLeftButtonDown"
+              ClipToBounds="True">
 
-                <Button Style="{StaticResource WindowCircleButtonStyle}"
-                        Margin="0,0,8,0"
-                        Click="Minimize_Click">
+            <Grid.Clip>
+                <RectangleGeometry Rect="0,0,958,598" RadiusX="15" RadiusY="15"/>
+            </Grid.Clip>
 
-                    <fa:IconBlock Icon="WindowMinimize"
-                                  Width="12"
-                                  Height="12"
-                                  Foreground="{StaticResource WhiteBrush}" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1.3*"/>
+            </Grid.ColumnDefinitions>
 
-                </Button>
+            <!-- ================= Left: brand / welcome panel ================= -->
 
-                <Button Style="{StaticResource CloseButtonStyle}"
-                        Click="Close_Click">
+            <Grid Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}">
 
-                    <fa:IconBlock Icon="Xmark"
-                                  Width="12"
-                                  Height="12"
-                                  Foreground="{StaticResource WhiteBrush}" />
+                <StackPanel HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Margin="48,40,0,0">
 
-                </Button>
+                    <StackPanel Orientation="Horizontal">
 
-            </StackPanel>
+                        <Border Width="54" Height="54"
+                                CornerRadius="17"
+                                Background="{DynamicResource PrimaryTintBrush}">
+                            <Image Source="/Assets/logo.png"
+                                   Width="70" Height="70"
+                                   Stretch="Uniform"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                        </Border>
 
-            <!-- Login Card -->
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Single sign-on"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                            <TextBlock Text="(SSO)"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       Margin="0,-2,0,0"/>
+                        </StackPanel>
 
-            <Border Width="380"
-                    Padding="35"
-                    CornerRadius="15"
-                    Background="{StaticResource CardBackgroundBrush}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-
-                <StackPanel>
-
-                    <!-- Logo -->
-
-                    <Border Width="90"
-                            Height="90"
-                            CornerRadius="45"
-                            Background="{StaticResource PrimaryBrush}"
-                            HorizontalAlignment="Center">
-
-                        <fa:IconBlock Icon="Users"
-                                      Width="42"
-                                      Height="42"
-                                      Foreground="{StaticResource WhiteBrush}"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-
-                    </Border>
-
-                    <TextBlock Text="HR MANAGEMENT"
-                               Margin="0,18,0,4"
-                               FontSize="28"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
-                               HorizontalAlignment="Center"/>
-
-                    <TextBlock Text="Human Resource Management System"
-                               Margin="0,0,0,28"
-                               FontSize="13"
-                               Foreground="{StaticResource SecondaryTextBrush}"
-                               HorizontalAlignment="Center"/>
-
-                    <!-- Username -->
-
-                    <TextBlock Text="Username"
-                               Margin="0,0,0,6"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
-
-                    <Border Height="42"
-                            Margin="0,0,0,18"
-                            Background="{StaticResource InputBackgroundBrush}"
-                            BorderBrush="{StaticResource BorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8">
-
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <fa:IconBlock Grid.Column="0"
-                                          Icon="User"
-                                          Width="15"
-                                          Height="15"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Foreground="{StaticResource SecondaryTextBrush}"/>
-
-                            <TextBox Grid.Column="1"
-                                     Margin="0,0,10,0"
-                                     BorderThickness="0"
-                                     Background="Transparent"
-                                     VerticalContentAlignment="Center"
-                                     Foreground="{StaticResource PrimaryTextBrush}"
-                                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
-
-                        </Grid>
-
-                    </Border>
-
-                    <!-- Password -->
-
-                    <TextBlock Text="Password"
-                               Margin="0,0,0,6"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
-
-                    <controls:BindablePasswordBox
-                        Margin="0,0,0,28"
-                        Password="{Binding Password, Mode=TwoWay}"/>
-
-                    <!-- Login -->
-
-                    <Button Content="LOGIN"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding LoginCommand}"
-                            Width="180"
-                            HorizontalAlignment="Center"
-                            IsDefault="True"/>
-
-                    <TextBlock
-                            Text="{Binding ErrorMessage}"
-                            Foreground="{StaticResource DangerBrush}"
-                            Margin="0,8,0,0"/>
+                    </StackPanel>
 
                 </StackPanel>
 
-            </Border>
+                <StackPanel HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="48,0,40,0">
+
+                    <TextBlock Text="WELCOME BACK !"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryBrush}"/>
+
+                    <TextBlock Text="Enter your ID and Password to continue"
+                               FontSize="16"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               Margin="0,14,0,0"/>
+
+                </StackPanel>
+
+            </Grid>
+
+            <!-- ================= Right: blue panel + sign-in card ================= -->
+
+            <Grid Grid.Column="1">
+
+                <!-- Wavy diagonal blue panel. The Path draws a single smooth
+                     S-curve on the left edge (matching the reference's wave)
+                     and fills the rest with the diagonal brand gradient. -->
+                <Path Fill="{DynamicResource LoginPanelGradientBrush}"
+                      Stretch="Fill">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="0,0" IsClosed="True">
+                                <LineSegment Point="100,0"/>
+                                <LineSegment Point="100,100"/>
+                                <LineSegment Point="0,100"/>
+                                <!-- Smooth S-curve back up the left edge, echoing
+                                     the reference's single wave bulge roughly a
+                                     third of the way down and a matching dip
+                                     two-thirds of the way down. -->
+                                <BezierSegment Point1="14,82" Point2="-8,64" Point3="6,50"/>
+                                <BezierSegment Point1="20,36" Point2="-2,18" Point3="0,0"/>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <!-- Faint decorative outline icons scattered over the panel,
+                     echoing the reference's key/mail/lock motif. Kept subtle
+                     (low opacity, white) so they read as background texture
+                     rather than competing with the sign-in card. -->
+                <Canvas IsHitTestVisible="False">
+
+                    <fa:IconBlock Icon="Key" Canvas.Left="60" Canvas.Top="70" Width="34" Height="34" Foreground="{DynamicResource WhiteBrush}" Opacity="0.10">
+                        <fa:IconBlock.RenderTransform>
+                            <RotateTransform Angle="-30"/>
+                        </fa:IconBlock.RenderTransform>
+                    </fa:IconBlock>
+
+                    <fa:IconBlock Icon="Envelope" Canvas.Left="480" Canvas.Top="60" Width="30" Height="30" Foreground="{DynamicResource WhiteBrush}" Opacity="0.10"/>
+
+                    <fa:IconBlock Icon="Lock" Canvas.Left="80" Canvas.Top="420" Width="32" Height="32" Foreground="{DynamicResource WhiteBrush}" Opacity="0.10"/>
+
+                    <fa:IconBlock Icon="Key" Canvas.Left="500" Canvas.Top="440" Width="30" Height="30" Foreground="{DynamicResource WhiteBrush}" Opacity="0.10">
+                        <fa:IconBlock.RenderTransform>
+                            <RotateTransform Angle="25"/>
+                        </fa:IconBlock.RenderTransform>
+                    </fa:IconBlock>
+
+                    <fa:IconBlock Icon="Envelope" Canvas.Left="70" Canvas.Top="250" Width="26" Height="26" Foreground="{DynamicResource WhiteBrush}" Opacity="0.08"/>
+
+                </Canvas>
+
+                <!-- Window control buttons -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,16,16,0">
+
+                    <Button Style="{StaticResource LoginWindowButtonStyle}"
+                            Margin="0,0,8,0"
+                            Click="Minimize_Click">
+                        <fa:IconBlock Icon="WindowMinimize" Width="12" Height="12"/>
+                    </Button>
+
+                    <Button Style="{StaticResource LoginCloseButtonStyle}"
+                            Click="Close_Click">
+                        <fa:IconBlock Icon="Xmark" Width="13" Height="13"/>
+                    </Button>
+
+                </StackPanel>
+
+                <!-- Sign-in card -->
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                    <StackPanel Width="360">
+
+                        <TextBlock Text="SIGN IN"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource WhiteBrush}"
+                                   HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="TO ACCESS THE PORTAL"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource LoginOnPanelMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,2,0,26"/>
+
+                        <!-- Username -->
+
+                        <Border Style="{StaticResource LoginInputContainerStyle}" Margin="0,0,0,14">
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <fa:IconBlock Grid.Column="0"
+                                              Icon="User"
+                                              Width="15" Height="15"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                                <TextBox Grid.Column="1"
+                                         Margin="-10,0,16,0"
+                                         Style="{StaticResource LoginTextBoxStyle}"
+                                         Tag="Enter User Name Here"
+                                         Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            </Grid>
+
+                        </Border>
+
+                        <!-- Password -->
+
+                        <Border Style="{StaticResource LoginPasswordHostStyle}" Margin="0,0,0,26">
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <fa:IconBlock Grid.Column="0"
+                                              Icon="Key"
+                                              Width="15" Height="15"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                                <!-- BindablePasswordBox already renders its own
+                                     pill-shaped Border internally, so it is placed
+                                     borderless/transparent-backed here and simply
+                                     hosted inside this pill container for the icon
+                                     gutter; Margin nudges its internal 8px inset to
+                                     align with the username field above. -->
+                                <controls:BindablePasswordBox Grid.Column="1"
+                                                               Margin="-10,2,10,2"
+                                                               Password="{Binding Password, Mode=TwoWay}"/>
+
+                            </Grid>
+
+                        </Border>
+
+                        <!-- Login -->
+
+                        <Button Content="LOGIN"
+                                Style="{StaticResource LoginPrimaryButtonStyle}"
+                                Command="{Binding LoginCommand}"
+                                IsDefault="True"/>
+
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Foreground="{DynamicResource DangerBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- Footer -->
+
+                <TextBlock Text="Copyright © 2025 HR Management. All rights reserved."
+                           FontSize="11"
+                           Foreground="{DynamicResource LoginOnPanelMutedBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Bottom"
+                           Margin="0,0,0,20"/>
+
+            </Grid>
 
         </Grid>
 

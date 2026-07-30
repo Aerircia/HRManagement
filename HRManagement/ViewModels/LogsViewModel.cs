@@ -1,57 +1,40 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace HRManagement.ViewModels;
 
 public class LogsViewModel : PageViewModel
 {
-    public override string Title => "Logs";
+    public override string Title => "Logs"; //[cite: 4]
 
-    private readonly SystemLogRepository _repo;
     private readonly ILogService _logService;
 
+    // View model initializes the observable collection[cite: 4]
     public ObservableCollection<SystemLog> Logs { get; } = new();
 
-    public LogsViewModel(SystemLogRepository repo, ILogService logService)
+    public LogsViewModel(ILogService logService)
     {
-        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        // Removed the SystemLogRepository injection[cite: 4]
         _logService = logService ?? throw new ArgumentNullException(nameof(logService));
 
-        LoadLogs();
+        // Offload back-end seeding logic to the service layer
+        _logService.EnsureSeeded();
 
-        // seed if empty (optional)
-        if (!Logs.Any())
-        {
-            try
-            {
-                _logService.WriteLog(0, "Application initialized - sample log");
-                LoadLogs();
-            }
-            catch
-            {
-                // ignore
-            }
-        }
+        LoadLogs();
     }
 
     public void LoadLogs()
     {
-        try
+        var logs = _logService.GetLogs();
+        Logs.Clear();
+
+        // Populate the logs collection for the view[cite: 4]
+        foreach (var l in logs)
         {
-            var logs = _repo.GetLogs() ?? new List<SystemLog>();
-            Logs.Clear();
-            foreach (var l in logs)
-                Logs.Add(l);
-        }
-        catch
-        {
-            // ignore
+            Logs.Add(l);
         }
     }
 }

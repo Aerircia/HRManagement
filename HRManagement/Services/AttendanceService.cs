@@ -110,7 +110,10 @@ public class AttendanceService : IAttendanceService
                     .OrderBy(x => x)
                     .Cast<DateTime?>()
                     .FirstOrDefault(),
-                HasCheckIn = g.Any(x => x.CheckIn.HasValue)
+                HasCheckIn = g.Any(x => x.CheckIn.HasValue),
+                Status = g.First().Status,
+                CheckIn = g.First().CheckIn,
+                CheckOut = g.First().CheckOut
             })
             .ToList();
 
@@ -142,13 +145,23 @@ public class AttendanceService : IAttendanceService
             }
         }
 
+        var otDays = grouped.Count(g => string.Equals(g.Status, "OT", StringComparison.OrdinalIgnoreCase));
+        var dayOffDays = grouped.Count(g => string.Equals(g.Status, "Day Off", StringComparison.OrdinalIgnoreCase));
+
+        var totalWorkedMinutes = grouped
+            .Where(g => g.CheckIn.HasValue && g.CheckOut.HasValue && g.CheckOut.Value > g.CheckIn.Value)
+            .Sum(g => (int)Math.Round((g.CheckOut!.Value - g.CheckIn!.Value).TotalMinutes));
+
         return new AttendanceMonthSummary
         {
             TotalDaysWorked = daysWorked,
             TotalOnTime = onTime,
             TotalLate = late,
             TotalLateMinutes = lateMinutes,
-            TotalAbsent = Math.Max(0, totalWorkingDays - daysWorked)
+            TotalAbsent = Math.Max(0, totalWorkingDays - daysWorked),
+            TotalOtDays = otDays,
+            TotalDayOffDays = dayOffDays,
+            TotalWorkedMinutes = totalWorkedMinutes
         };
     }
 
@@ -234,6 +247,13 @@ public class AttendanceService : IAttendanceService
             });
         }
     }
+
+    // Public "today's attendance record" lookup, used by ManageAttendancesViewModel
+    // to populate per-row Check-in/Check-out-today columns without each caller
+    // re-implementing the "find today's record" query (see FindToday below,
+    // which this simply exposes through the interface).
+    public Attendance? GetTodayAttendance(int employeeId) => FindToday(employeeId);
+
     private static string ResolveStatus(AttendanceDayModel day, string? dbStatus)
     {
         if (!day.IsCurrentMonth)

@@ -37,7 +37,7 @@
         <Setter Property="Padding" Value="16,0"/>
         <Setter Property="Height" Value="36"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>

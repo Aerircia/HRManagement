@@ -6,7 +6,7 @@
              xmlns:utilities="clr-namespace:HRManagement.Utilities"
              mc:Ignorable="d"
              d:DesignWidth="1240" d:DesignHeight="1200"
-             Background="{StaticResource WindowBackgroundBrush}">
+             Background="{DynamicResource WindowBackgroundBrush}">
 
     <UserControl.Resources>
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -55,10 +55,10 @@
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="Contract Document"
                                FontSize="24" FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <TextBlock Text="Your official signed agreement"
                                FontSize="13"
-                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Margin="0,4,0,0"/>
                 </StackPanel>
 
@@ -192,7 +192,7 @@
 
                     <TextBlock Text="No contract on file yet."
                                FontSize="15"
-                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 

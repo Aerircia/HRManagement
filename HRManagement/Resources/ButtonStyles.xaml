@@ -11,10 +11,10 @@
            TargetType="Button">
 
         <Setter Property="Foreground"
-                Value="{StaticResource WhiteBrush}"/>
+                Value="{DynamicResource WhiteBrush}"/>
 
         <Setter Property="Background"
-                Value="{StaticResource PrimaryButtonBrush}"/>
+                Value="{DynamicResource PrimaryButtonBrush}"/>
 
         <Setter Property="BorderBrush"
                 Value="Transparent"/>
@@ -64,7 +64,7 @@
 
                             <Setter TargetName="Border"
                                     Property="Background"
-                                    Value="{StaticResource PrimaryButtonHoverBrush}"/>
+                                    Value="{DynamicResource PrimaryButtonHoverBrush}"/>
 
                         </Trigger>
 
@@ -111,13 +111,13 @@
            TargetType="Button">
 
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryBrush}"/>
+                Value="{DynamicResource PrimaryBrush}"/>
 
         <Setter Property="Background"
-                Value="{StaticResource CardBackgroundBrush}"/>
+                Value="{DynamicResource CardBackgroundBrush}"/>
 
         <Setter Property="BorderBrush"
-                Value="{StaticResource BorderBrush}"/>
+                Value="{DynamicResource BorderBrush}"/>
 
         <Setter Property="BorderThickness"
                 Value="1"/>
@@ -162,11 +162,11 @@
 
                             <Setter TargetName="Border"
                                     Property="Background"
-                                    Value="{StaticResource PrimaryTintBrush}"/>
+                                    Value="{DynamicResource PrimaryTintBrush}"/>
 
                             <Setter TargetName="Border"
                                     Property="BorderBrush"
-                                    Value="{StaticResource PrimaryBrush}"/>
+                                    Value="{DynamicResource PrimaryBrush}"/>
 
                         </Trigger>
 
@@ -217,7 +217,7 @@
                 Value="#14000000"/>
 
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryTextBrush}"/>
+                Value="{DynamicResource PrimaryTextBrush}"/>
 
         <Setter Property="BorderThickness"
                 Value="0"/>
@@ -279,10 +279,10 @@
            BasedOn="{StaticResource WindowCircleButtonStyle}">
 
         <Setter Property="Background"
-                Value="{StaticResource DangerBrush}"/>
+                Value="{DynamicResource DangerBrush}"/>
 
         <Setter Property="Foreground"
-                Value="{StaticResource WhiteBrush}"/>
+                Value="{DynamicResource WhiteBrush}"/>
 
         <Setter Property="Template">
 
@@ -331,12 +331,14 @@
     </Style>
 
     <!-- Sidebar Navigation Button -->
-    <!-- Selected/hover states now render as a soft blue pill with blue text
+    <!-- Selected/hover states render as a soft blue pill with blue text
          (SidebarSelectedBrush/SidebarSelectedTextBrush) since the sidebar
-         itself is now a light surface, not a dark gradient. The style still
-         only changes Background via triggers (as before) so it keeps
-         working even though Sidebar.xaml doesn't currently set IsSelected
-         itself - hover/pressed feedback alone reads correctly on light. -->
+         itself is now a light surface, not a dark gradient. The active page
+         is resolved via a MultiBinding (NavItemBrushConverter) comparing
+         SidebarViewModel.CurrentPageType against each button's own
+         CommandParameter, so Background/Foreground reflect the selected
+         page without any per-button DataTrigger boilerplate in Sidebar.xaml.
+         Hover/pressed still layer on top via the template triggers below. -->
 
     <Style x:Key="NavigationButtonStyle"
        TargetType="Button">
@@ -356,12 +358,6 @@
         <Setter Property="VerticalContentAlignment"
             Value="Center"/>
 
-        <Setter Property="Background"
-            Value="Transparent"/>
-
-        <Setter Property="Foreground"
-            Value="{StaticResource SidebarTextBrush}"/>
-
         <Setter Property="BorderThickness"
             Value="0"/>
 
@@ -373,6 +369,32 @@
 
         <Setter Property="FontWeight"
             Value="SemiBold"/>
+
+        <!-- Selected state: compares the DataContext's CurrentPageType
+             (SidebarViewModel) against this button's own CommandParameter
+             (the page's ViewModel Type, e.g. {x:Type vm:DashboardViewModel})
+             so the active nav item renders as a soft blue pill with blue
+             text instead of every item looking identical. Falls back to
+             Transparent/SidebarTextBrush when nothing matches (including
+             design-time, where CurrentPageType may not resolve). -->
+
+        <Setter Property="Background">
+            <Setter.Value>
+                <MultiBinding Converter="{StaticResource NavItemBrushConverter}" ConverterParameter="Background">
+                    <Binding Path="CurrentPageType"/>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="CommandParameter"/>
+                </MultiBinding>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="Foreground">
+            <Setter.Value>
+                <MultiBinding Converter="{StaticResource NavItemBrushConverter}" ConverterParameter="Foreground">
+                    <Binding Path="CurrentPageType"/>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="CommandParameter"/>
+                </MultiBinding>
+            </Setter.Value>
+        </Setter>
 
         <Setter Property="Template">
 
@@ -398,7 +420,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="{StaticResource SidebarHoverBrush}"/>
+                                Value="{DynamicResource SidebarHoverBrush}"/>
 
                         </Trigger>
 
@@ -407,7 +429,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="{StaticResource SidebarSelectedBrush}"/>
+                                Value="{DynamicResource SidebarSelectedBrush}"/>
 
                         </Trigger>
 
@@ -463,7 +485,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="{StaticResource InputBackgroundBrush}"/>
+                                Value="{DynamicResource InputBackgroundBrush}"/>
 
                         </Trigger>
 
@@ -472,7 +494,7 @@
 
                             <Setter TargetName="Border"
                                 Property="Background"
-                                Value="{StaticResource PrimaryTintBrush}"/>
+                                Value="{DynamicResource PrimaryTintBrush}"/>
 
                         </Trigger>
 

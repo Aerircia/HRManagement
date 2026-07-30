@@ -147,6 +147,9 @@ public class AttendanceViewModel : PageViewModel
         TotalLate = 0;
         TotalLateMinutes = 0;
         TotalAbsent = 0;
+        TotalOtDays = 0;
+        TotalDayOffDays = 0;
+        TotalWorkedMinutes = 0;
     }
 
     private void ApplySummary(AttendanceMonthSummary summary)
@@ -156,6 +159,9 @@ public class AttendanceViewModel : PageViewModel
         TotalLate = summary.TotalLate;
         TotalLateMinutes = summary.TotalLateMinutes;
         TotalAbsent = summary.TotalAbsent;
+        TotalOtDays = summary.TotalOtDays;
+        TotalDayOffDays = summary.TotalDayOffDays;
+        TotalWorkedMinutes = summary.TotalWorkedMinutes;
     }
 
     private bool CanCheckIn()
@@ -233,4 +239,25 @@ public class AttendanceViewModel : PageViewModel
 
     private int _totalOnTime;
     public int TotalOnTime { get => _totalOnTime; private set => SetProperty(ref _totalOnTime, value); }
+
+    private int _totalOtDays;
+    public int TotalOtDays { get => _totalOtDays; private set => SetProperty(ref _totalOtDays, value); }
+
+    private int _totalDayOffDays;
+    public int TotalDayOffDays { get => _totalDayOffDays; private set => SetProperty(ref _totalDayOffDays, value); }
+
+    private int _totalWorkedMinutes;
+    public int TotalWorkedMinutes
+    {
+        get => _totalWorkedMinutes;
+        private set
+        {
+            if (SetProperty(ref _totalWorkedMinutes, value))
+                OnPropertyChanged(nameof(TotalHoursThisMonthDisplay));
+        }
+    }
+
+    // "142h 30m" style display for the new "Total Hours This Month" card.
+    public string TotalHoursThisMonthDisplay =>
+        $"{TotalWorkedMinutes / 60}h {TotalWorkedMinutes % 60}m";
 }
