@@ -18,32 +18,18 @@
         <!-- Header -->
 
         <Grid Grid.Row="0" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="Requests"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                    Style="{StaticResource TopBarIconButtonStyle}"
-                    Command="{Binding BackCommand}"
-                    Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVisibility}}"
-                    Margin="0,0,14,0">
-
-                <fa:IconBlock Icon="ArrowLeft"
-                              Width="16"
-                              Height="16"
-                              Foreground="{DynamicResource PrimaryTextBrush}"/>
-
-            </Button>
-
-            <TextBlock Grid.Column="1"
-                       Text="Requests"
-                       FontSize="30"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-
+                <TextBlock Text="Send and manage personal requests"
+                           FontSize="13"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
         </Grid>
 
         <!-- Status messages -->
@@ -194,226 +180,246 @@
 
             </Border>
 
-            <!-- Right column: category selection or active form -->
-
             <Grid Grid.Column="1">
+                
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
 
-                <!-- Category selection -->
+                <!-- Right column: category selection or active form -->
+                <Button Grid.Row="0" HorizontalAlignment="Left"
+                        Style="{StaticResource TopBarIconButtonStyle}"
+                        Command="{Binding BackCommand}"
+                        Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVisibility}}"
+                        Margin="0,0,14,0">
 
-                <StackPanel Visibility="{Binding IsSelectionVisible, Converter={StaticResource BoolToVisibility}}">
+                    <fa:IconBlock Icon="ArrowLeft"
+                                  Width="16"
+                                  Height="16"
+                                  Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-                    <Button Style="{StaticResource CategoryListButtonStyle}"
-                            Command="{Binding SelectCategoryCommand}"
-                            CommandParameter="DayOff">
+                </Button>
 
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="CalendarDay" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Ask for Day Off" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
+                <Grid Grid.Row="1">
+                    <!-- Category selection -->
 
-                    </Button>
+                    <StackPanel Visibility="{Binding IsSelectionVisible, Converter={StaticResource BoolToVisibility}}">
 
-                    <Button Style="{StaticResource CategoryListButtonStyle}"
-                            Command="{Binding SelectCategoryCommand}"
-                            CommandParameter="Resignation">
+                        <Button Style="{StaticResource CategoryListButtonStyle}"
+                                Command="{Binding SelectCategoryCommand}"
+                                CommandParameter="DayOff">
 
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="DoorOpen" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Resignation" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                    </Button>
-
-                    <Button Style="{StaticResource CategoryListButtonStyle}"
-                            Command="{Binding SelectCategoryCommand}"
-                            CommandParameter="OT">
-
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="Clock" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Ask for OT" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                    </Button>
-
-                    <Button Style="{StaticResource CategoryListButtonStyle}"
-                            Command="{Binding SelectCategoryCommand}"
-                            CommandParameter="Other">
-
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="Question" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="Other Request" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                    </Button>
-
-                </StackPanel>
-
-                <!-- Day Off form -->
-
-                <Border Style="{StaticResource PaperFormCardStyle}"
-                        Visibility="{Binding IsDayOffFormVisible, Converter={StaticResource BoolToVisibility}}">
-
-                    <StackPanel>
-
-                        <TextBlock Text="Day Off Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
-
-                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
-                                   Text="Please schedule day-off requests as far in advance as possible. Approval is based on business needs, and priority is given to whoever submits first when multiple employees request the same dates."/>
-
-                        <TextBlock Text="Reason for Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                 Text="{Binding DayOffReason, UpdateSourceTrigger=PropertyChanged}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="50"
-                                 Margin="0,0,0,20"/>
-
-                        <TextBlock Text="Requested Date of Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
-
-                        <Grid Margin="0,0,0,24">
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Starting Date" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffStartDate}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="CalendarDay" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Ask for Day Off" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Back to Work On" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffEndDate}"/>
+                        </Button>
+
+                        <Button Style="{StaticResource CategoryListButtonStyle}"
+                                Command="{Binding SelectCategoryCommand}"
+                                CommandParameter="Resignation">
+
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="DoorOpen" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Resignation" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                        </Grid>
+                        </Button>
 
-                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+                        <Button Style="{StaticResource CategoryListButtonStyle}"
+                                Command="{Binding SelectCategoryCommand}"
+                                CommandParameter="OT">
+
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="Clock" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Ask for OT" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                        </Button>
+
+                        <Button Style="{StaticResource CategoryListButtonStyle}"
+                                Command="{Binding SelectCategoryCommand}"
+                                CommandParameter="Other">
+
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Icon="Question" Width="22" Height="22" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Other Request" Margin="14,0,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                        </Button>
 
                     </StackPanel>
 
-                </Border>
+                    <!-- Day Off form -->
 
-                <!-- Resignation form -->
+                    <Border Style="{StaticResource PaperFormCardStyle}"
+                            Visibility="{Binding IsDayOffFormVisible, Converter={StaticResource BoolToVisibility}}">
 
-                <Border Style="{StaticResource PaperFormCardStyle}"
-                        Visibility="{Binding IsResignationFormVisible, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
 
-                    <StackPanel>
+                            <TextBlock Text="Day Off Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-                        <TextBlock Text="Resignation Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                       Text="Please schedule day-off requests as far in advance as possible. Approval is based on business needs, and priority is given to whoever submits first when multiple employees request the same dates."/>
 
-                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
-                                   Text="Please provide as much notice as possible so we can plan for a smooth transition. Your manager will review this request and follow up with next steps."/>
+                            <TextBlock Text="Reason for Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                     Text="{Binding DayOffReason, UpdateSourceTrigger=PropertyChanged}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="50"
+                                     Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Reason for Resignation:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                 Text="{Binding ResignationReason, UpdateSourceTrigger=PropertyChanged}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="50"
-                                 Margin="0,0,0,20"/>
+                            <TextBlock Text="Requested Date of Absence:" Style="{StaticResource PaperSectionLabelStyle}"/>
 
-                        <TextBlock Text="Last Working Day:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <DatePicker Style="{StaticResource PaperDatePickerLineStyle}"
-                                    SelectedDate="{Binding ResignationLastWorkingDate}"
-                                    HorizontalAlignment="Left"
-                                    Width="200"
-                                    Margin="0,0,0,24"/>
+                            <Grid Margin="0,0,0,24">
 
-                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                    </StackPanel>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Starting Date" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                    <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffStartDate}"/>
+                                </StackPanel>
 
-                </Border>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Back to Work On" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                    <DatePicker Style="{StaticResource PaperDatePickerLineStyle}" SelectedDate="{Binding DayOffEndDate}"/>
+                                </StackPanel>
 
-                <!-- OT form -->
+                            </Grid>
 
-                <Border Style="{StaticResource PaperFormCardStyle}"
-                        Visibility="{Binding IsOtFormVisible, Converter={StaticResource BoolToVisibility}}">
+                            <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
 
-                    <StackPanel>
+                        </StackPanel>
 
-                        <TextBlock Text="OT Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </Border>
 
-                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
-                                   Text="Ask permission to work overtime on a specific day. Once approved, the OT hours will automatically appear on your Attendance calendar for that day."/>
+                    <!-- Resignation form -->
 
-                        <TextBlock Text="Reason for OT:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                 Text="{Binding OtReason, UpdateSourceTrigger=PropertyChanged}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="50"
-                                 Margin="0,0,0,20"/>
+                    <Border Style="{StaticResource PaperFormCardStyle}"
+                            Visibility="{Binding IsResignationFormVisible, Converter={StaticResource BoolToVisibility}}">
 
-                        <TextBlock Text="OT Date:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <DatePicker Style="{StaticResource PaperDatePickerLineStyle}"
-                                    SelectedDate="{Binding OtDate}"
-                                    HorizontalAlignment="Left"
-                                    Width="200"
-                                    Margin="0,0,0,20"/>
+                        <StackPanel>
 
-                        <Grid Margin="0,0,0,24">
+                            <TextBlock Text="Resignation Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                       Text="Please provide as much notice as possible so we can plan for a smooth transition. Your manager will review this request and follow up with next steps."/>
 
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Start Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                         Text="{Binding OtStartTime, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <TextBlock Text="Reason for Resignation:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                     Text="{Binding ResignationReason, UpdateSourceTrigger=PropertyChanged}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="50"
+                                     Margin="0,0,0,20"/>
 
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="End Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                         Text="{Binding OtEndTime, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <TextBlock Text="Last Working Day:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <DatePicker Style="{StaticResource PaperDatePickerLineStyle}"
+                                        SelectedDate="{Binding ResignationLastWorkingDate}"
+                                        HorizontalAlignment="Left"
+                                        Width="200"
+                                        Margin="0,0,0,24"/>
 
-                        </Grid>
+                            <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
 
-                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+                        </StackPanel>
 
-                    </StackPanel>
+                    </Border>
 
-                </Border>
+                    <!-- OT form -->
 
-                <!-- Other form -->
+                    <Border Style="{StaticResource PaperFormCardStyle}"
+                            Visibility="{Binding IsOtFormVisible, Converter={StaticResource BoolToVisibility}}">
 
-                <Border Style="{StaticResource PaperFormCardStyle}"
-                        Visibility="{Binding IsOtherFormVisible, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
 
-                    <StackPanel>
+                            <TextBlock Text="OT Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-                        <TextBlock Text="Other Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                       Text="Ask permission to work overtime on a specific day. Once approved, the OT hours will automatically appear on your Attendance calendar for that day."/>
 
-                        <TextBlock Style="{StaticResource PaperIntroTextStyle}"
-                                   Text="Use this form for any request that doesn't fit the categories above. Please provide a clear subject and description so it can be reviewed quickly."/>
+                            <TextBlock Text="Reason for OT:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                     Text="{Binding OtReason, UpdateSourceTrigger=PropertyChanged}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="50"
+                                     Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Subject:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                 Text="{Binding OtherSubject, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,20"/>
+                            <TextBlock Text="OT Date:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <DatePicker Style="{StaticResource PaperDatePickerLineStyle}"
+                                        SelectedDate="{Binding OtDate}"
+                                        HorizontalAlignment="Left"
+                                        Width="200"
+                                        Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Description:" Style="{StaticResource PaperSectionLabelStyle}"/>
-                        <TextBox Style="{StaticResource PaperInputLineStyle}"
-                                 Text="{Binding OtherDescription, UpdateSourceTrigger=PropertyChanged}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="80"
-                                 Margin="0,0,0,24"/>
+                            <Grid Margin="0,0,0,24">
 
-                        <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                    </StackPanel>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Start Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Style="{StaticResource PaperInputLineStyle}"
+                             Text="{Binding OtStartTime, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
 
-                </Border>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="End Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
+                                    <TextBox Style="{StaticResource PaperInputLineStyle}"
+                             Text="{Binding OtEndTime, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+
+                            </Grid>
+
+                            <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- Other form -->
+
+                    <Border Style="{StaticResource PaperFormCardStyle}"
+                            Visibility="{Binding IsOtherFormVisible, Converter={StaticResource BoolToVisibility}}">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Other Request" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                            <TextBlock Style="{StaticResource PaperIntroTextStyle}"
+                                       Text="Use this form for any request that doesn't fit the categories above. Please provide a clear subject and description so it can be reviewed quickly."/>
+
+                            <TextBlock Text="Subject:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                     Text="{Binding OtherSubject, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Description:" Style="{StaticResource PaperSectionLabelStyle}"/>
+                            <TextBox Style="{StaticResource PaperInputLineStyle}"
+                                     Text="{Binding OtherDescription, UpdateSourceTrigger=PropertyChanged}"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     MinHeight="80"
+                                     Margin="0,0,0,24"/>
+
+                            <Button Content="SEND" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SendCommand}" Width="160" HorizontalAlignment="Left"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
 
             </Grid>
 

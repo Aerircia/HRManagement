@@ -238,6 +238,13 @@ public class AttendanceService : IAttendanceService
     {
         for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
         {
+            // Skip weekends
+            if (date.DayOfWeek == DayOfWeek.Saturday ||
+                date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
             _attendanceRepository.UpsertAttendance(new Attendance
             {
                 EmployeeId = employeeId,

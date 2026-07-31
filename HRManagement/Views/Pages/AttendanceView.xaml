@@ -35,8 +35,19 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,10">
-            <TextBlock Text="Attendance" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+        <StackPanel Grid.Row="0"
+                    Grid.ColumnSpan="2"
+                    Orientation="Vertical"
+                    VerticalAlignment="Top"
+                    Margin="0,0,0,10">
+            <TextBlock Text="Attendance" 
+                       FontSize="30" 
+                       FontWeight="Bold" 
+                       Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Your monthly attendance tracker"
+                       FontSize="13"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Margin="0,4,0,0"/>
         </StackPanel>
 
         <!-- Left: Calendar (now includes its own bottom legend) -->
