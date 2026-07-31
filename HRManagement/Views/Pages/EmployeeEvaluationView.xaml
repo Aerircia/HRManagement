@@ -288,12 +288,19 @@
 
             <Style.Triggers>
 
-                <DataTrigger Binding="{Binding IsReward,
-                                              Mode=OneWay}"
-                             Value="True">
+                <DataTrigger Binding="{Binding BonusType, Mode=OneWay}"
+                             Value="Reward">
 
                     <Setter Property="Background"
                             Value="{DynamicResource SuccessBrush}" />
+
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding BonusType, Mode=OneWay}"
+                             Value="Penalty">
+
+                    <Setter Property="Background"
+                            Value="{DynamicResource DangerBrush}" />
 
                 </DataTrigger>
 
@@ -545,30 +552,17 @@
             <Grid>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="150" />
                     <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                
+
                 <StackPanel Grid.Column="0"
-                            Margin="0,0,12,0">
-
-                    <TextBlock Text="Search employee"
-                               Style="{StaticResource FieldLabelStyle}" />
-
-                    <TextBox Text="{Binding SearchText,
-                                           Mode=TwoWay,
-                                           UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="Enter employee name"
-                             Style="{StaticResource EvaluationTextBoxStyle}" />
-
-                </StackPanel>
-
-                <StackPanel Grid.Column="1"
                             Margin="0,0,12,0">
 
                     <TextBlock Text="Month"
@@ -583,7 +577,7 @@
 
                 </StackPanel>
 
-                <StackPanel Grid.Column="2"
+                <StackPanel Grid.Column="1"
                             Margin="0,0,12,0">
 
                     <TextBlock Text="Year"
@@ -598,19 +592,34 @@
 
                 </StackPanel>
 
-                <StackPanel Grid.Column="3"
+                <StackPanel Grid.Column="2"
                             Margin="0,0,12,0">
 
                     <TextBlock Text="Department"
                                Style="{StaticResource FieldLabelStyle}" />
 
-                    <ComboBox ItemsSource="{Binding Departments,
-                                                   Mode=OneWay}"
+                    <ComboBox ItemsSource="{Binding Departments, Mode=OneWay}"
                               SelectedItem="{Binding SelectedDepartment,
                                                     Mode=TwoWay,
                                                     UpdateSourceTrigger=PropertyChanged}"
                               DisplayMemberPath="DepartmentName"
+                              TextSearch.TextPath="DepartmentName"
+                              IsTextSearchEnabled="True"
+                              IsSynchronizedWithCurrentItem="False"
                               Style="{StaticResource ModernComboBox}" />
+
+                </StackPanel>
+                <StackPanel Grid.Column="3"
+            Margin="0,0,12,0">
+
+                    <TextBlock Text="Search employee"
+               Style="{StaticResource FieldLabelStyle}" />
+
+                    <TextBox Text="{Binding SearchText,
+                           Mode=TwoWay,
+                           UpdateSourceTrigger=PropertyChanged}"
+             ToolTip="Enter employee name"
+             Style="{StaticResource EvaluationTextBoxStyle}" />
 
                 </StackPanel>
 
@@ -627,14 +636,6 @@
                         MinWidth="80"
                         Content="Clear"
                         Command="{Binding ClearSearchCommand,
-                                          Mode=OneWay}"
-                        Style="{StaticResource EvaluationSecondaryButtonStyle}" />
-
-                <Button Grid.Column="6"
-                        Margin="0,23,0,0"
-                        MinWidth="90"
-                        Content="Refresh"
-                        Command="{Binding RefreshCommand,
                                           Mode=OneWay}"
                         Style="{StaticResource EvaluationSecondaryButtonStyle}" />
 

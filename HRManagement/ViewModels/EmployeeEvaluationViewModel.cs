@@ -13,11 +13,12 @@ namespace HRManagement.ViewModels;
 public class EmployeeEvaluationViewModel : PageViewModel
 {
     public override string Title => "Employee Evaluations";
+    private const int AllDepartmentsId = 0;
+
     private readonly IEmployeeEvaluationService
         _evaluationService;
 
-    private readonly List<EvaluationEmployeeItemModel>
-        _departmentSource = new();
+    private bool _suppressFilterReload;
 
     private string _searchText = string.Empty;
 
@@ -118,8 +119,10 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 _ => ClearSearch(),
                 _ =>
                     !IsLoading &&
-                    !string.IsNullOrWhiteSpace(
-                        SearchText));
+                    (
+                        !string.IsNullOrWhiteSpace(SearchText)
+                        || GetSelectedDepartmentId().HasValue
+                    ));
 
         SaveEvaluationCommand =
             new RelayCommand(
@@ -143,6 +146,10 @@ public class EmployeeEvaluationViewModel : PageViewModel
                         parameter as
                             EmployeeEvaluationItemModel),
                 _ => !IsLoading);
+
+        // Load data immediately when the Evaluation page is created.
+        // Previously the page stayed empty until Refresh was clicked.
+        InitializeData();
     }
 
     #region Collections
@@ -216,7 +223,11 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 nameof(SelectedPeriod));
 
             SetDefaultEvaluationDate();
-            LoadEmployees();
+
+            if (!_suppressFilterReload)
+            {
+                LoadEmployees();
+            }
         }
     }
 
@@ -237,7 +248,11 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 nameof(SelectedPeriod));
 
             SetDefaultEvaluationDate();
-            LoadEmployees();
+
+            if (!_suppressFilterReload)
+            {
+                LoadEmployees();
+            }
         }
     }
 
@@ -257,7 +272,13 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 return;
             }
 
-            LoadEmployees();
+            CommandManager
+                .InvalidateRequerySuggested();
+
+            if (!_suppressFilterReload)
+            {
+                LoadEmployees();
+            }
         }
     }
 
@@ -587,7 +608,7 @@ public class EmployeeEvaluationViewModel : PageViewModel
         get;
     }
 
-    
+
 
     #endregion
 
@@ -611,7 +632,7 @@ public class EmployeeEvaluationViewModel : PageViewModel
                     SelectedMonth,
                     SelectedYear,
                     SearchText,
-                    SelectedDepartment?.DepartmentId);
+                    GetSelectedDepartmentId());
 
             ReplaceCollection(
                 Employees,
@@ -667,62 +688,75 @@ public class EmployeeEvaluationViewModel : PageViewModel
     {
         try
         {
-            var employees =
-                _evaluationService.GetEmployees(
-                    SelectedMonth,
-                    SelectedYear);
-
-            _departmentSource.Clear();
-            _departmentSource.AddRange(employees);
-
             var currentDepartmentId =
-                SelectedDepartment?.DepartmentId;
+                SelectedDepartment?.DepartmentId
+                ?? AllDepartmentsId;
 
             var departments =
-                employees
+                _evaluationService
+                    .GetAllDepartments()
                     .Where(
-                        employee =>
-                            employee.DepartmentId > 0)
-                    .GroupBy(
-                        employee =>
-                            employee.DepartmentId)
-                    .Select(
-                        group =>
-                            new Department
-                            {
-                                DepartmentId =
-                                    group.Key,
-
-                                DepartmentName =
-                                    group
-                                        .First()
-                                        .DepartmentName
-                            })
+                        department =>
+                            department.DepartmentId > 0)
                     .OrderBy(
                         department =>
                             department.DepartmentName)
                     .ToList();
 
-            ReplaceCollection(
-                Departments,
-                departments);
+            // "All Department" is a UI-only option.
+            departments.Insert(
+                0,
+                new Department
+                {
+                    DepartmentId = AllDepartmentsId,
+                    DepartmentName = "All Department"
+                });
 
-            if (currentDepartmentId.HasValue)
+            _suppressFilterReload = true;
+
+            try
             {
+                ReplaceCollection(
+                    Departments,
+                    departments);
+
                 _selectedDepartment =
                     Departments.FirstOrDefault(
                         department =>
                             department.DepartmentId
-                            == currentDepartmentId.Value);
+                            == currentDepartmentId)
+                    ?? Departments.FirstOrDefault();
 
                 OnPropertyChanged(
                     nameof(SelectedDepartment));
             }
+            finally
+            {
+                _suppressFilterReload = false;
+            }
+
+            CommandManager
+                .InvalidateRequerySuggested();
         }
-        catch
+        catch (Exception ex)
         {
             Departments.Clear();
-            _departmentSource.Clear();
+
+            Departments.Add(
+                new Department
+                {
+                    DepartmentId = AllDepartmentsId,
+                    DepartmentName = "All Department"
+                });
+
+            _selectedDepartment =
+                Departments.FirstOrDefault();
+
+            OnPropertyChanged(
+                nameof(SelectedDepartment));
+
+            StatusMessage =
+                $"Unable to load departments. {ex.Message}";
         }
     }
 
@@ -995,10 +1029,28 @@ public class EmployeeEvaluationViewModel : PageViewModel
 
     private void ClearSearch()
     {
-        SearchText = string.Empty;
-        SelectedDepartment = null;
+        _suppressFilterReload = true;
+
+        try
+        {
+            SearchText = string.Empty;
+
+            SelectedDepartment =
+                Departments.FirstOrDefault(
+                    department =>
+                        department.DepartmentId
+                        == AllDepartmentsId)
+                ?? Departments.FirstOrDefault();
+        }
+        finally
+        {
+            _suppressFilterReload = false;
+        }
 
         LoadEmployees();
+
+        CommandManager
+            .InvalidateRequerySuggested();
     }
 
     private void ReloadEmployeeData(
@@ -1016,7 +1068,7 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 SelectedMonth,
                 SelectedYear,
                 SearchText,
-                SelectedDepartment?.DepartmentId);
+                GetSelectedDepartmentId());
 
         ReplaceCollection(
             Employees,
@@ -1038,6 +1090,38 @@ public class EmployeeEvaluationViewModel : PageViewModel
     #endregion
 
     #region Helpers
+
+    private void InitializeData()
+    {
+        if (IsLoading)
+            return;
+
+        try
+        {
+            /*
+             * Load Department options first so the ComboBox is ready as soon as
+             * the page opens, then load the employee list immediately.
+             */
+            LoadDepartmentOptions();
+            LoadEmployees();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage =
+                $"Unable to initialize evaluation data. {ex.Message}";
+        }
+    }
+
+    private int? GetSelectedDepartmentId()
+    {
+        if (SelectedDepartment == null
+            || SelectedDepartment.DepartmentId <= AllDepartmentsId)
+        {
+            return null;
+        }
+
+        return SelectedDepartment.DepartmentId;
+    }
 
     private void SetDefaultEvaluationDate()
     {

@@ -17,14 +17,14 @@ namespace HRManagement.Services
 
         private const int MaximumCommentLength = 500;
 
-        private readonly IEmployeeEvaluationRepository
+        private readonly HRManagement.Repositories.Interfaces.IEmployeeEvaluationRepository
             _evaluationRepository;
 
         private readonly ISalaryRepository
             _salaryRepository;
 
         public EmployeeEvaluationService(
-            IEmployeeEvaluationRepository evaluationRepository,
+            HRManagement.Repositories.Interfaces.IEmployeeEvaluationRepository evaluationRepository,
             ISalaryRepository salaryRepository)
         {
             _evaluationRepository =
@@ -38,6 +38,17 @@ namespace HRManagement.Services
                     nameof(salaryRepository));
         }
 
+        public IReadOnlyList<Department>
+            GetAllDepartments()
+        {
+            /*
+             * Department filter must come directly from the Department table,
+             * not be inferred from employees in the selected month/year.
+             */
+            return _evaluationRepository
+                .GetAllDepartments();
+        }
+
         public IReadOnlyList<EvaluationEmployeeItemModel>
             GetEmployees(
                 int month,
@@ -45,7 +56,7 @@ namespace HRManagement.Services
                 string? searchText = null,
                 int? departmentId = null)
         {
-            
+
             ValidateEvaluationPeriod(month, year);
 
             if (departmentId.HasValue &&
@@ -87,7 +98,7 @@ namespace HRManagement.Services
         public EmployeeEvaluation? GetEvaluationById(
             int evaluationId)
         {
-            
+
             ValidateEvaluationId(evaluationId);
 
             return _evaluationRepository
@@ -102,7 +113,7 @@ namespace HRManagement.Services
             DateTime bonusDate,
             string? comment)
         {
-            
+
 
             ValidateEmployeeId(employeeId);
             EnsureEmployeeExists(employeeId);
@@ -255,7 +266,7 @@ namespace HRManagement.Services
                 evaluationId);
         }
 
-        
+
 
         private void EnsureEmployeeExists(
             int employeeId)

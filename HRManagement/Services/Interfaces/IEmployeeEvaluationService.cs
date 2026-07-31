@@ -8,6 +8,12 @@ namespace HRManagement.Services.Interfaces
     public interface IEmployeeEvaluationService
     {
         /// <summary>
+        /// Lấy toàn bộ phòng ban từ database.
+        /// Dùng để hiển thị bộ lọc Department trên màn hình Evaluation.
+        /// </summary>
+        IReadOnlyList<Department> GetAllDepartments();
+
+        /// <summary>
         /// Lấy danh sách nhân viên cùng tổng hợp đánh giá
         /// trong tháng và năm được chọn.
         /// </summary>
