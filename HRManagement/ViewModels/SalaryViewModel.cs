@@ -1,4 +1,5 @@
 ﻿using HRManagement.Models;
+using HRManagement.Repositories;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
@@ -10,61 +11,119 @@ namespace HRManagement.ViewModels;
 
 public class SalaryViewModel : PageViewModel
 {
-    private readonly ISalaryRepository _salaryRepository;
-    private readonly ISalaryCalculator _salaryCalculator;
-    private readonly SessionManager _sessionManager;
+    private readonly ISalaryRepository
+        _salaryRepository;
 
-    private SalaryDetailModel? _salary;
+    private readonly ISalaryCalculator
+        _salaryCalculator;
+
+    private readonly IAttendanceService
+        _attendanceService;
+
+    private readonly IPaidTimeOffService
+        _paidTimeOffService;
+
+    private readonly SessionManager
+        _sessionManager;
+
+    private SalaryDetailModel?
+        _salary;
+
     private int _selectedMonth;
+
     private int _selectedYear;
-    private string _statusMessage = string.Empty;
+
+    private string _statusMessage =
+        string.Empty;
+
     private bool _isLoading;
+
     private bool _hasSalary;
 
-    public override string Title => "Salary";
+    public override string Title =>
+        "Salary";
 
     public SalaryDetailModel? Salary
     {
         get => _salary;
+
         private set
         {
-            if (!SetProperty(ref _salary, value))
+            if (!SetProperty(
+                    ref _salary,
+                    value))
+            {
                 return;
+            }
 
-            HasSalary = value != null;
+            HasSalary =
+                value != null;
 
-            OnPropertyChanged(nameof(RoleSalary));
-            OnPropertyChanged(nameof(DailySalary));
-            OnPropertyChanged(nameof(AttendanceSalary));
-            OnPropertyChanged(nameof(SalaryPeriod));
+            OnPropertyChanged(
+                nameof(RoleSalary));
+
+            OnPropertyChanged(
+                nameof(DailySalary));
+
+            OnPropertyChanged(
+                nameof(AttendanceSalary));
+
+            OnPropertyChanged(
+                nameof(SalaryPeriod));
+
+            OnPropertyChanged(
+                nameof(OvertimeSalary));
+
+            OnPropertyChanged(
+                nameof(TotalDeductions));
         }
     }
 
-    public ObservableCollection<int> Months { get; }
+    public ObservableCollection<int>
+        Months
+    {
+        get;
+    }
 
-    public ObservableCollection<int> Years { get; }
+    public ObservableCollection<int>
+        Years
+    {
+        get;
+    }
 
     public int SelectedMonth
     {
         get => _selectedMonth;
+
         set
         {
-            if (SetProperty(ref _selectedMonth, value))
+            if (!SetProperty(
+                    ref _selectedMonth,
+                    value))
             {
-                OnPropertyChanged(nameof(SelectedPeriod));
+                return;
             }
+
+            OnPropertyChanged(
+                nameof(SelectedPeriod));
         }
     }
 
     public int SelectedYear
     {
         get => _selectedYear;
+
         set
         {
-            if (SetProperty(ref _selectedYear, value))
+            if (!SetProperty(
+                    ref _selectedYear,
+                    value))
             {
-                OnPropertyChanged(nameof(SelectedPeriod));
+                return;
             }
+
+            OnPropertyChanged(
+                nameof(SelectedPeriod));
         }
     }
 
@@ -79,69 +138,127 @@ public class SalaryViewModel : PageViewModel
     public string StatusMessage
     {
         get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
+
+        private set =>
+            SetProperty(
+                ref _statusMessage,
+                value ?? string.Empty);
     }
 
     public bool IsLoading
     {
         get => _isLoading;
+
         private set
         {
-            if (!SetProperty(ref _isLoading, value))
+            if (!SetProperty(
+                    ref _isLoading,
+                    value))
+            {
                 return;
+            }
 
-            CommandManager.InvalidateRequerySuggested();
+            CommandManager
+                .InvalidateRequerySuggested();
         }
     }
 
     public bool HasSalary
     {
         get => _hasSalary;
-        private set => SetProperty(ref _hasSalary, value);
+
+        private set =>
+            SetProperty(
+                ref _hasSalary,
+                value);
     }
 
     public decimal RoleSalary =>
-        Salary == null
-            ? 0
-            : Salary.BaseSalary * Salary.PayRate;
+        Salary?.RoleSalary ?? 0;
 
     public decimal DailySalary =>
-        RoleSalary / 26m;
+        Salary?.DailySalary ?? 0;
 
+    /*
+     * Compatibility property for the current SalaryView.
+     *
+     * The old View treated AttendanceSalary as a separate amount.
+     * Under the new model, the regular role salary is the full base
+     * amount before attendance/PTO deductions.
+     */
     public decimal AttendanceSalary =>
         Salary == null
             ? 0
-            : DailySalary * Salary.WorkingDays;
+            : Salary.RoleSalary
+              - Salary.AbsentDeduction
+              - Salary.UnpaidDayOffDeduction;
 
-    public ICommand LoadSalaryCommand { get; }
+    public decimal OvertimeSalary =>
+        Salary?.OvertimeSalary ?? 0;
+
+    public decimal TotalDeductions =>
+        Salary?.TotalDeductions ?? 0;
+
+    public ICommand LoadSalaryCommand
+    {
+        get;
+    }
 
     public SalaryViewModel(
         ISalaryRepository salaryRepository,
         ISalaryCalculator salaryCalculator,
+        IAttendanceService attendanceService,
+        IPaidTimeOffService paidTimeOffService,
         SessionManager sessionManager)
     {
-        _salaryRepository = salaryRepository
-            ?? throw new ArgumentNullException(nameof(salaryRepository));
+        _salaryRepository =
+            salaryRepository
+            ?? throw new ArgumentNullException(
+                nameof(salaryRepository));
 
-        _salaryCalculator = salaryCalculator
-            ?? throw new ArgumentNullException(nameof(salaryCalculator));
+        _salaryCalculator =
+            salaryCalculator
+            ?? throw new ArgumentNullException(
+                nameof(salaryCalculator));
 
-        _sessionManager = sessionManager
-            ?? throw new ArgumentNullException(nameof(sessionManager));
+        _attendanceService =
+            attendanceService
+            ?? throw new ArgumentNullException(
+                nameof(attendanceService));
 
-        var currentDate = DateTime.Today;
+        _paidTimeOffService =
+            paidTimeOffService
+            ?? throw new ArgumentNullException(
+                nameof(paidTimeOffService));
 
-        Months = new ObservableCollection<int>(
-            Enumerable.Range(1, 12));
+        _sessionManager =
+            sessionManager
+            ?? throw new ArgumentNullException(
+                nameof(sessionManager));
 
-        Years = CreateYearCollection(currentDate.Year);
+        var currentDate =
+            DateTime.Today;
 
-        _selectedMonth = currentDate.Month;
-        _selectedYear = currentDate.Year;
+        Months =
+            new ObservableCollection<int>(
+                Enumerable.Range(
+                    1,
+                    12));
 
-        LoadSalaryCommand = new RelayCommand(
-            _ => LoadSalary(),
-            _ => CanLoadSalary());
+        Years =
+            CreateYearCollection(
+                currentDate.Year);
+
+        _selectedMonth =
+            currentDate.Month;
+
+        _selectedYear =
+            currentDate.Year;
+
+        LoadSalaryCommand =
+            new RelayCommand(
+                _ => LoadSalary(),
+                _ => CanLoadSalary());
 
         LoadSalary();
     }
@@ -149,7 +266,8 @@ public class SalaryViewModel : PageViewModel
     private bool CanLoadSalary()
     {
         return !IsLoading
-               && SelectedMonth is >= 1 and <= 12
+               && SelectedMonth
+                   is >= 1 and <= 12
                && SelectedYear >= 2000;
     }
 
@@ -159,12 +277,15 @@ public class SalaryViewModel : PageViewModel
             return;
 
         Salary = null;
-        StatusMessage = string.Empty;
+        StatusMessage =
+            string.Empty;
+
         IsLoading = true;
 
         try
         {
-            var currentUser = _sessionManager.CurrentUser;
+            var currentUser =
+                _sessionManager.CurrentUser;
 
             if (currentUser == null)
             {
@@ -175,12 +296,15 @@ public class SalaryViewModel : PageViewModel
             }
 
             var employeeId =
-                currentUser.Employee.EmployeeId;
+                currentUser
+                    .Employee
+                    .EmployeeId;
 
-            if (!_salaryRepository.PayrollExists(
-                    employeeId,
-                    SelectedMonth,
-                    SelectedYear))
+            if (!_salaryRepository
+                    .PayrollExists(
+                        employeeId,
+                        SelectedMonth,
+                        SelectedYear))
             {
                 StatusMessage =
                     $"Payroll for {SelectedPeriod} has not been created.";
@@ -189,7 +313,9 @@ public class SalaryViewModel : PageViewModel
             }
 
             var employee =
-                _salaryRepository.GetEmployee(employeeId);
+                _salaryRepository
+                    .GetEmployee(
+                        employeeId);
 
             if (employee == null)
             {
@@ -200,10 +326,11 @@ public class SalaryViewModel : PageViewModel
             }
 
             var contract =
-                _salaryRepository.GetContractForPeriod(
-                    employeeId,
-                    SelectedMonth,
-                    SelectedYear);
+                _salaryRepository
+                    .GetContractForPeriod(
+                        employeeId,
+                        SelectedMonth,
+                        SelectedYear);
 
             if (contract == null)
             {
@@ -214,7 +341,9 @@ public class SalaryViewModel : PageViewModel
             }
 
             var role =
-                _salaryRepository.GetRole(contract.RoleId);
+                _salaryRepository
+                    .GetRole(
+                        contract.RoleId);
 
             if (role == null)
             {
@@ -225,30 +354,51 @@ public class SalaryViewModel : PageViewModel
             }
 
             var departmentName =
-                _salaryRepository.GetDepartmentName(
-                    employee.DepartmentId);
+                _salaryRepository
+                    .GetDepartmentName(
+                        employee.DepartmentId);
 
-            var attendances =
-                _salaryRepository.GetAttendances(
-                    employeeId,
-                    SelectedMonth,
-                    SelectedYear);
+            var attendanceSummary =
+                _attendanceService
+                    .GetMonthSummary(
+                        employeeId,
+                        employee.HireDate,
+                        new DateTime(
+                            SelectedYear,
+                            SelectedMonth,
+                            1));
+
+            var paidTimeOffSummary =
+                _paidTimeOffService
+                    .GetMonthSummary(
+                        employeeId,
+                        SelectedMonth,
+                        SelectedYear);
+
+            var salaryAttendanceSummary =
+                SalaryAttendanceSummary
+                    .Create(
+                        attendanceSummary,
+                        paidTimeOffSummary);
 
             var evaluations =
-                _salaryRepository.GetEvaluations(
-                    employeeId,
-                    SelectedMonth,
-                    SelectedYear);
+                _salaryRepository
+                    .GetEvaluations(
+                        employeeId,
+                        SelectedMonth,
+                        SelectedYear);
 
-            Salary = _salaryCalculator.CalculateSalary(
-                employee,
-                contract,
-                role,
-                attendances,
-                evaluations,
-                departmentName,
-                SelectedMonth,
-                SelectedYear);
+            Salary =
+                _salaryCalculator
+                    .CalculateSalary(
+                        employee,
+                        contract,
+                        role,
+                        salaryAttendanceSummary,
+                        evaluations,
+                        departmentName,
+                        SelectedMonth,
+                        SelectedYear);
 
             StatusMessage =
                 $"Salary information for {SelectedPeriod} was loaded successfully.";
@@ -256,12 +406,16 @@ public class SalaryViewModel : PageViewModel
         catch (ArgumentException exception)
         {
             Salary = null;
-            StatusMessage = exception.Message;
+
+            StatusMessage =
+                exception.Message;
         }
         catch (InvalidOperationException exception)
         {
             Salary = null;
-            StatusMessage = exception.Message;
+
+            StatusMessage =
+                exception.Message;
         }
         catch (Exception exception)
         {
@@ -277,19 +431,27 @@ public class SalaryViewModel : PageViewModel
     }
 
     private static ObservableCollection<int>
-        CreateYearCollection(int currentYear)
+        CreateYearCollection(
+            int currentYear)
     {
-        const int numberOfPreviousYears = 5;
+        const int numberOfPreviousYears =
+            5;
 
         var firstYear =
-            currentYear - numberOfPreviousYears;
+            currentYear
+            - numberOfPreviousYears;
 
-        var years = Enumerable
-            .Range(
-                firstYear,
-                numberOfPreviousYears + 1)
-            .OrderByDescending(year => year);
+        var years =
+            Enumerable
+                .Range(
+                    firstYear,
+                    numberOfPreviousYears
+                    + 1)
+                .OrderByDescending(
+                    year =>
+                        year);
 
-        return new ObservableCollection<int>(years);
+        return new ObservableCollection<int>(
+            years);
     }
 }

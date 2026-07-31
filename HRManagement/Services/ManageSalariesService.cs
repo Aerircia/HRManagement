@@ -14,6 +14,7 @@ using ManageSalaryModel = HRManagement.Models.ManageSalariesItemModel;
 using PayrollModel = HRManagement.Models.Payroll;
 using RoleModel = HRManagement.Models.Role;
 using SalaryDetailModel = HRManagement.Models.SalaryDetailModel;
+using SalaryAttendanceSummaryModel = HRManagement.Models.SalaryAttendanceSummary;
 
 namespace HRManagement.Services
 {
@@ -28,10 +29,18 @@ namespace HRManagement.Services
         private readonly ISalaryCalculator
             _salaryCalculator;
 
+        private readonly IAttendanceService
+            _attendanceService;
+
+        private readonly IPaidTimeOffService
+            _paidTimeOffService;
+
         public ManageSalariesService(
             ISalaryRepository salaryRepository,
             IManageSalariesRepository manageSalariesRepository,
-            ISalaryCalculator salaryCalculator)
+            ISalaryCalculator salaryCalculator,
+            IAttendanceService attendanceService,
+            IPaidTimeOffService paidTimeOffService)
         {
             _salaryRepository = salaryRepository
                 ?? throw new ArgumentNullException(
@@ -45,6 +54,14 @@ namespace HRManagement.Services
             _salaryCalculator = salaryCalculator
                 ?? throw new ArgumentNullException(
                     nameof(salaryCalculator));
+
+            _attendanceService = attendanceService
+                ?? throw new ArgumentNullException(
+                    nameof(attendanceService));
+
+            _paidTimeOffService = paidTimeOffService
+                ?? throw new ArgumentNullException(
+                    nameof(paidTimeOffService));
         }
 
         // =========================================================
@@ -553,17 +570,74 @@ namespace HRManagement.Services
                     BaseSalary =
                         salaryDetail.BaseSalary,
 
+                    CalendarWorkingDays =
+                        salaryDetail.CalendarWorkingDays,
+
+                    EffectiveWorkingDays =
+                        salaryDetail.EffectiveWorkingDays,
+
+                    PresentDays =
+                        salaryDetail.PresentDays,
+
+                    LateDays =
+                        salaryDetail.LateDays,
+
+                    LateMinutes =
+                        salaryDetail.LateMinutes,
+
+                    WeekdayOtDays =
+                        salaryDetail.WeekdayOtDays,
+
+                    WeekendOtDays =
+                        salaryDetail.WeekendOtDays,
+
+                    WeekdayOtHours =
+                        salaryDetail.WeekdayOtHours,
+
+                    WeekendOtHours =
+                        salaryDetail.WeekendOtHours,
+
+                    PaidDayOffDays =
+                        salaryDetail.PaidDayOffDays,
+
+                    UnpaidDayOffDays =
+                        salaryDetail.UnpaidDayOffDays,
+
                     WorkingDays =
                         salaryDetail.WorkingDays,
 
                     AbsentDays =
                         salaryDetail.AbsentDays,
 
+                    RoleSalary =
+                        salaryDetail.RoleSalary,
+
+                    DailySalary =
+                        salaryDetail.DailySalary,
+
+                    HourlySalary =
+                        salaryDetail.HourlySalary,
+
+                    WeekdayOtSalary =
+                        salaryDetail.WeekdayOtSalary,
+
+                    WeekendOtSalary =
+                        salaryDetail.WeekendOtSalary,
+
                     Reward =
                         salaryDetail.Reward,
 
                     Penalty =
                         salaryDetail.Penalty,
+
+                    LatePenalty =
+                        salaryDetail.LatePenalty,
+
+                    AbsentDeduction =
+                        salaryDetail.AbsentDeduction,
+
+                    UnpaidDayOffDeduction =
+                        salaryDetail.UnpaidDayOffDeduction,
 
                     PayrollId =
                         payrollId,
@@ -627,11 +701,29 @@ namespace HRManagement.Services
             int month,
             int year)
         {
-            IReadOnlyList<AttendanceModel> attendances =
-                _salaryRepository.GetAttendances(
-                    employee.EmployeeId,
-                    month,
-                    year);
+            var attendanceSummary =
+                _attendanceService
+                    .GetMonthSummary(
+                        employee.EmployeeId,
+                        employee.HireDate,
+                        new DateTime(
+                            year,
+                            month,
+                            1));
+
+            var paidTimeOffSummary =
+                _paidTimeOffService
+                    .GetMonthSummary(
+                        employee.EmployeeId,
+                        month,
+                        year);
+
+            SalaryAttendanceSummaryModel
+                salaryAttendanceSummary =
+                    SalaryAttendanceSummaryModel
+                        .Create(
+                            attendanceSummary,
+                            paidTimeOffSummary);
 
             IReadOnlyList<EvaluationModel> evaluations =
                 _salaryRepository.GetEvaluations(
@@ -643,15 +735,16 @@ namespace HRManagement.Services
                 GetDepartmentNameSafely(
                     employee.DepartmentId);
 
-            return _salaryCalculator.CalculateSalary(
-                employee,
-                contract,
-                role,
-                attendances,
-                evaluations,
-                departmentName,
-                month,
-                year);
+            return _salaryCalculator
+                .CalculateSalary(
+                    employee,
+                    contract,
+                    role,
+                    salaryAttendanceSummary,
+                    evaluations,
+                    departmentName,
+                    month,
+                    year);
         }
 
         private static ManageSalaryModel
@@ -702,13 +795,51 @@ namespace HRManagement.Services
                     contract?.BaseSalary
                     ?? 0,
 
+                CalendarWorkingDays = 0,
+
+                EffectiveWorkingDays = 0,
+
+                PresentDays = 0,
+
+                LateDays = 0,
+
+                LateMinutes = 0,
+
+                WeekdayOtDays = 0,
+
+                WeekendOtDays = 0,
+
+                WeekdayOtHours = 0,
+
+                WeekendOtHours = 0,
+
+                PaidDayOffDays = 0,
+
+                UnpaidDayOffDays = 0,
+
                 WorkingDays = 0,
 
                 AbsentDays = 0,
 
+                RoleSalary = 0,
+
+                DailySalary = 0,
+
+                HourlySalary = 0,
+
+                WeekdayOtSalary = 0,
+
+                WeekendOtSalary = 0,
+
                 Reward = 0,
 
                 Penalty = 0,
+
+                LatePenalty = 0,
+
+                AbsentDeduction = 0,
+
+                UnpaidDayOffDeduction = 0,
 
                 PayrollId =
                     payrollId,

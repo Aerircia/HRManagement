@@ -53,6 +53,7 @@ public partial class App : Application
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IContractService, ContractService>();
         services.AddSingleton<IManageProfilesService, ManageProfilesService>();
+        services.AddTransient<IPaidTimeOffService,PaidTimeOffService>();
 
 
         // Repositories
