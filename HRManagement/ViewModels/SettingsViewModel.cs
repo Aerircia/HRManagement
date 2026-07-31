@@ -132,7 +132,7 @@ public class SettingsViewModel : PageViewModel
 
     private void SavePassword()
     {
-        var accountId = _sessionService.CurrentUser.Account.AccountId;
+        var accountId = _sessionService.CurrentUser!.Account.AccountId;
         PasswordChangeSucceeded = false;
 
         if (NewPassword != ConfirmPassword)

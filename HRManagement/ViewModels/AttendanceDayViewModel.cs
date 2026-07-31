@@ -10,6 +10,20 @@ namespace HRManagement.ViewModels;
 // status -> appearance.
 public class AttendanceDayViewModel : ViewModelBase
 {
+    // Raw Status string ("Present", "OT", "Day Off", etc.) is never renamed -
+    // it's still what's stored/compared everywhere else in the app. This map
+    // only controls the *label* shown to the user in the calendar cell.
+    private static readonly Dictionary<string, string> StatusWordMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Present"] = "Ontime",
+        ["Late"] = "Late",
+        ["Absent"] = "Absent",
+        ["OT"] = "OT",
+        ["Day Off"] = "Day Off",
+        ["Weekend"] = "Weekend",
+        ["Before Hire Date"] = "Before Hire Date"
+    };
+
     public AttendanceDayViewModel(AttendanceDayModel model)
     {
         UpdateFrom(model);
@@ -44,10 +58,32 @@ public class AttendanceDayViewModel : ViewModelBase
     public bool IsFuture { get => _isFuture; private set => SetProperty(ref _isFuture, value); }
 
     private DateTime? _checkIn;
-    public DateTime? CheckIn { get => _checkIn; private set => SetProperty(ref _checkIn, value); }
+    public DateTime? CheckIn
+    {
+        get => _checkIn;
+        private set
+        {
+            if (SetProperty(ref _checkIn, value))
+            {
+                OnPropertyChanged(nameof(WorkedHoursDisplay));
+                OnPropertyChanged(nameof(ShouldShowWorkedHours));
+            }
+        }
+    }
 
     private DateTime? _checkOut;
-    public DateTime? CheckOut { get => _checkOut; private set => SetProperty(ref _checkOut, value); }
+    public DateTime? CheckOut
+    {
+        get => _checkOut;
+        private set
+        {
+            if (SetProperty(ref _checkOut, value))
+            {
+                OnPropertyChanged(nameof(WorkedHoursDisplay));
+                OnPropertyChanged(nameof(ShouldShowWorkedHours));
+            }
+        }
+    }
 
     private string _status = string.Empty;
     public string Status
@@ -59,6 +95,9 @@ public class AttendanceDayViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(DisplayStatus));
                 OnPropertyChanged(nameof(HasStatus));
+                OnPropertyChanged(nameof(DisplayStatusWord));
+                OnPropertyChanged(nameof(ShouldShowWorkedHours));
+                OnPropertyChanged(nameof(IsWeekendOrBeforeHire));
             }
         }
     }
@@ -89,6 +128,47 @@ public class AttendanceDayViewModel : ViewModelBase
             return Status;
         }
     }
+
+    // Display-only relabeling of Status (e.g. "Present" -> "Ontime"). The
+    // underlying Status string is never changed - this is purely a label
+    // mapping so converters/comparisons elsewhere keep working unmodified.
+    public string DisplayStatusWord =>
+        HasStatus && StatusWordMap.TryGetValue(Status, out var word) ? word : Status;
+
+    // Convenience flag so the calendar cell template doesn't need two
+    // separate OR-style DataTriggers for "weekend with no OT worked" vs
+    // "before hire date" - both cases just show date + status word, no
+    // hours/times.
+    public bool IsWeekendOrBeforeHire =>
+        IsBeforeHireDate || (IsWeekend && string.Equals(Status, "Weekend", StringComparison.OrdinalIgnoreCase));
+
+    // "7h 42m" style duration for the day, or empty when not applicable.
+    public string WorkedHoursDisplay
+    {
+        get
+        {
+            if (!ShouldShowWorkedHours || !CheckIn.HasValue || !CheckOut.HasValue)
+                return string.Empty;
+
+            var span = CheckOut.Value - CheckIn.Value;
+            if (span.Ticks <= 0)
+                return string.Empty;
+
+            var hours = (int)span.TotalHours;
+            var minutes = span.Minutes;
+            return $"{hours}h {minutes}m";
+        }
+    }
+
+    // True only when CheckIn and CheckOut are both present and the day
+    // isn't a plain weekend/before-hire/future-empty day - mirrors
+    // ShouldShowTimes but specifically gates the new dominant hours-worked
+    // text (weekend/before-hire cells should show only date + status word).
+    public bool ShouldShowWorkedHours =>
+        !IsWeekendOrBeforeHire
+        && CheckIn.HasValue
+        && CheckOut.HasValue
+        && CheckOut.Value > CheckIn.Value;
 
     public bool ShouldShowTimes
     {

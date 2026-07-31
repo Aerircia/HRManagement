@@ -11,17 +11,21 @@
             <ResourceDictionary.MergedDictionaries>
 
                 <!--<ResourceDictionary Source="Resources/DarkBrushes.xaml"/>-->
+                <ResourceDictionary Source="Resources/Converters.xaml"/>
                 <ResourceDictionary Source="Resources/Brushes.xaml"/>
                 <ResourceDictionary Source="Resources/FontSizes.xaml"/>
                 <ResourceDictionary Source="Resources/ButtonStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ComboBoxStyles.xaml"/>
                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>
+                <ResourceDictionary Source="/Resources/TableStyles.xaml"/>
                 <ResourceDictionary Source="Resources/AttendanceResources.xaml"/>
                 <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
-                <ResourceDictionary Source="/Resources/TableStyles.xaml"/>
                 <ResourceDictionary Source="Resources/FormStyles.xaml"/>
-                <ResourceDictionary Source="Resources/Converters.xaml"/>
+                <ResourceDictionary Source="/Resources/LogsStyles.xaml"/>
+                <ResourceDictionary Source="Resources/AnnouncementBoardStyles.xaml"/>
+                <ResourceDictionary Source="Resources/LoginStyles.xaml"/>
+                <ResourceDictionary Source="Resources/ShellStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
 

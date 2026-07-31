@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
              xmlns:controls="clr-namespace:HRManagement.Controls"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              mc:Ignorable="d"
              Background="Transparent">
 
@@ -15,6 +16,12 @@
         resolves the same StaticResources. Re-merging it per-view previously
         caused the duplicate-resource-key ambiguity described in
         AttendanceResources.xaml.
+
+        Right column redesign: the legend previously lived here as its own
+        block - it now lives at the bottom of AttendanceCalendarView itself
+        (shared with ManageAttendancesView), so this page's right column is
+        just: Total Hours This Month card -> Summary card -> Check In button
+        -> Check Out button.
     -->
 
     <Grid Margin="20">
@@ -29,86 +36,83 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,10">
-            <TextBlock Text="Attendance" FontSize="30" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
+            <TextBlock Text="Attendance" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
         </StackPanel>
 
-        <!-- Left: Calendar -->
-        <Border Grid.Row="1" Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16"
-                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <!-- Left: Calendar (now includes its own bottom legend) -->
+        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
             <!-- DataContext flows through implicitly: this page's own
                  AttendanceViewModel is exactly what AttendanceCalendarView expects. -->
             <controls:AttendanceCalendarView />
         </Border>
 
-        <!-- Right: Summary and actions -->
-        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="12,0,0,0"
-                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-            <StackPanel>
-                <TextBlock Text="Summary" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,0,0,10" />
+        <!-- Right: Total hours card, summary card, Check In, Check Out -->
+        <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,0">
 
-                <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Days worked:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="{Binding TotalDaysWorked}" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
+            <!-- Total hours worked this month -->
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                        <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Total Hours This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalHoursThisMonthDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </StackPanel>
                 </StackPanel>
+            </Border>
 
-                <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="On-time days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="{Binding TotalOnTime}" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Late days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="{Binding TotalLate}" FontWeight="Bold" Foreground="{StaticResource WarningBrush}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,4">
-                    <TextBlock Text="Absent days:" Width="120" Foreground="{StaticResource SecondaryTextBrush}" />
-                    <TextBlock Text="{Binding TotalAbsent}" FontWeight="Bold" Foreground="{StaticResource DangerBrush}" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                    <Button Content="Check In"
-                            Style="{StaticResource CheckInButtonStyle}"
-                            Command="{Binding CheckInCommand}" Width="106" Margin="0,0,10,0" />
-                    <Button Content="Check Out"
-                            Style="{StaticResource CheckOutButtonStyle}"
-                            Command="{Binding CheckOutCommand}" Width="106" />
-                </StackPanel>
-
-                <TextBlock Text="Legend" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,18,0,6" />
+            <!-- Summary card -->
+            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="0,0,0,12"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource SuccessBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" On time / Present" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
-                    </StackPanel>
+                    <TextBlock Text="Summary" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,10" />
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource WarningBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" Late" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Days worked:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalDaysWorked}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                     </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource DangerBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" Absent" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="On-time days:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalOnTime}" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" />
                     </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource WeekendBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" Weekend (Sat/Sun)" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Late days:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalLate}" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}" />
                     </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource OtBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" OT" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Absent days:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalAbsent}" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" />
                     </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource DayOffBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" Day Off" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="OT days:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalOtDays}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" />
                     </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <Rectangle Width="16" Height="16" RadiusX="3" RadiusY="3" Fill="{StaticResource NeutralBgBrush}" Stroke="{StaticResource BorderBrush}" />
-                        <TextBlock Text=" Before hire date" Margin="8,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                        <TextBlock Text="Day Off days:" Width="120" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBlock Text="{Binding TotalDayOffDays}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                     </StackPanel>
                 </StackPanel>
+            </Border>
 
-            </StackPanel>
-        </Border>
+            <!-- Check In -->
+            <Button Content="Check In"
+                    Style="{StaticResource CheckInButtonStyle}"
+                    Command="{Binding CheckInCommand}"
+                    Margin="0,0,0,12" />
+
+            <!-- Check Out -->
+            <Button Content="Check Out"
+                    Style="{StaticResource CheckOutButtonStyle}"
+                    Command="{Binding CheckOutCommand}" />
+
+        </StackPanel>
 
     </Grid>
 </UserControl>

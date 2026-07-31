@@ -68,6 +68,9 @@
             <Setter Property="FontWeight"
                     Value="SemiBold" />
 
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
+
             <Setter Property="Opacity"
                     Value="0.7" />
 
@@ -82,6 +85,9 @@
 
             <Setter Property="FontWeight"
                     Value="SemiBold" />
+
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryTextBrush}" />
 
             <Setter Property="Margin"
                     Value="0,0,0,16" />
@@ -290,6 +296,12 @@
             <Setter Property="HorizontalContentAlignment"
                     Value="Center" />
 
+            <Setter Property="Background"
+                    Value="Transparent" />
+
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryTextBrush}" />
+
             <Setter Property="BorderThickness"
                     Value="0" />
 
@@ -313,6 +325,9 @@
 
             <Setter Property="Background"
                     Value="{DynamicResource CardBackgroundBrush}" />
+
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
 
             <Setter Property="BorderBrush"
                     Value="{DynamicResource BorderBrush}" />
@@ -402,11 +417,13 @@
 
                 <TextBlock Text="Manage Salaries"
                            FontSize="28"
-                           FontWeight="Bold" />
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" />
 
                 <TextBlock Margin="0,5,0,0"
                            FontSize="14"
                            Opacity="0.65"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
                            Text="Manage salary components and create monthly payroll records." />
 
             </StackPanel>
@@ -501,6 +518,7 @@
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"
                                Opacity="0.45"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Text="Search by employee, department, role or status">
 
                         <TextBlock.Style>
@@ -572,11 +590,13 @@
 
                     <TextBlock Text="Total Employees"
                                FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Opacity="0.65" />
 
                     <TextBlock Margin="0,8,0,0"
                                FontSize="26"
                                FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                Text="{Binding TotalEmployees, Mode=OneWay}" />
 
                 </StackPanel>
@@ -592,6 +612,7 @@
 
                     <TextBlock Text="Payroll Created"
                                FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Opacity="0.65" />
 
                     <TextBlock Margin="0,8,0,0"
@@ -613,6 +634,7 @@
 
                     <TextBlock Text="Payroll Pending"
                                FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Opacity="0.65" />
 
                     <TextBlock Margin="0,8,0,0"
@@ -635,6 +657,7 @@
 
                     <TextBlock Text="Estimated Monthly Salary"
                                FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Opacity="0.65" />
 
                     <TextBlock Margin="0,8,0,0"
@@ -690,10 +713,12 @@
 
                             <TextBlock Text="Employee Salary List"
                                        FontSize="17"
-                                       FontWeight="SemiBold" />
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" />
 
                             <TextBlock Margin="0,4,0,0"
                                        FontSize="12"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.6">
 
                                 <Run Text="Salary period: " />
@@ -720,6 +745,8 @@
                                   Style="{StaticResource ManageSalaryDataGridStyle}"
                                   CellStyle="{StaticResource ManageSalaryDataGridCellStyle}"
                                   ColumnHeaderStyle="{StaticResource ManageSalaryColumnHeaderStyle}"
+                                  RowBackground="Transparent"
+                                  AlternatingRowBackground="{DynamicResource InputBackgroundBrush}"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Hidden"
                                   ScrollViewer.CanContentScroll="True">
@@ -805,11 +832,13 @@
                             <TextBlock HorizontalAlignment="Center"
                                        FontSize="17"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        Text="No salary records found" />
 
                             <TextBlock Margin="0,7,0,0"
                                        HorizontalAlignment="Center"
                                        Opacity="0.6"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Text="Select another month or change the search keyword." />
 
                         </StackPanel>
@@ -852,6 +881,7 @@
                         <TextBlock FontSize="12"
                                    Opacity="0.8"
                                    TextWrapping="Wrap"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
                                    Text="{Binding StatusMessage, Mode=OneWay}" />
 
                     </Border>
@@ -919,6 +949,7 @@
                                            Style="{StaticResource FieldLabelStyle}" />
 
                                 <TextBlock FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                            Text="{Binding SelectedSalary.DepartmentName,
                                                           TargetNullValue=--}" />
 
@@ -930,6 +961,7 @@
                                            Style="{StaticResource FieldLabelStyle}" />
 
                                 <TextBlock FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                            Text="{Binding SelectedSalary.RoleName,
                                                           TargetNullValue=--}" />
 
@@ -945,6 +977,7 @@
                         <TextBlock Text="Editable Components"
                                    FontSize="15"
                                    FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
                                    Margin="0,0,0,14" />
 
                         <StackPanel Margin="0,0,0,14">
@@ -1003,6 +1036,7 @@
                         <TextBlock Text="Salary Calculation"
                                    FontSize="15"
                                    FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
                                    Margin="0,0,0,14" />
 
                         <Grid Margin="0,0,0,8">
@@ -1013,10 +1047,12 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Working days"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        Text="{Binding SelectedSalary.WorkingDays,
                                                       TargetNullValue=0}" />
 
@@ -1030,10 +1066,12 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Absent days"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        Text="{Binding SelectedSalary.AbsentDays,
                                                       TargetNullValue=0}" />
 
@@ -1047,6 +1085,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Reward"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
@@ -1066,6 +1105,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Penalty"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
@@ -1085,10 +1125,12 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Role salary"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        Text="{Binding PreviewRoleSalary,
                                                       Mode=OneWay,
                                                       StringFormat={}{0:N0} VND}" />
@@ -1103,10 +1145,12 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Text="Attendance salary"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Opacity="0.7" />
 
                             <TextBlock Grid.Column="1"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        Text="{Binding PreviewAttendanceSalary,
                                                       Mode=OneWay,
                                                       StringFormat={}{0:N0} VND}" />

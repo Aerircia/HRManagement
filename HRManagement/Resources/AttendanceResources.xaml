@@ -45,8 +45,8 @@
         <Setter Property="Height" Value="32" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-        <Setter Property="Background" Value="{StaticResource PrimaryTintBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -62,16 +62,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryDarkBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryDarkBrush}" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource InputBackgroundBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource HintTextBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -113,19 +113,19 @@
     </Style>
 
     <Style x:Key="CheckInButtonStyle" TargetType="Button" BasedOn="{StaticResource AttendanceActionButtonBase}">
-        <Setter Property="Background" Value="{StaticResource PrimaryButtonBrush}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryButtonBrush}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryButtonHoverBrush}" />
+                <Setter Property="Background" Value="{DynamicResource PrimaryButtonHoverBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style x:Key="CheckOutButtonStyle" TargetType="Button" BasedOn="{StaticResource AttendanceActionButtonBase}">
-        <Setter Property="Background" Value="{StaticResource SecondaryButtonBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SecondaryButtonBrush}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource SecondaryButtonHoverBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SecondaryButtonHoverBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>

@@ -92,6 +92,26 @@ public class ManageAttendancesViewModel : PageViewModel
     public ICommand LoadEmployeesCommand { get; }
     public ICommand SelectEmployeeCommand { get; }
 
+    // ===== Top stat cards =====
+
+    private string _presentRateTodayDisplay = "0%";
+    public string PresentRateTodayDisplay { get => _presentRateTodayDisplay; private set => SetProperty(ref _presentRateTodayDisplay, value); }
+
+    private string _lateRateTodayDisplay = "0%";
+    public string LateRateTodayDisplay { get => _lateRateTodayDisplay; private set => SetProperty(ref _lateRateTodayDisplay, value); }
+
+    private string _absentRateTodayDisplay = "0%";
+    public string AbsentRateTodayDisplay { get => _absentRateTodayDisplay; private set => SetProperty(ref _absentRateTodayDisplay, value); }
+
+    private int _dayOffThisMonthCount;
+    public int DayOffThisMonthCount { get => _dayOffThisMonthCount; private set => SetProperty(ref _dayOffThisMonthCount, value); }
+
+    private int _otThisMonthCount;
+    public int OtThisMonthCount { get => _otThisMonthCount; private set => SetProperty(ref _otThisMonthCount, value); }
+
+    private string _teamHoursThisMonthDisplay = "0h 0m";
+    public string TeamHoursThisMonthDisplay { get => _teamHoursThisMonthDisplay; private set => SetProperty(ref _teamHoursThisMonthDisplay, value); }
+
     private void LoadDepartments()
     {
         Departments.Clear();
@@ -142,20 +162,36 @@ public class ManageAttendancesViewModel : PageViewModel
             list = _employeeRepository.GetAll();
         }
 
+        if (!string.IsNullOrWhiteSpace(EmployeeIdFilter))
+        {
+            list = int.TryParse(EmployeeIdFilter, out var fid)
+                ? list.Where(e => e.EmployeeId == fid)
+                : Enumerable.Empty<Employee>();
+        }
+
+        var scopedEmployees = list.ToList();
+
         var now = DateTime.Now;
 
-        foreach (var e in list)
-        {
-            if (!string.IsNullOrWhiteSpace(EmployeeIdFilter))
-            {
-                if (!int.TryParse(EmployeeIdFilter, out var fid) || fid != e.EmployeeId)
-                    continue;
-            }
+        var presentToday = 0;
+        var lateToday = 0;
+        var absentToday = 0;
+        var expectedTodayCount = 0;
 
+        var isWeekendToday = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+        var dayOffCount = 0;
+        var otCount = 0;
+        var teamMinutes = 0;
+
+        foreach (var e in scopedEmployees)
+        {
             // Single source of truth for the summary math - same service
             // method used by the calendar itself, so the row list and the
             // detail calendar can never disagree.
             var summary = _attendanceService.GetMonthSummary(e.EmployeeId, e.HireDate.Date, now);
+
+            var today = _attendanceService.GetTodayAttendance(e.EmployeeId);
 
             Employees.Add(new ManageEmployeeRowViewModel
             {
@@ -164,8 +200,47 @@ public class ManageAttendancesViewModel : PageViewModel
                 WorkingDays = summary.TotalDaysWorked,
                 OnTimeDays = summary.TotalOnTime,
                 LateDays = summary.TotalLate,
-                AbsentDays = summary.TotalAbsent
+                AbsentDays = summary.TotalAbsent,
+                CheckInToday = today?.CheckIn,
+                CheckOutToday = today?.CheckOut
             });
+
+            dayOffCount += summary.TotalDayOffDays;
+            otCount += summary.TotalOtDays;
+            teamMinutes += summary.TotalWorkedMinutes;
+
+            // "Expected today" excludes weekends and employees not yet hired,
+            // mirroring the exclusion logic already used for absence
+            // counting in AttendanceService.BuildMonth/GetMonthSummary.
+            var expectedToday = !isWeekendToday && e.HireDate.Date <= now.Date;
+            if (!expectedToday)
+                continue;
+
+            expectedTodayCount++;
+
+            if (string.Equals(today?.Status, "Late", StringComparison.OrdinalIgnoreCase))
+                lateToday++;
+            else if (today?.CheckIn.HasValue == true)
+                presentToday++;
+            else
+                absentToday++;
+        }
+
+        DayOffThisMonthCount = dayOffCount;
+        OtThisMonthCount = otCount;
+        TeamHoursThisMonthDisplay = $"{teamMinutes / 60}h {teamMinutes % 60}m";
+
+        if (expectedTodayCount > 0)
+        {
+            PresentRateTodayDisplay = $"{presentToday * 100.0 / expectedTodayCount:0}%";
+            LateRateTodayDisplay = $"{lateToday * 100.0 / expectedTodayCount:0}%";
+            AbsentRateTodayDisplay = $"{absentToday * 100.0 / expectedTodayCount:0}%";
+        }
+        else
+        {
+            PresentRateTodayDisplay = "0%";
+            LateRateTodayDisplay = "0%";
+            AbsentRateTodayDisplay = "0%";
         }
     }
 
@@ -195,4 +270,49 @@ public class ManageEmployeeRowViewModel : ViewModelBase
 
     private int _absentDays;
     public int AbsentDays { get => _absentDays; set => SetProperty(ref _absentDays, value); }
+
+    private DateTime? _checkInToday;
+    public DateTime? CheckInToday
+    {
+        get => _checkInToday;
+        set
+        {
+            if (SetProperty(ref _checkInToday, value))
+                OnPropertyChanged(nameof(CheckInTodayDisplay));
+        }
+    }
+
+    private DateTime? _checkOutToday;
+    public DateTime? CheckOutToday
+    {
+        get => _checkOutToday;
+        set
+        {
+            if (SetProperty(ref _checkOutToday, value))
+                OnPropertyChanged(nameof(CheckOutTodayDisplay));
+        }
+    }
+
+    public string CheckInTodayDisplay => CheckInToday.HasValue ? CheckInToday.Value.ToString("HH:mm") : "—";
+    public string CheckOutTodayDisplay => CheckOutToday.HasValue ? CheckOutToday.Value.ToString("HH:mm") : "—";
+
+    // Initials used for the avatar-style circle in the employee table
+    // (e.g. "John Doe" -> "JD"), since a reliable avatar image isn't
+    // available for every employee.
+    public string Initials
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(EmployeeName))
+                return "?";
+
+            var parts = EmployeeName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length switch
+            {
+                0 => "?",
+                1 => parts[0][..1].ToUpperInvariant(),
+                _ => (parts[0][..1] + parts[^1][..1]).ToUpperInvariant()
+            };
+        }
+    }
 }

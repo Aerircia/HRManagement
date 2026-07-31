@@ -46,6 +46,9 @@
             <Setter Property="FontWeight"
                     Value="SemiBold" />
 
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryTextBrush}" />
+
             <Setter Property="VerticalAlignment"
                     Value="Center" />
 
@@ -63,6 +66,9 @@
 
             <Setter Property="FontWeight"
                     Value="SemiBold" />
+
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
 
             <Setter Property="Margin"
                     Value="0,0,0,6" />
@@ -318,6 +324,9 @@
             <Setter Property="FontSize"
                     Value="12" />
 
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
+
             <Setter Property="Opacity"
                     Value="0.7" />
 
@@ -331,6 +340,9 @@
 
             <Setter Property="FontWeight"
                     Value="Bold" />
+
+            <Setter Property="Foreground"
+                    Value="{DynamicResource PrimaryTextBrush}" />
 
             <Setter Property="Margin"
                     Value="0,5,0,0" />
@@ -514,10 +526,12 @@
 
                 <TextBlock Text="Employee Evaluations"
                            FontSize="28"
-                           FontWeight="Bold" />
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" />
 
                 <TextBlock Margin="0,5,0,0"
                            Opacity="0.7"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
                            Text="Manage employee rewards, penalties and evaluation comments." />
 
             </StackPanel>
@@ -528,6 +542,7 @@
 
                 <TextBlock Text="Selected period"
                            HorizontalAlignment="Right"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
                            Opacity="0.65" />
 
                 <TextBlock Text="{Binding SelectedPeriod,
@@ -707,6 +722,7 @@
                     <TextBlock Grid.Row="1"
                                Margin="0,0,0,12"
                                Opacity="0.65"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
                                Text="Select an employee to view or create evaluations." />
 
                     <Grid Grid.Row="2">
@@ -717,24 +733,29 @@
                                                         Mode=TwoWay,
                                                         UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource EvaluationDataGridStyle}"
-                                  RowStyle="{StaticResource EvaluationDataGridRowStyle}">
+                                  RowStyle="{StaticResource EvaluationDataGridRowStyle}"
+                                  ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                  RowBackground="Transparent">
 
                             <DataGrid.Columns>
 
                                 <DataGridTextColumn Header="Employee"
                                                     Width="*"
                                                     Binding="{Binding FullName,
-                                                                      Mode=OneWay}" />
+                                                                      Mode=OneWay}"
+                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                 <DataGridTextColumn Header="Department"
                                                     Width="125"
                                                     Binding="{Binding DepartmentName,
-                                                                      Mode=OneWay}" />
+                                                                      Mode=OneWay}"
+                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                 <DataGridTextColumn Header="Count"
                                                     Width="60"
                                                     Binding="{Binding EvaluationCount,
-                                                                      Mode=OneWay}" />
+                                                                      Mode=OneWay}"
+                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                             </DataGrid.Columns>
 
@@ -749,10 +770,12 @@
                                 <TextBlock Text="No employees found"
                                            FontSize="17"
                                            FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                            HorizontalAlignment="Center" />
 
                                 <TextBlock Margin="0,7,0,0"
                                            Opacity="0.65"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
                                            Text="Change the search or department filter."
                                            HorizontalAlignment="Center" />
 
@@ -785,10 +808,12 @@
                             <TextBlock Text="Select an employee"
                                        FontSize="21"
                                        FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
                                        HorizontalAlignment="Center" />
 
                             <TextBlock Margin="0,8,0,0"
                                        Opacity="0.65"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                        Text="Employee details and evaluation history will appear here."
                                        HorizontalAlignment="Center" />
 
@@ -828,21 +853,25 @@
                                     <TextBlock Text="{Binding SelectedEmployeeName,
                                                               Mode=OneWay}"
                                                FontSize="22"
-                                               FontWeight="Bold" />
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" />
 
                                     <StackPanel Margin="0,6,0,0"
                                                 Orientation="Horizontal">
 
                                         <TextBlock Text="{Binding SelectedEmployeeDepartment,
                                                                   Mode=OneWay}"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
                                                    Opacity="0.7" />
 
                                         <TextBlock Margin="8,0"
                                                    Text="•"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
                                                    Opacity="0.5" />
 
                                         <TextBlock Text="{Binding SelectedEmployeeRole,
                                                                   Mode=OneWay}"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
                                                    Opacity="0.7" />
 
                                     </StackPanel>
@@ -985,9 +1014,11 @@
 
                                             <TextBlock Text="{Binding CommentLength,
                                                                       Mode=OneWay}"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                                        Opacity="0.6" />
 
                                             <TextBlock Text="/500"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                                        Opacity="0.6" />
 
                                         </StackPanel>
@@ -1149,6 +1180,7 @@
 
                                             <TextBlock Margin="0,4,0,0"
                                                        Text="View, edit or delete previous evaluations."
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
                                                        Opacity="0.65" />
 
                                         </StackPanel>
@@ -1172,7 +1204,9 @@
                                                                         UpdateSourceTrigger=PropertyChanged}"
                                                   MinHeight="220"
                                                   Style="{StaticResource EvaluationDataGridStyle}"
-                                                  RowStyle="{StaticResource EvaluationDataGridRowStyle}">
+                                                  RowStyle="{StaticResource EvaluationDataGridRowStyle}"
+                                                  ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                                  RowBackground="Transparent">
 
                                             <DataGrid.Columns>
 
@@ -1207,22 +1241,26 @@
                                                 <DataGridTextColumn Header="Category"
                                                                     Width="140"
                                                                     Binding="{Binding EvaluationType,
-                                                                                      Mode=OneWay}" />
+                                                                                      Mode=OneWay}"
+                                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                                 <DataGridTextColumn Header="Amount"
                                                                     Width="140"
                                                                     Binding="{Binding DisplayAmount,
-                                                                                      Mode=OneWay}" />
+                                                                                      Mode=OneWay}"
+                                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                                 <DataGridTextColumn Header="Date"
                                                                     Width="110"
                                                                     Binding="{Binding DisplayDate,
-                                                                                      Mode=OneWay}" />
+                                                                                      Mode=OneWay}"
+                                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                                 <DataGridTextColumn Header="Comment"
                                                                     Width="*"
                                                                     Binding="{Binding Comment,
-                                                                                      Mode=OneWay}" />
+                                                                                      Mode=OneWay}"
+                                                                    ElementStyle="{StaticResource TableCellTextStyle}" />
 
                                             </DataGrid.Columns>
 
@@ -1237,12 +1275,14 @@
                                                 <TextBlock Text="No evaluations"
                                                            FontSize="17"
                                                            FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                                            HorizontalAlignment="Center" />
 
                                                 <TextBlock Margin="0,7,0,0"
                                                            Opacity="0.65"
                                                            TextWrapping="Wrap"
                                                            TextAlignment="Center"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
                                                            Text="This employee has no evaluations for the selected period."
                                                            HorizontalAlignment="Center" />
 
@@ -1255,6 +1295,7 @@
                                     <TextBlock Grid.Row="2"
                                                Margin="0,10,0,0"
                                                Opacity="0.6"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
                                                Text="Select an evaluation row to load it into the edit form." />
 
                                 </Grid>
@@ -1286,6 +1327,7 @@
             <TextBlock Text="{Binding StatusMessage,
                                       Mode=OneWay}"
                        TextWrapping="Wrap"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
                        Opacity="0.8" />
 
         </Border>
@@ -1314,6 +1356,7 @@
                                HorizontalAlignment="Center"
                                FontSize="15"
                                FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                Text="Loading evaluation data..." />
 
                 </StackPanel>

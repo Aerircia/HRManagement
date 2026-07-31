@@ -1,35 +1,21 @@
-﻿using HRManagement.Repositories.Interfaces;
-using HRManagement.Services;
+﻿using HRManagement.Services;
+using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
-using System.Collections.Generic;
 
 namespace HRManagement.ViewModels
 {
     public class ContractViewModel : PageViewModel
     {
-        private static readonly Dictionary<int, string> RoleNames = new()
-        {
-            [1] = "Admin",
-            [2] = "Manager",
-            [3] = "Employee"
-        };
-
-        private readonly IContractRepository _contractRepository;
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly IDepartmentRepository _departmentRepository;
+        private readonly IContractService _contractService;
         private readonly SessionManager _sessionManager;
 
         public override string Title => "Contract";
 
         public ContractViewModel(
-            IContractRepository contractRepository,
-            IEmployeeRepository employeeRepository,
-            IDepartmentRepository departmentRepository,
+            IContractService contractService,
             SessionManager sessionManager)
         {
-            _contractRepository = contractRepository;
-            _employeeRepository = employeeRepository;
-            _departmentRepository = departmentRepository;
+            _contractService = contractService;
             _sessionManager = sessionManager;
 
             // Unconditionally load the contract for the logged-in user
@@ -97,34 +83,33 @@ namespace HRManagement.ViewModels
             var employeeId = _sessionManager.CurrentUser?.Employee?.EmployeeId;
             if (employeeId == null) return;
 
-            var employee = _employeeRepository.GetById(employeeId.Value);
-            if (employee == null) return;
+            var data = _contractService.GetContract(employeeId.Value);
+            if (data == null) return;
 
-            EmployeeNameDisplay = employee.FullName;
-            var department = _departmentRepository.GetById(employee.DepartmentId);
-            DepartmentDisplay = department?.DepartmentName ?? $"Department #{employee.DepartmentId}";
+            EmployeeNameDisplay = data.Employee.FullName;
+            DepartmentDisplay = data.DepartmentName;
 
-            var contract = _contractRepository.GetCurrentByEmployeeId(employeeId.Value);
-            if (contract == null)
+            if (!data.HasContract)
             {
                 HasContract = false;
                 return;
             }
 
+            var contract = data.Contract!;
+
             HasContract = true;
             ContractIdDisplay = $"CTR-{contract.ContractId:0000}";
             ContractType = contract.ContractType;
             Status = contract.Status;
-            RoleDisplay = RoleNames.TryGetValue(contract.RoleId, out var roleName) ? roleName : "—";
+            RoleDisplay = data.RoleName;
             BaseSalaryDisplay = contract.BaseSalary.ToString("C0");
             StartDateDisplay = contract.StartDate.ToString("MMM dd, yyyy");
             EndDateDisplay = contract.EndDate.HasValue ? contract.EndDate.Value.ToString("MMM dd, yyyy") : "No end date";
 
-            EmployerNameDisplay = "My Company Inc.";
-            EmployerAddressDisplay = "123 Business Rd, Suite 400, Tech City, ST 12345";
-
-            EmployeeAddressDisplay = "987 Residential Ave, Apt 2B, Home City, ST 54321";
-            NoticePeriodDaysDisplay = "14";
+            EmployerNameDisplay = data.EmployerName;
+            EmployerAddressDisplay = data.EmployerAddress;
+            EmployeeAddressDisplay = data.EmployeeAddress;
+            NoticePeriodDaysDisplay = data.NoticePeriodDays;
         }
     }
 }

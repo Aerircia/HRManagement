@@ -50,7 +50,10 @@ public partial class App : Application
         services.AddSingleton<ILogService, LogService>();
         services.AddSingleton<IManageSalariesService, ManageSalariesService>();
         services.AddSingleton<IEmployeeEvaluationService, EmployeeEvaluationService>();
+        services.AddSingleton<IProfileService, ProfileService>();
+        services.AddSingleton<IContractService, ContractService>();
         services.AddSingleton<IManageProfilesService, ManageProfilesService>();
+
 
         // Repositories
         services.AddSingleton<IManageSalariesRepository, ManageSalariesRepository>();
@@ -65,7 +68,7 @@ public partial class App : Application
         services.AddSingleton<IPayrollRepository, PayrollRepository>();
         services.AddSingleton<IRequestFormRepository, RequestFormRepository>();
         services.AddSingleton<IAnnouncementRepository, AnnouncementRepository>();
-        services.AddSingleton<SystemLogRepository>();
+        services.AddSingleton<ISystemLogRepository, SystemLogRepository>();
 
 
         // ViewModels

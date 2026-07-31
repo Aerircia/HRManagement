@@ -7,18 +7,24 @@
         Height="900"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        ResizeMode="CanResize"
-        Background="{DynamicResource WindowBackgroundBrush}">
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True">
 
-    <Border
+    <Border x:Name="RootBorder"
+        CornerRadius="14"
         Background="{DynamicResource WindowBackgroundBrush}"
         BorderBrush="{DynamicResource BorderBrush}"
         BorderThickness="1">
 
+        <Border.Effect>
+            <DropShadowEffect Color="#1A2B3674" BlurRadius="24" ShadowDepth="6" Opacity="0.22" Direction="270"/>
+        </Border.Effect>
+
         <Grid>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="{Binding DataContext.IsCollapsed, ElementName=SidebarHost, Converter={StaticResource CollapsedToWidthConverter}, FallbackValue=240}"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -28,9 +34,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <Grid.Clip>
+                <RectangleGeometry x:Name="ContentClipGeometry" RadiusX="14" RadiusY="14"/>
+            </Grid.Clip>
+
             <!-- Sidebar -->
 
-            <shared:Sidebar
+            <shared:Sidebar x:Name="SidebarHost"
                 Grid.Column="0"
                 Grid.Row="1"
                 Grid.RowSpan="3"/>

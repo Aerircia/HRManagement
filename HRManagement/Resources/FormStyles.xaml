@@ -6,30 +6,31 @@
         ============================================================
         Shared "Add / Edit" form field styles.
         ============================================================
-        ManageProfilesView, ManageContractsView, ManageAnnouncementsView,
-        and ProfileView each currently define their own near-identical copies
-        of FormLabelStyle / FormTextBoxStyle / FormComboBoxStyle /
-        FormDatePickerStyle inside UserControl.Resources. Those page-local
-        copies still take precedence (WPF resource lookup resolves the
-        nearest ancestor first), so nothing below changes any existing page
-        today - this file exists so those pages can be pointed at ONE
-        shared, modernized definition in a future pass instead of four
-        copies drifting independently. Merged in App.xaml as an additive,
-        non-breaking dictionary.
+        Consolidated (Phase 2 step 3): ManageProfilesView, ManageContractsView,
+        ManageAnnouncementsView, and ProfileView previously each defined their
+        own near-identical local copies of FormLabelStyle / FormTextBoxStyle /
+        FormComboBoxStyle / FormDatePickerStyle inside UserControl.Resources.
+        Those local copies have been removed from all four views; the plain
+        "FormXxxStyle" keys below (merged once in App.xaml) are now the only
+        definitions, so every Add/Edit form in the app renders identically
+        without four copies drifting independently. Keeping the plain
+        (non-"Shared"-prefixed) key names means each view's body markup -
+        e.g. Style="{StaticResource FormLabelStyle}" - needed zero changes
+        beyond deleting the local <Style> blocks.
 
         Modernized here: soft input fill, no border by default (matches the
         reference dashboards' minimal search/inputs), focus-friendly
         contrast, rounded 10px corners.
     -->
 
-    <Style x:Key="SharedFormLabelStyle" TargetType="TextBlock">
+    <Style x:Key="FormLabelStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
-    <Style x:Key="SharedFormTextBoxStyle" TargetType="TextBox">
+    <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
         <Setter Property="Height" Value="42"/>
         <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
@@ -50,7 +51,7 @@
     </Style>
 
     <!-- Multi-line variant (Content/Description/Comment fields) -->
-    <Style x:Key="SharedFormTextAreaStyle" TargetType="TextBox" BasedOn="{StaticResource SharedFormTextBoxStyle}">
+    <Style x:Key="FormTextAreaStyle" TargetType="TextBox" BasedOn="{StaticResource FormTextBoxStyle}">
         <Setter Property="Height" Value="120"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="AcceptsReturn" Value="True"/>
@@ -68,7 +69,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="SharedFormComboBoxStyle" TargetType="ComboBox">
+    <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Height" Value="42"/>
         <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
@@ -77,7 +78,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 
-    <Style x:Key="SharedFormDatePickerStyle" TargetType="DatePicker">
+    <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
         <Setter Property="Height" Value="42"/>
         <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>

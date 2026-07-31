@@ -1,68 +1,30 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories;
-using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace HRManagement.ViewModels
 {
-
     public class ProfileViewModel : PageViewModel
     {
-
-        private static readonly Dictionary<int, string> RoleNames = new()
-        {
-            [1] = "Admin",
-            [2] = "Manager",
-            [3] = "Employee"
-        };
-
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly IDepartmentRepository _departmentRepository;
-        private readonly IContractRepository _contractRepository;
-        private readonly IAttendanceRepository _attendanceRepository;
-        private readonly IEmployeeEvaluationRepository _evaluationRepository;
-        private readonly IPayrollRepository _payrollRepository;
-        private readonly IRequestFormRepository _requestFormRepository;
+        private readonly IProfileService _profileService;
         private readonly SessionManager _sessionManager;
-        private readonly ILogService _logService;
 
-        private Employee _employee;
-        private Contract? _currentContract;
+        private ProfileData? _profile;
 
         public override string Title => "My Profile";
 
         public ProfileViewModel(
-            IEmployeeRepository employeeRepository,
-            IDepartmentRepository departmentRepository,
-            IContractRepository contractRepository,
-            IAttendanceRepository attendanceRepository,
-            IEmployeeEvaluationRepository evaluationRepository,
-            IPayrollRepository payrollRepository,
-            IRequestFormRepository requestFormRepository,
-            SessionManager sessionManager,
-            ILogService logService)
+            IProfileService profileService,
+            SessionManager sessionManager)
         {
-            _employeeRepository = employeeRepository;
-            _departmentRepository = departmentRepository;
-            _contractRepository = contractRepository;
-            _attendanceRepository = attendanceRepository;
-            _evaluationRepository = evaluationRepository;
-            _payrollRepository = payrollRepository;
-            _requestFormRepository = requestFormRepository;
+            _profileService = profileService;
             _sessionManager = sessionManager;
-            _logService = logService;
 
             EditProfileCommand = new RelayCommand(OnEditProfile);
             SaveProfileCommand = new RelayCommand(_ => SaveProfile());
             CancelEditCommand = new RelayCommand(_ => IsEditOpen = false);
-
-            EmploymentDetails = [];
 
             LoadCurrentUser();
         }
@@ -77,77 +39,77 @@ namespace HRManagement.ViewModels
 
         //Personal info 
 
-        private string _fullName;
+        private string _fullName = string.Empty;
         public string FullName
         {
             get => _fullName;
             set => SetProperty(ref _fullName, value);
         }
 
-        private string _roleLabel;
+        private string _roleLabel = string.Empty;
         public string RoleLabel
         {
             get => _roleLabel;
             set => SetProperty(ref _roleLabel, value);
         }
 
-        private string _avatarPath;
+        private string _avatarPath = string.Empty;
         public string AvatarPath
         {
             get => _avatarPath;
             set => SetProperty(ref _avatarPath, value);
         }
 
-        private string _email;
+        private string _email = string.Empty;
         public string Email
         {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
-        private string _phone;
+        private string _phone = string.Empty;
         public string Phone
         {
             get => _phone;
             set => SetProperty(ref _phone, value);
         }
 
-        private string _dateOfBirthDisplay;
+        private string _dateOfBirthDisplay = string.Empty;
         public string DateOfBirthDisplay
         {
             get => _dateOfBirthDisplay;
             set => SetProperty(ref _dateOfBirthDisplay, value);
         }
 
-        private string _employeeIdDisplay;
+        private string _employeeIdDisplay = string.Empty;
         public string EmployeeIdDisplay
         {
             get => _employeeIdDisplay;
             set => SetProperty(ref _employeeIdDisplay, value);
         }
 
-        private string _department;
+        private string _department = string.Empty;
         public string Department
         {
             get => _department;
             set => SetProperty(ref _department, value);
         }
 
-        private string _status;
+        private string _status = string.Empty;
         public string Status
         {
             get => _status;
             set => SetProperty(ref _status, value);
         }
 
-        private string _hireDateDisplay;
+        private string _hireDateDisplay = string.Empty;
         public string HireDateDisplay
         {
             get => _hireDateDisplay;
             set => SetProperty(ref _hireDateDisplay, value);
         }
 
-        private string _lastUpdatedDisplay;
+        private string _lastUpdatedDisplay = string.Empty;
         public string LastUpdatedDisplay
         {
             get => _lastUpdatedDisplay;
@@ -194,21 +156,21 @@ namespace HRManagement.ViewModels
 
         // Dashboard: Latest evaluation / bonus 
 
-        private string _latestEvaluationAmountDisplay;
+        private string _latestEvaluationAmountDisplay = string.Empty;
         public string LatestEvaluationAmountDisplay
         {
             get => _latestEvaluationAmountDisplay;
             set => SetProperty(ref _latestEvaluationAmountDisplay, value);
         }
 
-        private string _latestEvaluationTypeDisplay;
+        private string _latestEvaluationTypeDisplay = string.Empty;
         public string LatestEvaluationTypeDisplay
         {
             get => _latestEvaluationTypeDisplay;
             set => SetProperty(ref _latestEvaluationTypeDisplay, value);
         }
 
-        private string _totalBonusThisYearDisplay;
+        private string _totalBonusThisYearDisplay = string.Empty;
         public string TotalBonusThisYearDisplay
         {
             get => _totalBonusThisYearDisplay;
@@ -217,32 +179,32 @@ namespace HRManagement.ViewModels
 
         // Employment details list
 
-        public ObservableCollection<KeyValueItem> EmploymentDetails { get; }
+        public ObservableCollection<KeyValueItem> EmploymentDetails { get; } = [];
 
         //Quick info
 
-        private string _latestPayslipDate;
+        private string _latestPayslipDate = string.Empty;
         public string LatestPayslipDate
         {
             get => _latestPayslipDate;
             set => SetProperty(ref _latestPayslipDate, value);
         }
 
-        private string _latestPayslipAmount;
+        private string _latestPayslipAmount = string.Empty;
         public string LatestPayslipAmount
         {
             get => _latestPayslipAmount;
             set => SetProperty(ref _latestPayslipAmount, value);
         }
 
-        private string _contractTypeDisplay;
+        private string _contractTypeDisplay = string.Empty;
         public string ContractTypeDisplay
         {
             get => _contractTypeDisplay;
             set => SetProperty(ref _contractTypeDisplay, value);
         }
 
-        private string _contractStatusDisplay;
+        private string _contractStatusDisplay = string.Empty;
         public string ContractStatusDisplay
         {
             get => _contractStatusDisplay;
@@ -310,177 +272,100 @@ namespace HRManagement.ViewModels
 
         private void LoadCurrentUser()
         {
-            var signedInEmployee = _sessionManager.CurrentUser?.Employee;
-            if (signedInEmployee == null)
+            var signedInEmployeeId = _sessionManager.CurrentUser?.Employee?.EmployeeId;
+            if (signedInEmployeeId == null)
                 return;
 
-            _employee = _employeeRepository.GetById(signedInEmployee.EmployeeId);
-            if (_employee == null)
+            var profile = _profileService.GetProfile(signedInEmployeeId.Value);
+            if (profile == null)
                 return;
 
-            FullName = _employee.FullName;
-            RoleLabel = RoleNames.TryGetValue(_employee.RoleId, out var roleName) ? roleName : "Employee";
-            AvatarPath = string.IsNullOrWhiteSpace(_employee.Avatar)
+            _profile = profile;
+            var employee = profile.Employee;
+
+            FullName = employee.FullName;
+            RoleLabel = profile.RoleLabel;
+            AvatarPath = string.IsNullOrWhiteSpace(employee.Avatar)
                 ? "/Resources/Images/DefaultAvatar.png"
-                : _employee.Avatar;
+                : employee.Avatar;
 
-            Email = _employee.Email;
-            Phone = _employee.Phone ?? "—";
-            DateOfBirthDisplay = _employee.DateOfBirth.ToString("MMM dd, yyyy");
-            EmployeeIdDisplay = $"EMP-{_employee.EmployeeId:0000}";
-            Status = _employee.Status;
+            Email = employee.Email;
+            Phone = employee.Phone ?? "—";
+            DateOfBirthDisplay = employee.DateOfBirth.ToString("MMM dd, yyyy");
+            EmployeeIdDisplay = $"EMP-{employee.EmployeeId:0000}";
+            Status = employee.Status;
+            Department = profile.DepartmentName;
 
-            var department = _departmentRepository.GetById(_employee.DepartmentId);
-            Department = department?.DepartmentName ?? $"Department #{_employee.DepartmentId}";
+            ContractTypeDisplay = profile.ContractTypeDisplay;
+            ContractStatusDisplay = profile.ContractStatusDisplay;
 
-            _currentContract = _contractRepository.GetCurrentByEmployeeId(_employee.EmployeeId);
-            ContractTypeDisplay = _currentContract?.ContractType ?? "No contract on file";
-            ContractStatusDisplay = _currentContract?.Status ?? "—";
-
-            HireDateDisplay = _employee.HireDate.ToString("MMM dd, yyyy");
+            HireDateDisplay = employee.HireDate.ToString("MMM dd, yyyy");
             LastUpdatedDisplay = $"Last updated on {DateTime.Now:MMM dd, yyyy 'at' h:mmtt}";
 
             EmploymentDetails.Clear();
-            EmploymentDetails.Add(new KeyValueItem("Department", Department));
-            EmploymentDetails.Add(new KeyValueItem("Status", _employee.Status));
-            EmploymentDetails.Add(new KeyValueItem("Hire Date", HireDateDisplay));
-            EmploymentDetails.Add(new KeyValueItem("Date of Birth", DateOfBirthDisplay));
-            EmploymentDetails.Add(new KeyValueItem("Employee ID", EmployeeIdDisplay));
+            foreach (var item in profile.EmploymentDetails)
+                EmploymentDetails.Add(item);
 
-            if (_currentContract != null)
-            {
-                EmploymentDetails.Add(new KeyValueItem("Contract Type", _currentContract.ContractType));
-                EmploymentDetails.Add(new KeyValueItem("Contract Status", _currentContract.Status));
-                EmploymentDetails.Add(new KeyValueItem("Base Salary", $"{_currentContract.BaseSalary:C0}"));
-                EmploymentDetails.Add(new KeyValueItem("Contract Start", _currentContract.StartDate.ToString("MMM dd, yyyy")));
-                if (_currentContract.EndDate.HasValue)
-                    EmploymentDetails.Add(new KeyValueItem("Contract End", _currentContract.EndDate.Value.ToString("MMM dd, yyyy")));
-            }
+            AttendanceRate = profile.AttendanceRate;
+            AttendanceSummary = profile.AttendanceSummary;
 
-            LoadDashboardStats();
-        }
+            RequestApprovalRate = profile.RequestApprovalRate;
+            PendingRequestsCount = profile.PendingRequestsCount;
+            RequestsSummary = profile.RequestsSummary;
 
-        private void LoadDashboardStats()
-        {
-            var now = DateTime.Now;
+            LatestEvaluationAmountDisplay = profile.LatestEvaluationAmountDisplay;
+            LatestEvaluationTypeDisplay = profile.LatestEvaluationTypeDisplay;
+            TotalBonusThisYearDisplay = profile.TotalBonusThisYearDisplay;
 
-            // Attendance
-           
-            var attendanceRecords = _attendanceRepository.GetAttendancesForEmployeeMonth(_employee.EmployeeId, now.Year, now.Month);
-            var presentCount = attendanceRecords.Count(a => string.Equals(a.Status, "Present", StringComparison.OrdinalIgnoreCase));
-            var totalAttendanceRecords = attendanceRecords.Count();
-
-            AttendanceRate = totalAttendanceRecords > 0
-                ? (double)presentCount / totalAttendanceRecords * 100
-                : 0;
-            AttendanceSummary = totalAttendanceRecords > 0
-                ? $"{presentCount} present / {totalAttendanceRecords - presentCount} other this month"
-                : "No attendance records this month";
-
-            //Requests
-            var thisYearRequests = _requestFormRepository.GetByEmployeeId(_employee.EmployeeId)
-                .Where(r => r.SubmitDate.Year == now.Year)
-                .ToList();
-
-            var approvedCount = thisYearRequests.Count(r => string.Equals(r.Status, "Approved", StringComparison.OrdinalIgnoreCase));
-            var pendingCount = thisYearRequests.Count(r => string.Equals(r.Status, "Pending", StringComparison.OrdinalIgnoreCase));
-            var totalRequests = thisYearRequests.Count;
-
-            RequestApprovalRate = totalRequests > 0 ? (double)approvedCount / totalRequests * 100 : 0;
-            PendingRequestsCount = pendingCount;
-            RequestsSummary = totalRequests > 0
-                ? $"{approvedCount} approved / {totalRequests} total this year"
-                : "No requests submitted this year";
-
-            //Latest evaluation / bonus 
-            var latestEvaluation = _evaluationRepository.GetLatestByEmployeeId(_employee.EmployeeId);
-            if (latestEvaluation != null)
-            {
-                LatestEvaluationAmountDisplay = latestEvaluation.Amount.ToString("C0");
-                var type = latestEvaluation.EvaluationType ?? latestEvaluation.BonusType ?? "Evaluation";
-                LatestEvaluationTypeDisplay = $"{type} · {latestEvaluation.BonusDate:MMM dd, yyyy}";
-            }
-            else
-            {
-                LatestEvaluationAmountDisplay = "—";
-                LatestEvaluationTypeDisplay = "No evaluations on file";
-            }
-
-            TotalBonusThisYearDisplay = _evaluationRepository.GetTotalBonusForYear(_employee.EmployeeId, now.Year).ToString("C0");
-
-            // Latest payslip
-            var latestPayroll = _payrollRepository.GetLatestByEmployeeId(_employee.EmployeeId);
-            if (latestPayroll != null)
-            {
-                LatestPayslipDate = new DateTime(latestPayroll.Year, latestPayroll.Month, 1).ToString("MMM yyyy");
-
-                var bonusAmount = latestPayroll.EvaluationId.HasValue
-                    ? _evaluationRepository.GetById(latestPayroll.EvaluationId.Value)?.Amount ?? 0m
-                    : 0m;
-                var payAmount = (_currentContract?.BaseSalary ?? 0m) + bonusAmount;
-                LatestPayslipAmount = payAmount.ToString("C0");
-            }
-            else
-            {
-                LatestPayslipDate = "No payroll yet";
-                LatestPayslipAmount = "—";
-            }
+            LatestPayslipDate = profile.LatestPayslipDate;
+            LatestPayslipAmount = profile.LatestPayslipAmount;
         }
 
         private void OnEditProfile(object? parameter)
         {
-            if (_employee == null)
+            if (_profile == null)
                 return;
 
+            var employee = _profile.Employee;
+
             // Pre-fill the form with the current DB values
-            FormFullName = _employee.FullName;
-            FormEmail = _employee.Email;
-            FormPhone = _employee.Phone ?? string.Empty;
-            FormDateOfBirth = _employee.DateOfBirth;
+            FormFullName = employee.FullName;
+            FormEmail = employee.Email;
+            FormPhone = employee.Phone ?? string.Empty;
+            FormDateOfBirth = employee.DateOfBirth;
             FormErrorMessage = null;
             IsEditOpen = true;
         }
 
         private void SaveProfile()
         {
-            if (_employee == null)
+            var signedInEmployeeId = _sessionManager.CurrentUser?.Employee?.EmployeeId;
+            if (signedInEmployeeId == null)
                 return;
 
-            if (string.IsNullOrWhiteSpace(FormFullName) || string.IsNullOrWhiteSpace(FormEmail))
+            var input = new ProfileUpdateInput
             {
-                FormErrorMessage = "Full name and email are required.";
+                FullName = FormFullName,
+                Email = FormEmail,
+                Phone = FormPhone,
+                DateOfBirth = FormDateOfBirth
+            };
+
+            var result = _profileService.UpdateProfile(signedInEmployeeId.Value, input);
+
+            if (!result.Success)
+            {
+                FormErrorMessage = result.ErrorMessage;
                 return;
             }
-            List<string> changes = new List<string>();
-
-            if (_employee.FullName != FormFullName.Trim())
-                changes.Add("Full Name");
-
-            if (_employee.Email != FormEmail.Trim())
-                changes.Add("Email");
-
-            if ((_employee.Phone ?? "") != (FormPhone ?? "").Trim())
-                changes.Add("Phone");
-
-            if (_employee.DateOfBirth != (FormDateOfBirth ?? _employee.DateOfBirth))
-                changes.Add("Date of Birth");
-
-            _employee.FullName = FormFullName.Trim();
-            _employee.Email = FormEmail.Trim();
-            _employee.Phone = string.IsNullOrWhiteSpace(FormPhone) ? null : FormPhone.Trim();
-            _employee.DateOfBirth = FormDateOfBirth ?? _employee.DateOfBirth;
-
-            _employeeRepository.Update(_employee);
 
             IsEditOpen = false;
-            string message = changes.Count > 0 ? "Updated: " + string.Join(", ", changes) : "Profile updated";
-            _logService.WriteLog(_sessionManager.CurrentUser!.Account.EmployeeId, message);
-            // Re-read from the database so the page reflects exactly what was saved.
+
+            // Re-read so the page reflects exactly what was saved.
             LoadCurrentUser();
         }
     }
 
-  
     public class KeyValueItem(string label, string value)
     {
         public string Label { get; } = label;

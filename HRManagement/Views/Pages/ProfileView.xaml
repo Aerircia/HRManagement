@@ -7,47 +7,23 @@
              xmlns:utilities="clr-namespace:HRManagement.Utilities"
              mc:Ignorable="d"
              d:DesignWidth="1240" d:DesignHeight="820"
-             Background="{StaticResource WindowBackgroundBrush}">
+             Background="{DynamicResource WindowBackgroundBrush}">
 
     <UserControl.Resources>
 
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
-        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="12,0"
-                                          VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
+        <!--
+            FormLabelStyle / FormTextBoxStyle / FormDatePickerStyle now come
+            from the shared Resources/FormStyles.xaml (merged in App.xaml) so
+            this page's Edit Profile overlay matches Manage Profiles, Manage
+            Contracts, and Manage Announcements. DashboardCardStyle and the
+            other styles below are specific to this page's dashboard-style
+            layout and remain local.
+        -->
 
         <Style x:Key="DashboardCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="22"/>
             <Setter Property="Effect">
@@ -60,12 +36,12 @@
         <Style x:Key="CardTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         </Style>
 
         <Style x:Key="CardSubtleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         </Style>
 
 
@@ -73,7 +49,7 @@
             <Setter Property="Width" Value="30"/>
             <Setter Property="Height" Value="30"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
         </Style>
 
     </UserControl.Resources>
@@ -99,10 +75,10 @@
                     <TextBlock Text="My Profile"
                            FontSize="24"
                            FontWeight="Bold"
-                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <TextBlock Text="{Binding SubHeading}"
                            FontSize="13"
-                           Foreground="{StaticResource SecondaryTextBrush}"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,4,0,0"/>
                 </StackPanel>
 
@@ -138,11 +114,11 @@
                         <TextBlock Text="{Binding FullName}"
                                FontSize="18"
                                FontWeight="Bold"
-                               Foreground="{StaticResource PrimaryTextBrush}"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,14,0,0"/>
 
-                        <Border Background="{StaticResource InputBackgroundBrush}"
+                        <Border Background="{DynamicResource InputBackgroundBrush}"
                             CornerRadius="12"
                             Padding="12,4"
                             HorizontalAlignment="Center"
@@ -150,57 +126,57 @@
                             <TextBlock Text="{Binding RoleLabel}"
                                    FontSize="12"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                   Foreground="{DynamicResource PrimaryBrush}"/>
                         </Border>
 
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" Margin="0,20,0,16"/>
+                        <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,20,0,16"/>
 
                         <!-- Contact -->
                         <StackPanel Margin="0,0,0,6">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <Border Style="{StaticResource InfoRowIconStyle}">
                                     <TextBlock Text="&#xE715;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{StaticResource PrimaryBrush}"
+                                           Foreground="{DynamicResource PrimaryBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="Email" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding Email}"
                                            FontSize="13" FontWeight="Medium"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <Border Style="{StaticResource InfoRowIconStyle}">
                                     <TextBlock Text="&#xE717;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{StaticResource PrimaryBrush}"
+                                           Foreground="{DynamicResource PrimaryBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="Phone" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding Phone}"
                                            FontSize="13" FontWeight="Medium"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <Border Style="{StaticResource InfoRowIconStyle}">
                                     <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{StaticResource PrimaryBrush}"
+                                           Foreground="{DynamicResource PrimaryBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                                     <TextBlock Text="Date of Birth" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding DateOfBirthDisplay}"
                                            FontSize="13" FontWeight="Medium"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
 
-                        <Rectangle Height="1" Fill="{StaticResource DividerBrush}" Margin="0,4,0,16"/>
+                        <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,4,0,16"/>
 
                         <!-- Employment -->
                         <StackPanel>
@@ -212,12 +188,12 @@
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Employee ID" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding EmployeeIdDisplay}" FontWeight="SemiBold"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Department" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding Department}" FontWeight="SemiBold"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                             </Grid>
 
@@ -229,12 +205,12 @@
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Status" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding Status}" FontWeight="SemiBold"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Hire Date" Style="{StaticResource CardSubtleStyle}"/>
                                     <TextBlock Text="{Binding HireDateDisplay}" FontWeight="SemiBold"
-                                           Foreground="{StaticResource PrimaryTextBrush}"/>
+                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -272,8 +248,8 @@
                                         <TextBlock Grid.Column="1" Text="This Month" Style="{StaticResource CardSubtleStyle}"/>
                                     </Grid>
                                     <controls:DonutProgress Percentage="{Binding AttendanceRate}"
-                                                         RingBrush="{StaticResource PrimaryBrush}"
-                                                         TrackBrush="{StaticResource InputBackgroundBrush}"
+                                                         RingBrush="{DynamicResource PrimaryBrush}"
+                                                         TrackBrush="{DynamicResource InputBackgroundBrush}"
                                                          Thickness="12"
                                                          Width="175" Height="204">
                                         <controls:DonutProgress.CenterContent>
@@ -281,10 +257,10 @@
                                                 <TextBlock Text="{Binding AttendanceRateDisplay}"
                                                        FontSize="20" FontWeight="Bold"
                                                        HorizontalAlignment="Center"
-                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
                                                 <TextBlock Text="present" FontSize="11"
                                                        HorizontalAlignment="Center"
-                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
                                             </StackPanel>
                                         </controls:DonutProgress.CenterContent>
                                     </controls:DonutProgress>
@@ -309,8 +285,8 @@
                                     </Grid>
 
                                     <controls:DonutProgress Percentage="{Binding RequestApprovalRate}"
-                                                         RingBrush="{StaticResource AccentBrush}"
-                                                         TrackBrush="{StaticResource InputBackgroundBrush}"
+                                                         RingBrush="{DynamicResource AccentBrush}"
+                                                         TrackBrush="{DynamicResource InputBackgroundBrush}"
                                                          Thickness="12"
                                                          Width="198" Height="202"
                                                          HorizontalAlignment="Center"
@@ -320,10 +296,10 @@
                                                 <TextBlock Text="{Binding PendingRequestsCount}"
                                                        FontSize="20" FontWeight="Bold"
                                                        HorizontalAlignment="Center"
-                                                       Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
                                                 <TextBlock Text="pending" FontSize="11"
                                                        HorizontalAlignment="Center"
-                                                       Foreground="{StaticResource SecondaryTextBrush}"/>
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
                                             </StackPanel>
                                         </controls:DonutProgress.CenterContent>
                                     </controls:DonutProgress>
@@ -344,14 +320,14 @@
                                         <TextBlock Text="{Binding LatestEvaluationAmountDisplay}"
                                                FontSize="28" FontWeight="Bold"
                                                HorizontalAlignment="Center"
-                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                                         <TextBlock Text="{Binding LatestEvaluationTypeDisplay}"
                                                FontSize="12"
                                                HorizontalAlignment="Center"
-                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
                                     </StackPanel>
 
-                                    <Rectangle Height="1" Fill="{StaticResource DividerBrush}" Margin="0,0,0,12"/>
+                                    <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,12"/>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -360,10 +336,10 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="Total bonus this year"
                                                FontSize="12"
-                                               Foreground="{StaticResource SecondaryTextBrush}"/>
+                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
                                         <TextBlock Grid.Column="1" Text="{Binding TotalBonusThisYearDisplay}"
                                                FontSize="13" FontWeight="SemiBold"
-                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -391,10 +367,10 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                                           Foreground="{StaticResource SecondaryTextBrush}"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
                                                            FontSize="13"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                                           Foreground="{StaticResource PrimaryTextBrush}"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                                            FontWeight="SemiBold"
                                                            FontSize="13"/>
                                                 </Grid>
@@ -416,20 +392,20 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{StaticResource InputBackgroundBrush}">
+                                            Background="{DynamicResource InputBackgroundBrush}">
                                             <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{StaticResource SuccessBrush}"
+                                                   Foreground="{DynamicResource SuccessBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="Latest Payslip" Style="{StaticResource CardSubtleStyle}"/>
                                             <TextBlock Text="{Binding LatestPayslipDate}" FontSize="12"
-                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2" Text="{Binding LatestPayslipAmount}"
                                                FontWeight="Bold" FontSize="15"
                                                VerticalAlignment="Center"
-                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                                     </Grid>
 
                                     <Grid Margin="0,0,0,14">
@@ -439,20 +415,20 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{StaticResource InputBackgroundBrush}">
+                                            Background="{DynamicResource InputBackgroundBrush}">
                                             <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{StaticResource AccentBrush}"
+                                                   Foreground="{DynamicResource AccentBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="Contract" Style="{StaticResource CardSubtleStyle}"/>
                                             <TextBlock Text="{Binding ContractTypeDisplay}" FontSize="12"
-                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2" Text="{Binding ContractStatusDisplay}"
                                                FontWeight="Bold" FontSize="13"
                                                VerticalAlignment="Center"
-                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                               Foreground="{DynamicResource PrimaryBrush}"/>
                                     </Grid>
 
                                     <Grid>
@@ -462,20 +438,20 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{StaticResource InputBackgroundBrush}">
+                                            Background="{DynamicResource InputBackgroundBrush}">
                                             <TextBlock Text="&#xE9D5;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{StaticResource PrimaryBrush}"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="Pending Requests" Style="{StaticResource CardSubtleStyle}"/>
                                             <TextBlock Text="Awaiting approval" FontSize="12"
-                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2" Text="{Binding PendingRequestsCount}"
                                                FontWeight="Bold" FontSize="15"
                                                VerticalAlignment="Center"
-                                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -488,7 +464,7 @@
         </Grid>
 
         <!-- Edit Profile overlay-->
-        <Grid Background="#66000000"
+        <Grid Style="{StaticResource ModalScrimStyle}"
           Visibility="{Binding IsEditOpen, Converter={StaticResource BoolToVisibility}}">
 
             <Border Style="{StaticResource DashboardCardStyle}"
@@ -500,11 +476,11 @@
 
                     <TextBlock Text="Edit Profile"
                            FontSize="18" FontWeight="Bold"
-                           Foreground="{StaticResource PrimaryTextBrush}"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
                            Margin="0,0,0,18"/>
 
                     <TextBlock Text="{Binding FormErrorMessage}"
-                           Foreground="{StaticResource DangerBrush}"
+                           Foreground="{DynamicResource DangerBrush}"
                            FontSize="12"
                            Margin="0,0,0,10"
                            TextWrapping="Wrap"

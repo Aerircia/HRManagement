@@ -8,44 +8,150 @@
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              xmlns:vm="clr-namespace:HRManagement.ViewModels">
 
-    <Border Background="{DynamicResource SidebarBackgroundBrush}">
+    <!--
+        Redesigned as a collapsible "mini rail" sidebar (light-blue/white
+        shell to match TopBar/TitleBar). IsCollapsed lives on
+        SidebarViewModel and drives:
+          - This control's own content (labels/section headers/search
+            hidden via InverseBoolToVisibility, nav buttons centered).
+          - The host window's sidebar column width, via
+            CollapsedToWidthConverter bound in MainWindow.xaml.
+        Page navigation (NavigateCommand + CommandParameter per button) is
+        unchanged from before - only the chrome around it changed.
+    -->
+
+    <Border Background="{DynamicResource SidebarBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,1,0">
 
         <Grid>
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="90"/>
+                <RowDefinition Height="76"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Logo -->
+            <!-- ================= Header: logo/name + collapse toggle ================= -->
 
-            <StackPanel Grid.Row="0"
-                        VerticalAlignment="Center"
-                        Margin="25,0">
+            <Grid Grid.Row="0" Margin="16,0">
 
-                <TextBlock Text="HR MANAGER"
-                           FontSize="22"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource WhiteBrush}"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Human Resource"
-                           Foreground="{DynamicResource WhiteBrush}"
-                           Opacity="0.75"/>
+                <!-- App branding: collapses to just the icon -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
 
-            </StackPanel>
+                    <Border Style="{StaticResource AppLogoBadgeStyle}" Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
+                        <Image Source="/Assets/logo.png"
+                               Margin="-10"
+                               Width="40" Height="40"
+                               Stretch="Uniform"/>
+                    </Border>
 
-            <!-- Menu -->
+                    <TextBlock Text="HR Manager"
+                               Style="{StaticResource AppNameTextStyle}"
+                               Margin="10,0,0,0"
+                               Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
-            <ScrollViewer Grid.Row="1"
+                </StackPanel>
+
+                <!-- Collapse toggle: top-right of sidebar (not bottom) -->
+                <Button Grid.Column="1"
+                        Style="{StaticResource SidebarCollapseButtonStyle}"
+                        Command="{Binding ToggleCollapseCommand}"
+                        ToolTip="Collapse sidebar"
+                        Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
+
+                    <fa:IconBlock Icon="AngleLeft" Width="13" Height="13"/>
+
+                </Button>
+
+            </Grid>
+
+            <!-- Collapsed-state expand button (icon-only rail still needs a
+                 way back). Centered under the logo since there's no room
+                 next to it once labels disappear. -->
+            <Button Grid.Row="0"
+                    Style="{StaticResource SidebarCollapseButtonStyle}"
+                    Command="{Binding ToggleCollapseCommand}"
+                    ToolTip="Expand sidebar"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,0,6"
+                    Visibility="{Binding IsCollapsed, Converter={StaticResource BoolToVisibility}}">
+
+                <fa:IconBlock Icon="AngleRight" Width="13" Height="13"/>
+
+            </Button>
+
+            <!-- ================= Search (nav filter only) ================= -->
+
+            <Border Grid.Row="1"
+                    Margin="16,4,16,10"
+                    Style="{StaticResource TopBarSearchContainerStyle}"
+                    Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <fa:IconBlock Grid.Column="0"
+                                  Icon="MagnifyingGlass"
+                                  Width="13" Height="13"
+                                  Margin="0,0,8,0"
+                                  Foreground="{DynamicResource SecondaryTextBrush}"
+                                  VerticalAlignment="Center"/>
+
+                    <Grid Grid.Column="1">
+
+                        <TextBox x:Name="NavSearchBox"
+                                 Style="{StaticResource TopBarSearchTextBoxStyle}"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="Search menu..."
+                                   Style="{StaticResource TopBarSearchPlaceholderStyle}"
+                                   Visibility="{Binding Text, ElementName=NavSearchBox, Converter={StaticResource StringEmptyToVisibility}}"/>
+
+                    </Grid>
+
+                </Grid>
+
+            </Border>
+
+            <!-- ================= Menu ================= -->
+
+            <ScrollViewer Grid.Row="2"
                           VerticalScrollBarVisibility="Hidden"
                           HorizontalScrollBarVisibility="Disabled">
 
-                <StackPanel Margin="15">
+                <StackPanel Margin="12,0,12,16">
+
+                    <!-- ===== Menu section ===== -->
+
+                    <TextBlock Text="MENU"
+                               Style="{StaticResource SidebarSectionHeaderStyle}"
+                               Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                     <!-- Dashboard -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:DashboardViewModel}">
+                            CommandParameter="{x:Type vm:DashboardViewModel}"
+                            ToolTip="Dashboard">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Dashboard"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -53,12 +159,13 @@
                             <fa:IconBlock Icon="House"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                            VerticalAlignment="Center"
-                                           Foreground="{DynamicResource SidebarTextBrush}"
-                                           Text="Dashboard"/>
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                           Text="Dashboard"
+                                           Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -67,7 +174,15 @@
                     <!-- Profile -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ProfileViewModel}">
+                            CommandParameter="{x:Type vm:ProfileViewModel}"
+                            ToolTip="My Profile">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="My Profile"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -75,12 +190,13 @@
                             <fa:IconBlock Icon="User"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="My Profile"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="My Profile"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -89,7 +205,15 @@
                     <!-- Contract (own contract - Employee / Manager only, not Admin) -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ContractViewModel}">
+                            CommandParameter="{x:Type vm:ContractViewModel}"
+                            ToolTip="Contract">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Contract"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -97,12 +221,13 @@
                             <fa:IconBlock Icon="FileContract"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Contract"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Contract"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -111,7 +236,15 @@
                     <!-- Salary -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:SalaryViewModel}">
+                            CommandParameter="{x:Type vm:SalaryViewModel}"
+                            ToolTip="Salary">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Salary"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -119,12 +252,13 @@
                             <fa:IconBlock Icon="MoneyBillWave"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Salary"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Salary"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -133,7 +267,15 @@
                     <!-- Attendance -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:AttendanceViewModel}">
+                            CommandParameter="{x:Type vm:AttendanceViewModel}"
+                            ToolTip="Attendance">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Attendance"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -141,12 +283,13 @@
                             <fa:IconBlock Icon="Clock"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Attendance"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Attendance"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -155,7 +298,15 @@
                     <!-- Requests -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:RequestsViewModel}">
+                            CommandParameter="{x:Type vm:RequestsViewModel}"
+                            ToolTip="Requests">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Requests"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -163,25 +314,47 @@
                             <fa:IconBlock Icon="Envelope"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Requests"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Requests"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
                     </Button>
 
-                    <Separator Margin="0,18"
+                    <Separator Margin="0,14"
                                Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- ===== Management section ===== -->
+
+                    <TextBlock Text="MANAGEMENT"
+                               Margin="12,0,0,8"
+                               Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource SidebarSectionHeaderStyle}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsManager}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
 
                     <!-- Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageProfilesViewModel}">
+                            CommandParameter="{x:Type vm:ManageProfilesViewModel}"
+                            ToolTip="Manage Profiles">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -189,12 +362,13 @@
                             <fa:IconBlock Icon="Users"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Manage Profiles"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Profiles"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -204,7 +378,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageContractsViewModel}">
+                            CommandParameter="{x:Type vm:ManageContractsViewModel}"
+                            ToolTip="Manage Contracts">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -212,12 +387,13 @@
                             <fa:IconBlock Icon="FileContract"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Manage Contracts"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Contracts"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -227,7 +403,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageRequestsViewModel}">
+                            CommandParameter="{x:Type vm:ManageRequestsViewModel}"
+                            ToolTip="Manage Requests">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -235,12 +412,13 @@
                             <fa:IconBlock Icon="ClipboardCheck"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Manage Requests"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Requests"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -250,7 +428,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageAttendancesViewModel}">
+                            CommandParameter="{x:Type vm:ManageAttendancesViewModel}"
+                            ToolTip="Manage Attendances">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -258,25 +437,46 @@
                             <fa:IconBlock Icon="CalendarCheck"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Manage Attendances"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Attendances"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
                     </Button>
 
-                    <Separator Margin="0,18"
+                    <Separator Margin="0,14"
                                Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"/>
+
+                    <!-- ===== Administration section ===== -->
+
+                    <TextBlock Text="ADMINISTRATION"
+                               Margin="12,0,0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource SidebarSectionHeaderStyle}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAdmin}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
 
                     <!-- HR -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageSalariesViewModel}">
+                            CommandParameter="{x:Type vm:ManageSalariesViewModel}"
+                            ToolTip="Manage Salaries">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -284,12 +484,13 @@
                             <fa:IconBlock Icon="Coins"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Manage Salaries"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Salaries"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -299,7 +500,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:EmployeeEvaluationViewModel}">
+                            CommandParameter="{x:Type vm:EmployeeEvaluationViewModel}"
+                            ToolTip="Evaluations">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -307,12 +509,13 @@
                             <fa:IconBlock Icon="ClipboardUser"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Evaluations"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Evaluations"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -322,7 +525,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:LogsViewModel}">
+                            CommandParameter="{x:Type vm:LogsViewModel}"
+                            ToolTip="Logs">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -330,12 +534,13 @@
                             <fa:IconBlock Icon="History"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Logs"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Logs"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
@@ -345,7 +550,8 @@
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageAnnouncementsViewModel}">
+                            CommandParameter="{x:Type vm:ManageAnnouncementsViewModel}"
+                            ToolTip="Announcements">
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -353,23 +559,32 @@
                             <fa:IconBlock Icon="Bullhorn"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Announcements"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Announcements"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 
                     </Button>
 
-                    <Separator Margin="0,18"/>
+                    <Separator Margin="0,14"/>
 
                     <!-- Setting -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:SettingsViewModel}">
+                            CommandParameter="{x:Type vm:SettingsViewModel}"
+                            ToolTip="Settings">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Settings"/>
+                            </MultiBinding>
+                        </Button.Visibility>
 
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center">
@@ -377,12 +592,13 @@
                             <fa:IconBlock Icon="Cog"
                                           Width="18"
                                           Height="18"
-                                          Foreground="{DynamicResource SidebarTextBrush}"/>
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 
                             <TextBlock Margin="16,0,0,0"
                                        VerticalAlignment="Center"
-                                       Foreground="{DynamicResource SidebarTextBrush}"
-                                       Text="Settings"/>
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Settings"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>
 

@@ -1,0 +1,189 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Styles for the Logs page timeline UI (Views/Pages/LogsView.xaml).
+        Built entirely from the app's existing brush tokens (Brushes.xaml /
+        DarkBrushes.xaml) so the page follows the active theme automatically,
+        rather than any hardcoded colors. Merged once at the app level in
+        App.xaml, alongside the other shared style dictionaries.
+    -->
+
+    <!-- ========= Search bar ========= -->
+
+    <Style x:Key="LogSearchContainerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Height" Value="46"/>
+        <Setter Property="Padding" Value="14,0"/>
+    </Style>
+
+    <Style x:Key="LogSearchTextBoxStyle" TargetType="TextBox">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
+    </Style>
+
+    <!-- ========= Day section header ========= -->
+
+    <Style x:Key="LogDayHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="LogDayCountBadgeStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="9,3"/>
+    </Style>
+
+    <Style x:Key="LogDayCountTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+    </Style>
+
+    <!-- Vertical timeline rail connecting each entry's dot within a day. -->
+    <Style x:Key="LogTimelineRailStyle" TargetType="Border">
+        <Setter Property="Width" Value="2"/>
+        <Setter Property="Background" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Timeline dot marking each entry's timestamp. -->
+    <Style x:Key="LogTimelineDotStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Height" Value="10"/>
+        <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+    </Style>
+
+    <Style x:Key="LogTimeTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+    </Style>
+
+    <!-- ========= Log entry card ========= -->
+
+    <Style x:Key="LogEntryCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="16,14"/>
+    </Style>
+
+    <!-- Initials avatar circle shown next to the acting employee's name. -->
+    <Style x:Key="LogAvatarCircleStyle" TargetType="Border">
+        <Setter Property="Width" Value="34"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="CornerRadius" Value="17"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+    </Style>
+
+    <Style x:Key="LogAvatarInitialsTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="LogEmployeeNameTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="LogActionTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- Run-targeted counterparts of the two styles above. A Run is a
+         FrameworkContentElement (not a FrameworkElement), so it does have a
+         Style property, but the Style's TargetType must match Run exactly -
+         a TextBlock-targeted style throws at runtime if applied to a Run.
+         LogsView.xaml uses these two (not the TextBlock ones) inline inside
+         the entry's name+action TextBlock. -->
+    <Style x:Key="LogEmployeeNameRunStyle" TargetType="Run">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="LogActionRunStyle" TargetType="Run">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="LogTimestampSmallTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11.5"/>
+        <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+    </Style>
+
+    <!-- Delete icon button, placed where the reference design shows its
+         "Failed" status pill - reuses DangerBadgeBrush/DangerBrush so it
+         reads as a destructive action without needing a one-off color. -->
+    <Style x:Key="LogDeleteButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="Background" Value="{DynamicResource DangerBadgeBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="15">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="{TemplateBinding Padding}">
+                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"
+                                       FontSize="11"
+                                       Margin="0,0,6,0"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       VerticalAlignment="Center"/>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource DangerBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource WhiteBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Section card wrapping the whole timeline, matching TableCardStyle's
+         shadow/radius language used elsewhere in the app. -->
+    <Style x:Key="LogsPageCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="22" ShadowDepth="3" Opacity="0.06" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
