@@ -1,67 +1,213 @@
 ﻿<UserControl x:Class="HRManagement.Views.Pages.LogsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             mc:Ignorable="d"
              Background="Transparent">
 
-    <Grid>
+    <!--
+        All styles used here (LogSearch*, LogDay*, LogTimeline*, LogEntry*,
+        LogAvatar*, LogAction*, LogDeleteButtonStyle, LogsPageCardStyle) live
+        in Resources/LogsStyles.xaml, merged once at the app level in
+        App.xaml - no UserControl.Resources block here on purpose, so this
+        page follows the same pattern as the rest of the app (TableStyles,
+        FormStyles, etc.).
+    -->
 
-        <TextBlock Text="Logs"
+    <Grid Margin="30">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Logs"
                    FontSize="30"
                    FontWeight="Bold"
-                   Margin="30"
+                   Margin="0,0,0,4"
                    Foreground="{DynamicResource PrimaryTextBrush}"/>
 
-        <Border Grid.Row="2" Style="{StaticResource SurfaceCardStyle}" Margin="30,0,30,20">
-            <StackPanel Orientation="Vertical">
-                <TextBlock Text="Activity log of system changes" Foreground="{DynamicResource SecondaryTextBrush}" Margin="8,0,0,12" FontSize="13"/>
+        <TextBlock Grid.Row="0"
+                   Text="Activity log of system changes"
+                   FontSize="13"
+                   Margin="0,42,0,0"
+                   Foreground="{DynamicResource SecondaryTextBrush}"/>
 
-                <Border Style="{StaticResource TableCardStyle}" Padding="12">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+        <!-- Search -->
+        <Border Grid.Row="1"
+                Style="{StaticResource LogSearchContainerStyle}"
+                Margin="0,20,0,20"
+                MaxWidth="380"
+                HorizontalAlignment="Left">
 
-                        <!-- subtle header row inside the card -->
-                        <Border Background="{DynamicResource TableHeaderBrush}" CornerRadius="8" Padding="10" Grid.Row="0" Margin="0,0,0,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="220"/>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Time" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="0"/>
-                                <TextBlock Text="User ID" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="1"/>
-                                <TextBlock Text="Action" Style="{StaticResource TableHeaderTextStyle}" Grid.Column="2"/>
-                            </Grid>
-                        </Border>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding Logs}" AutoGenerateColumns="False" HeadersVisibility="None" Background="{DynamicResource CardBackgroundBrush}" RowBackground="Transparent" GridLinesVisibility="None" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" RowHeight="48" MaxHeight="420" ScrollViewer.VerticalScrollBarVisibility="Auto" AlternationCount="2" AlternatingRowBackground="{DynamicResource InputBackgroundBrush}">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
-                                <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
-                            </DataGrid.Resources>
+                <TextBlock Grid.Column="0"
+                           Text="&#xE721;"
+                           FontFamily="Segoe MDL2 Assets"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
 
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Time" Binding="{Binding TimeStamp, StringFormat=G}" ElementStyle="{StaticResource TableCellTextStyle}" Width="220"/>
-                                <DataGridTextColumn Header="User ID" Binding="{Binding AccountId}" ElementStyle="{StaticResource TableCellTextStyle}" Width="120"/>
-                                <DataGridTemplateColumn Header="Action" Width="*">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Action}" TextWrapping="Wrap" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13" MaxHeight="96"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </Border>
+                <TextBox Grid.Column="1"
+                         Width="300"
+                         Style="{StaticResource LogSearchTextBoxStyle}"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Tag="Search with employee name, action, etc"/>
 
-                <!-- No pager: show all logs with DataGrid scrolling -->
-            </StackPanel>
+            </Grid>
+
+        </Border>
+
+        <!-- Timeline -->
+        <Border Grid.Row="2" Style="{StaticResource LogsPageCardStyle}">
+
+            <Grid>
+
+                <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Disabled">
+
+                    <ItemsControl ItemsSource="{Binding DayGroups}">
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+
+                                <StackPanel Margin="0,0,0,28">
+
+                                    <!-- Day header -->
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding DayLabel}"
+                                                   Style="{StaticResource LogDayHeaderTextStyle}"/>
+
+                                        <Border Grid.Column="2"
+                                                Style="{StaticResource LogDayCountBadgeStyle}">
+                                            <TextBlock Text="{Binding Count}"
+                                                       Style="{StaticResource LogDayCountTextStyle}"/>
+                                        </Border>
+
+                                    </Grid>
+
+                                    <!-- Entries for this day -->
+                                    <ItemsControl ItemsSource="{Binding Entries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+
+                                                <Grid Margin="0,0,0,18">
+
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="70"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Left rail: time + dot + connecting line -->
+                                                    <Grid Grid.Column="0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock Grid.Row="0"
+                                                                   Text="{Binding TimeDisplay}"
+                                                                   Style="{StaticResource LogTimeTextStyle}"
+                                                                   Margin="0,0,0,8"/>
+
+                                                        <Ellipse Grid.Row="1"
+                                                                 Style="{StaticResource LogTimelineDotStyle}"/>
+
+                                                        <Border Grid.Row="2"
+                                                                Style="{StaticResource LogTimelineRailStyle}"
+                                                                Margin="0,6,0,0"/>
+
+                                                    </Grid>
+
+                                                    <!-- Entry card -->
+                                                    <Border Grid.Column="1"
+                                                            Style="{StaticResource LogEntryCardStyle}">
+
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- Avatar -->
+                                                            <Border Grid.Column="0"
+                                                                    Style="{StaticResource LogAvatarCircleStyle}"
+                                                                    Margin="0,0,12,0"
+                                                                    VerticalAlignment="Top">
+                                                                <TextBlock Text="{Binding Initials}"
+                                                                           Style="{StaticResource LogAvatarInitialsTextStyle}"/>
+                                                            </Border>
+
+                                                            <!-- Name + action + timestamp -->
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+
+                                                                <TextBlock FontSize="13.5" TextWrapping="Wrap">
+                                                                    <Run Text="{Binding EmployeeName, Mode=OneWay}"
+                                                                         Style="{StaticResource LogEmployeeNameRunStyle}"/>
+                                                                    <Run Text="  "/>
+                                                                    <Run Text="{Binding Action, Mode=OneWay}"
+                                                                         Style="{StaticResource LogActionRunStyle}"/>
+                                                                </TextBlock>
+
+                                                                <TextBlock Text="{Binding TimeStamp, StringFormat='MMM dd, yyyy - h:mm tt'}"
+                                                                           Style="{StaticResource LogTimestampSmallTextStyle}"
+                                                                           Margin="0,6,0,0"/>
+
+                                                            </StackPanel>
+
+                                                            <!-- Delete, positioned where the reference design shows
+                                                                 its "Failed" status pill -->
+                                                            <Button Grid.Column="2"
+                                                                    Content="Delete"
+                                                                    Style="{StaticResource LogDeleteButtonStyle}"
+                                                                    VerticalAlignment="Top"
+                                                                    Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=local:LogsView}}"
+                                                                    CommandParameter="{Binding}"/>
+
+                                                        </Grid>
+
+                                                    </Border>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </StackPanel>
+
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </ScrollViewer>
+
+                <TextBlock Text="No logs found."
+                           Style="{StaticResource TableEmptyStateStyle}"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}"/>
+
+            </Grid>
+
         </Border>
 
     </Grid>

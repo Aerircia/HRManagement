@@ -105,11 +105,12 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
-                    Background="{DynamicResource InputBackgroundBrush}"
+                    Background="{DynamicResource CardBackgroundBrush    }"
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="8"
-                    MaxWidth="320"
+                    CornerRadius="14"
+                    Width="340"
+                    Height="48"
                     HorizontalAlignment="Left">
 
                 <Grid>
@@ -131,6 +132,8 @@
                              BorderThickness="0"
                              Background="Transparent"
                              Padding="10,10"
+                             Width="300"
+                             VerticalContentAlignment="Center"
                              Foreground="{DynamicResource PrimaryTextBrush}"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 

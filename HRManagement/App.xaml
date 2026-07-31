@@ -22,6 +22,7 @@
                 <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
                 <ResourceDictionary Source="Resources/FormStyles.xaml"/>
+                <ResourceDictionary Source="/Resources/LogsStyles.xaml"/>
                 <ResourceDictionary Source="Resources/AnnouncementBoardStyles.xaml"/>
                 <ResourceDictionary Source="Resources/LoginStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ShellStyles.xaml"/>

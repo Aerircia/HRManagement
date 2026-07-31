@@ -41,6 +41,31 @@ public class LogService : ILogService
         }
     }
 
+    public List<SystemLogItemModel> GetLogItems()
+    {
+        try
+        {
+            return _repo.GetLogItems() ?? new List<SystemLogItemModel>();
+        }
+        catch
+        {
+            return new List<SystemLogItemModel>();
+        }
+    }
+
+    public bool DeleteLog(int logId)
+    {
+        try
+        {
+            _repo.DeleteLog(logId);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public void EnsureSeeded()
     {
         // Moved the seeding logic out of the ViewModel

@@ -75,6 +75,6 @@
     <Build Include="dbo\Tables\Announcement.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PostDeploy Include="Script.sql" />
+    <PostDeploy Include="seed.sql" />
   </ItemGroup>
 </Project>
