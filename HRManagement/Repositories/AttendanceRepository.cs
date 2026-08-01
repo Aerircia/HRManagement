@@ -97,4 +97,84 @@ public class AttendanceRepository : RepositoryBase, IAttendanceRepository
             }
         }
     }
+    public int GetTodayAttendanceCount(int departmentId)
+    {
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+        SELECT COUNT(*)
+        FROM Attendance a
+        INNER JOIN Employee e
+            ON e.EmployeeID = a.Employee_ID
+        WHERE e.Department_ID = @departmentId
+          AND CAST(ISNULL(a.Check_in, a.Check_out) AS date) = CAST(GETDATE() AS date)
+          AND a.Check_in IS NOT NULL;
+    ";
+
+        cmd.Parameters.Add(new SqlParameter("@departmentId", SqlDbType.Int)
+        {
+            Value = departmentId
+        });
+
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public double GetDepartmentHoursThisMonth(
+    int departmentId,
+    int year,
+    int month)
+    {
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1);
+
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = @"
+        SELECT
+            Check_in,
+            Check_out
+        FROM Attendance a
+        INNER JOIN Employee e
+            ON e.EmployeeID = a.Employee_ID
+        WHERE
+            e.Department_ID = @department
+            AND Check_in IS NOT NULL
+            AND Check_out IS NOT NULL
+            AND Check_in >= @start
+            AND Check_in < @end";
+
+        cmd.Parameters.Add(new SqlParameter("@department", SqlDbType.Int)
+        {
+            Value = departmentId
+        });
+
+        cmd.Parameters.Add(new SqlParameter("@start", SqlDbType.DateTime)
+        {
+            Value = start
+        });
+
+        cmd.Parameters.Add(new SqlParameter("@end", SqlDbType.DateTime)
+        {
+            Value = end
+        });
+
+        double totalHours = 0;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var checkIn = reader.GetDateTime(0);
+            var checkOut = reader.GetDateTime(1);
+
+            totalHours += (checkOut - checkIn).TotalHours;
+        }
+
+        return totalHours;
+    }
 }

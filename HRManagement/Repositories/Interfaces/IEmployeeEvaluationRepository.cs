@@ -67,5 +67,7 @@ namespace HRManagement.Repositories.Interfaces
         EmployeeEvaluation? GetLatestByEmployeeId(int employeeId);
         EmployeeEvaluation? GetById(int evaluationId);
         decimal GetTotalBonusForYear(int employeeId, int year);
+
+        decimal GetTotalBonusForMonth(int employeeId,int year,int month);
     }
 }

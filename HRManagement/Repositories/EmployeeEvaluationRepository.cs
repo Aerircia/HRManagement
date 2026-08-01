@@ -78,14 +78,43 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
         return result == null ? 0m : (decimal)result;
     }
 
+    public decimal GetTotalBonusForMonth(
+    int employeeId,
+    int year,
+    int month)
+    {
+        using var connection = Db.CreateConnection();
+        connection.Open();
+
+        const string sql = """
+        SELECT ISNULL(SUM(Amount), 0)
+        FROM EmployeeEvaluation
+        WHERE Employee_ID = @EmployeeId
+          AND YEAR(Bonus_Date) = @Year
+          AND MONTH(Bonus_Date) = @Month
+        """;
+
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@EmployeeId", employeeId);
+        command.Parameters.AddWithValue("@Year", year);
+        command.Parameters.AddWithValue("@Month", month);
+
+        var result = command.ExecuteScalar();
+
+        return result == null
+            ? 0m
+            : Convert.ToDecimal(result);
+    }
+
     public EmployeeEvaluation Map(SqlDataReader reader)
     {
         return new EmployeeEvaluation
         {
             EvaluationId = (int)reader["Evaluation_ID"],
             EmployeeId = (int)reader["Employee_ID"],
-            EvaluationType = reader["EvaluationType"] as string,
-            BonusType = reader["BonusType"] as string,
+            EvaluationType = (string)reader["EvaluationType"],
+            BonusType = (string)reader["BonusType"],
             Amount = (decimal)reader["Amount"],
             BonusDate = (System.DateTime)reader["Bonus_Date"]
         };
@@ -693,13 +722,9 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
             EmployeeId = reader.GetInt32(
                 reader.GetOrdinal("Employee_ID")),
 
-            EvaluationType = GetNullableString(
-                reader,
-                "EvaluationType"),
+            EvaluationType = (string)reader["EvaluationType"],
 
-            BonusType = GetNullableString(
-                reader,
-                "BonusType"),
+            BonusType = (string)reader["BonusType"],
 
             Amount = reader.GetDecimal(
                 reader.GetOrdinal("Amount")),
@@ -806,11 +831,7 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
     private static void ValidateEvaluation(
         EmployeeEvaluation evaluation)
     {
-        if (evaluation == null)
-        {
-            throw new ArgumentNullException(
-                nameof(evaluation));
-        }
+        ArgumentNullException.ThrowIfNull(evaluation);
 
         ValidateEmployeeId(
             evaluation.EmployeeId);

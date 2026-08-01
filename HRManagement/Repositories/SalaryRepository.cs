@@ -482,13 +482,9 @@ namespace HRManagement.Repositories
                 EmployeeId = reader.GetInt32(
                     reader.GetOrdinal("Employee_ID")),
 
-                EvaluationType = GetNullableString(
-                    reader,
-                    "EvaluationType"),
+                EvaluationType = (string)reader["EvaluationType"],
 
-                BonusType = GetNullableString(
-                    reader,
-                    "BonusType"),
+                BonusType = (string)reader["BonusType"],
 
                 Amount = reader.GetDecimal(
                     reader.GetOrdinal("Amount")),

@@ -1,342 +1,202 @@
 ﻿<UserControl x:Class="HRManagement.Views.Pages.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:HRManagement.Views.Pages"
-             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:HRManagement.Controls"
+             xmlns:vm="clr-namespace:HRManagement.ViewModels"
              mc:Ignorable="d"
-             d:DesignWidth="1240" d:DesignHeight="1000"
+             d:DesignHeight="900" d:DesignWidth="1200"
              Background="{DynamicResource WindowBackgroundBrush}">
 
     <UserControl.Resources>
 
-        <Style x:Key="DashCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="20"/>
-        </Style>
-
-        <Style x:Key="DashCardTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
-        </Style>
-
-        <Style x:Key="DashCardSubtleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
-        </Style>
-
-        <Style x:Key="QuickActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <Style x:Key="LatestEvaluationValueStyle" TargetType="TextBlock" BasedOn="{StaticResource AnalyticsValueStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding LatestEvaluation}" Value="{x:Null}">
+                    <Setter Property="Text" Value="None yet"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <Grid Margin="28">
+            <StackPanel Grid.Column="0">
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="Auto"/>
-                <!-- Personal Stats -->
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="Auto"/>
-                <!-- Team Stats (Mgmt) -->
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="Auto"/>
-                <!-- Chart Row -->
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="Auto"/>
-                <!-- Extra Announcement Row -->
-            </Grid.RowDefinitions>
+                <TextBlock Text="Activity" Style="{StaticResource SectionHeaderStyle}"/>
 
-            <!-- ============ Header ============ -->
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="{Binding GreetingMessage}"
-                               FontSize="26" FontWeight="Bold"
-                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    <TextBlock Text="{Binding ScopeLabel}"
-                               FontSize="13"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
-                               Margin="0,4,0,0"
-                               Visibility="{Binding IsManager, Converter={StaticResource BoolToVisibility}}"/>
-                </StackPanel>
-
-                <!-- Quick actions (Everyone) -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Width="120" Margin="0,0,10,0" Command="{Binding CheckInCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="RightToBracket" Width="15" Height="15" Foreground="{DynamicResource SuccessBrush}"/>
-                            <TextBlock Text="Check In" Margin="8,0,0,0" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Width="120" Margin="0,0,10,0" Command="{Binding CheckOutCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="RightFromBracket" Width="15" Height="15" Foreground="{DynamicResource WarningBrush}"/>
-                            <TextBlock Text="Check Out" Margin="8,0,0,0" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Width="140" Margin="0,0,10,0" Command="{Binding GoToRequestsCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="CalendarDay" Width="15" Height="15" Foreground="{DynamicResource PrimaryBrush}"/>
-                            <TextBlock Text="Request Day Off" Margin="8,0,0,0" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Width="130" Command="{Binding GoToSalaryCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Icon="FileInvoiceDollar" Width="15" Height="15" Foreground="{DynamicResource AccentBrush}"/>
-                            <TextBlock Text="View Payslip" Margin="8,0,0,0" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-
-            </Grid>
-
-            <!-- ============ Row 1: Personal Stats (Everyone) ============ -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource DashCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="My Hours This Month" Style="{StaticResource DashCardTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}">
-                            <Run Text="{Binding MyLoggedHoursThisMonth, Mode=OneWay}"/>
-                            <Run Text=" / " Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                            <Run Text="{Binding MyTargetHoursThisMonth, Mode=OneWay}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                            <Run Text=" h" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                        </TextBlock>
-                        <Border Height="8" CornerRadius="4" Background="{DynamicResource InputBackgroundBrush}" Margin="0,12,0,0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{Binding MyHoursProgressPercentage, Converter={StaticResource PercentageToStarConverter}}"/>
-                                    <ColumnDefinition Width="{Binding MyHoursProgressPercentage, Converter={StaticResource PercentageToStarConverter}, ConverterParameter=Remainder}"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" CornerRadius="4" Background="{DynamicResource PrimaryBrush}"/>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource DashCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="My Today's Attendance" Style="{StaticResource DashCardTitleStyle}"/>
-                        <TextBlock Text="{Binding TodayAttendanceStatus}" Margin="0,14,0,0" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="4" Style="{StaticResource DashCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="My Latest Evaluation" Style="{StaticResource DashCardTitleStyle}"/>
-                        <TextBlock Text="{Binding LatestEvaluationAmountDisplay}" Margin="0,10,0,0" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        <TextBlock Text="{Binding LatestEvaluationDisplay}" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <!-- ============ Row 2: Team Stats (Manager/Admin Only) ============ -->
-            <Grid Grid.Row="4" Visibility="{Binding IsManager, Converter={StaticResource BoolToVisibility}}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource DashCardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Team Hours This Month" Style="{StaticResource DashCardTitleStyle}"/>
-                        <TextBlock Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}">
-                            <Run Text="{Binding TeamLoggedHoursThisMonth, Mode=OneWay}"/>
-                            <Run Text=" / " Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                            <Run Text="{Binding TeamTargetHoursThisMonth, Mode=OneWay}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                            <Run Text=" h" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource DashCardStyle}" Padding="0">
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Background="Transparent" BorderBrush="Transparent" Command="{Binding GoToManageAttendancesCommand}">
-                        <StackPanel>
-                            <TextBlock Text="Team Today's Check-ins" Style="{StaticResource DashCardTitleStyle}"/>
-                            <TextBlock Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}">
-                                <Run Text="{Binding TodayCheckedIn, Mode=OneWay}"/>
-                                <Run Text=" / " Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                                <Run Text="{Binding TodayTotalEmployees, Mode=OneWay}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="16"/>
-                            </TextBlock>
-                            <TextBlock Text="checked in today" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Button>
-                </Border>
-
-                <Border Grid.Column="4" Style="{StaticResource DashCardStyle}" Padding="0">
-                    <Button Style="{StaticResource QuickActionButtonStyle}" Background="Transparent" BorderBrush="Transparent" Command="{Binding GoToManageRequestsCommand}">
-                        <StackPanel>
-                            <TextBlock Text="Pending Team Requests" Style="{StaticResource DashCardTitleStyle}"/>
-                            <TextBlock Text="{Binding PendingRequestsCount}" Margin="0,10,0,0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource WarningBrush}"/>
-                            <TextBlock Text="awaiting your review" Style="{StaticResource DashCardSubtleStyle}" Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Button>
-                </Border>
-            </Grid>
-
-            <!-- ============ Row 3: Payout Chart + Side Panel ============ -->
-            <Grid Grid.Row="6">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.7*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Chart Box (Dual lines handle themselves via ViewModel) -->
-                <Border Grid.Column="0" Style="{StaticResource DashCardStyle}" MinHeight="350">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Monthly Payout Overview" Style="{StaticResource DashCardTitleStyle}"/>
-                        <lvc:CartesianChart Grid.Row="1" Margin="0,14,0,0" Series="{Binding PayoutSeries}" XAxes="{Binding PayoutXAxes}" YAxes="{Binding PayoutYAxes}" TooltipPosition="Top" LegendPosition="Right"/>
-                    </Grid>
-                </Border>
-
-                <!-- Right Side: Pending requests list (Manager) OR Announcements list (Employee-only view) -->
-                <!-- Managers see pending requests here, because announcements get a full row below. Employees see announcements here because they lack the bottom row. -->
-
-                <!-- Mgmt View -->
-                <Border Grid.Column="2" Style="{StaticResource DashCardStyle}" Visibility="{Binding IsManager, Converter={StaticResource BoolToVisibility}}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Recent Pending Requests" Style="{StaticResource DashCardTitleStyle}" Margin="0,0,0,12"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding PendingRequestsCount, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}">
-                            <ItemsControl ItemsSource="{Binding PendingRequests}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="0,10">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding EmployeeName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                                <TextBlock Text="{Binding RequestType}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,2,0,0"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                        <TextBlock Grid.Row="1" Text="No pending requests." Style="{StaticResource DashCardSubtleStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding PendingRequestsCount, Converter={StaticResource ZeroToVisibleConverter}}"/>
-                    </Grid>
-                </Border>
-
-                <!-- Employee View -->
-                <Border Grid.Column="2">
-                    <Border.Style>
-                        <Style TargetType="Border" BasedOn="{StaticResource DashCardStyle}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <!-- Only visible when NOT a manager -->
-                                <DataTrigger Binding="{Binding IsManager}" Value="False">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Announcements" Style="{StaticResource DashCardTitleStyle}" Margin="0,0,0,12"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Announcements}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="0,10">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding Content}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                                <TextBlock Margin="0,6,0,0" FontSize="11" Foreground="{DynamicResource HintTextBrush}">
-                                                    <Run Text="{Binding PostedByName, Mode=OneWay}"/>
-                                                    <Run Text=" · "/>
-                                                    <Run Text="{Binding PostedDate, StringFormat='MMM dd, yyyy', Mode=OneWay}"/>
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- ============ Row 4: Wide Announcements Board (Manager/Admin Only) ============ -->
-            <Border Grid.Row="8" Style="{StaticResource DashCardStyle}" Visibility="{Binding IsManager, Converter={StaticResource BoolToVisibility}}">
-                <Grid>
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="14"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Company Announcements" Style="{StaticResource DashCardTitleStyle}" Margin="0,0,0,12"/>
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Announcements}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="3"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource InputBackgroundBrush}" CornerRadius="10" Padding="14" Margin="0,0,12,12">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding Content}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,6,0,0" TextWrapping="Wrap" MaxHeight="60" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="{DynamicResource HintTextBrush}">
-                                            <Run Text="{Binding PostedByName, Mode=OneWay}"/>
-                                            <Run Text=" · "/>
-                                            <Run Text="{Binding PostedDate, StringFormat='MMM dd, yyyy', Mode=OneWay}"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-            </Border>
 
+                    <Button Grid.Row="0" Grid.Column="0"
+                            Style="{StaticResource ActivityCardStyle}"
+                            Background="{DynamicResource PrimaryButtonBrush}"
+                            Command="{Binding CheckInCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <TextBlock Text="Check In" Style="{StaticResource ActivityLabelStyle}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Row="0" Grid.Column="2"
+                            Style="{StaticResource ActivityCardStyle}"
+                            Background="{DynamicResource SuccessBrush}"
+                            Command="{Binding CheckOutCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <TextBlock Text="Check Out" Style="{StaticResource ActivityLabelStyle}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Row="2" Grid.Column="0"
+                            Style="{StaticResource ActivityCardStyle}"
+                            Background="{DynamicResource OtBrush}"
+                            Command="{Binding SendRequestCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <TextBlock Text="Send Requests" Style="{StaticResource ActivityLabelStyle}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Row="2" Grid.Column="2"
+                            Style="{StaticResource ActivityCardStyle}"
+                            Background="{DynamicResource PrimaryDarkBrush}"
+                            Command="{Binding ViewPayslipCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <TextBlock Text="View Payslip" Style="{StaticResource ActivityLabelStyle}"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <TextBlock Text="Analytics" Style="{StaticResource SectionHeaderStyle}"/>
+
+                <Border Style="{StaticResource AnalyticsCardStyle}" Margin="0,0,0,16">
+                    <StackPanel DataContext="{Binding EmployeeAnalytics}">
+
+                        <Border Style="{StaticResource AnalyticsRowDividerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Hours this month" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding HoursThisMonth, StringFormat={}{0:0.##} hrs}" Style="{StaticResource AnalyticsValueStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource AnalyticsRowDividerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Today's attendance" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TodayAttendance}" Style="{StaticResource AnalyticsValueStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource AnalyticsRowDividerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Latest evaluation" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="1" Style="{StaticResource LatestEvaluationValueStyle}">
+                                    <Run Text="{Binding LatestEvaluation.BonusType, TargetNullValue=''}"/>
+                                    <Run Text=" · "/>
+                                    <Run Text="{Binding LatestEvaluation.Amount, StringFormat={}{0:N0} VND, TargetNullValue=''}"/>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Total bonus this month" Style="{StaticResource AnalyticsLabelStyle}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TotalBonusThisMonth, StringFormat={}{0:N0} VND}" Style="{StaticResource AnalyticsValueStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource AnalyticsCardStyle}"
+                        Visibility="{Binding ShowManagerAnalytics, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel DataContext="{Binding ManagerAnalytics}">
+
+                        <Border Style="{StaticResource AnalyticsRowDividerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Team hours this month" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding TeamHoursThisMonth, StringFormat={}{0:0.##} hrs}" Style="{StaticResource AnalyticsValueStyle}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource AnalyticsRowDividerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Team attendance today" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="1" Style="{StaticResource AnalyticsValueStyle}">
+                                    <Run Text="{Binding TodayAttendanceCount, Mode=OneWay}"/>
+                                    <Run Text=" / "/>
+                                    <Run Text="{Binding TotalEmployees, Mode=OneWay}"/>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Total employees" Style="{StaticResource AnalyticsLabelStyle}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TotalEmployees}" Style="{StaticResource AnalyticsValueStyle}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+
+                <TextBlock Text="Calendar" Style="{StaticResource SectionHeaderStyle}"/>
+
+                <controls:WeeklyCalendar WeekDays="{Binding WeekDays}" Margin="0,0,0,24"/>
+
+                <TextBlock Text="Monthly Payout Review" Style="{StaticResource SectionHeaderStyle}"/>
+                
+                <controls:AttendanceChart WeeklyHours="{Binding WeeklyHours}" Margin="0,0,0,24"/>
+
+                <TextBlock Text="Company Announcement" Style="{StaticResource SectionHeaderStyle}"/>
+                
+                <controls:AnnouncementCard Announcements="{Binding Announcements}"/>
+
+            </StackPanel>
         </Grid>
     </ScrollViewer>
 </UserControl>

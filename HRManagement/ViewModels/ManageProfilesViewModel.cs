@@ -24,8 +24,17 @@ namespace HRManagement.ViewModels
             RoleOptions = _manageProfilesService.GetRoleOptions();
             StatusOptionsList = StatusOptions;
 
+            DepartmentFilterOptions = new ObservableCollection<IdNamePair>();
+            RoleFilterOptions = new ObservableCollection<IdNamePair> { AllRolesOption };
+            foreach (var role in RoleOptions)
+                RoleFilterOptions.Add(role);
+
+            SortOptions = new List<string> { "Name (A-Z)", "Name (Z-A)", "Hire Date (Newest)", "Hire Date (Oldest)" };
+            _selectedSort = SortOptions[0];
+
             EmployeesView = CollectionViewSource.GetDefaultView(Employees);
             EmployeesView.Filter = FilterEmployee;
+            ApplySort();
 
             AddCommand = new RelayCommand(_ => OpenAddForm());
             EditCommand = new RelayCommand(param => OpenEditForm(param as EmployeeProfileItemModel));
@@ -46,6 +55,9 @@ namespace HRManagement.ViewModels
 
         public static readonly List<string> StatusOptions = new() { "Active", "Inactive", "On Leave" };
 
+        private static readonly IdNamePair AllDepartmentsOption = new(0, "All Departments");
+        private static readonly IdNamePair AllRolesOption = new(0, "All Roles");
+
         //Access control
 
         public bool HasAccess { get; }
@@ -59,6 +71,44 @@ namespace HRManagement.ViewModels
         public List<IdNamePair> RoleOptions { get; }
         public List<string> StatusOptionsList { get; }
 
+        //Summary stat cards (Total / Active / On Leave / Inactive)
+
+        private int _totalEmployeesCount;
+        public int TotalEmployeesCount
+        {
+            get => _totalEmployeesCount;
+            private set => SetProperty(ref _totalEmployeesCount, value);
+        }
+
+        private int _activeEmployeesCount;
+        public int ActiveEmployeesCount
+        {
+            get => _activeEmployeesCount;
+            private set => SetProperty(ref _activeEmployeesCount, value);
+        }
+
+        private int _onLeaveEmployeesCount;
+        public int OnLeaveEmployeesCount
+        {
+            get => _onLeaveEmployeesCount;
+            private set => SetProperty(ref _onLeaveEmployeesCount, value);
+        }
+
+        private int _inactiveEmployeesCount;
+        public int InactiveEmployeesCount
+        {
+            get => _inactiveEmployeesCount;
+            private set => SetProperty(ref _inactiveEmployeesCount, value);
+        }
+
+        // Filter dropdown sources (Department/Role) - separate from the
+        // Add/Edit form's Departments/RoleOptions since these need an
+        // "All" entry the form lists shouldn't have.
+        public ObservableCollection<IdNamePair> DepartmentFilterOptions { get; }
+        public ObservableCollection<IdNamePair> RoleFilterOptions { get; }
+
+        public List<string> SortOptions { get; }
+
         private string _searchText = string.Empty;
         public string SearchText
         {
@@ -67,6 +117,39 @@ namespace HRManagement.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                     EmployeesView.Refresh();
+            }
+        }
+
+        private IdNamePair _selectedDepartmentFilter;
+        public IdNamePair SelectedDepartmentFilter
+        {
+            get => _selectedDepartmentFilter;
+            set
+            {
+                if (SetProperty(ref _selectedDepartmentFilter, value))
+                    EmployeesView.Refresh();
+            }
+        }
+
+        private IdNamePair _selectedRoleFilter;
+        public IdNamePair SelectedRoleFilter
+        {
+            get => _selectedRoleFilter;
+            set
+            {
+                if (SetProperty(ref _selectedRoleFilter, value))
+                    EmployeesView.Refresh();
+            }
+        }
+
+        private string _selectedSort;
+        public string SelectedSort
+        {
+            get => _selectedSort;
+            set
+            {
+                if (SetProperty(ref _selectedSort, value))
+                    ApplySort();
             }
         }
 
@@ -228,6 +311,14 @@ namespace HRManagement.ViewModels
             Departments.Clear();
             foreach (var department in _manageProfilesService.GetDepartments())
                 Departments.Add(department);
+
+            DepartmentFilterOptions.Clear();
+            DepartmentFilterOptions.Add(AllDepartmentsOption);
+            foreach (var department in Departments)
+                DepartmentFilterOptions.Add(department);
+
+            SelectedDepartmentFilter ??= AllDepartmentsOption;
+            SelectedRoleFilter ??= AllRolesOption;
         }
 
         private void LoadEmployees()
@@ -235,12 +326,36 @@ namespace HRManagement.ViewModels
             Employees.Clear();
             foreach (var employee in _manageProfilesService.GetEmployees())
                 Employees.Add(employee);
+
+            UpdateStats();
+        }
+
+        private void UpdateStats()
+        {
+            TotalEmployeesCount = Employees.Count;
+            ActiveEmployeesCount = Employees.Count(e => string.Equals(e.Status, "Active", StringComparison.OrdinalIgnoreCase));
+            OnLeaveEmployeesCount = Employees.Count(e => string.Equals(e.Status, "On Leave", StringComparison.OrdinalIgnoreCase));
+            InactiveEmployeesCount = Employees.Count(e => string.Equals(e.Status, "Inactive", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool FilterEmployee(object obj)
         {
             if (obj is not EmployeeProfileItemModel row)
                 return false;
+
+            if (SelectedDepartmentFilter != null
+                && SelectedDepartmentFilter.Id != 0
+                && row.Employee.DepartmentId != SelectedDepartmentFilter.Id)
+            {
+                return false;
+            }
+
+            if (SelectedRoleFilter != null
+                && SelectedRoleFilter.Id != 0
+                && row.Employee.RoleId != SelectedRoleFilter.Id)
+            {
+                return false;
+            }
 
             if (string.IsNullOrWhiteSpace(SearchText))
                 return true;
@@ -249,6 +364,30 @@ namespace HRManagement.ViewModels
 
             return row.FullName.Contains(term, StringComparison.OrdinalIgnoreCase)
                 || row.Email.Contains(term, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplySort()
+        {
+            EmployeesView.SortDescriptions.Clear();
+
+            switch (SelectedSort)
+            {
+                case "Name (Z-A)":
+                    EmployeesView.SortDescriptions.Add(new SortDescription(nameof(EmployeeProfileItemModel.FullName), ListSortDirection.Descending));
+                    break;
+
+                case "Hire Date (Newest)":
+                    EmployeesView.SortDescriptions.Add(new SortDescription($"{nameof(EmployeeProfileItemModel.Employee)}.{nameof(Models.Employee.HireDate)}", ListSortDirection.Descending));
+                    break;
+
+                case "Hire Date (Oldest)":
+                    EmployeesView.SortDescriptions.Add(new SortDescription($"{nameof(EmployeeProfileItemModel.Employee)}.{nameof(Models.Employee.HireDate)}", ListSortDirection.Ascending));
+                    break;
+
+                default: // "Name (A-Z)"
+                    EmployeesView.SortDescriptions.Add(new SortDescription(nameof(EmployeeProfileItemModel.FullName), ListSortDirection.Ascending));
+                    break;
+            }
         }
 
         //Add / Edit Employee
@@ -347,6 +486,8 @@ namespace HRManagement.ViewModels
                     }
                 }
 
+                UpdateStats();
+
                 IsFormOpen = false;
             }
             catch (Exception ex)
@@ -375,6 +516,7 @@ namespace HRManagement.ViewModels
             {
                 _manageProfilesService.DeleteEmployee(PendingDelete.Employee.EmployeeId);
                 Employees.Remove(PendingDelete);
+                UpdateStats();
             }
             finally
             {

@@ -5,15 +5,11 @@ using HRManagement.ViewModels;
 
 namespace HRManagement.Services;
 
-/// <summary>
-/// Backing service for ProfileViewModel ("My Profile" page). Owns loading
-/// the signed-in employee's personal/employment info and dashboard stats,
-/// and saving edits to the editable profile fields. Pulled out of the
-/// ViewModel so the view -> viewmodel -> service -> repository flow matches
-/// the rest of the app (see ManageProfilesService, EmployeeEvaluationService).
-/// </summary>
 public class ProfileService : IProfileService
 {
+    private const int AnnualPtoAllowanceDays = ProfileData.AnnualPtoAllowanceDays;
+    private const decimal RetirementContributionRate = 0.07m;
+
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IContractRepository _contractRepository;
@@ -22,6 +18,8 @@ public class ProfileService : IProfileService
     private readonly IPayrollRepository _payrollRepository;
     private readonly IRequestFormRepository _requestFormRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly ISalaryRepository _salaryRepository;
+    private readonly ISalaryCalculator _salaryCalculator;
     private readonly ILogService _logService;
 
     public ProfileService(
@@ -33,6 +31,8 @@ public class ProfileService : IProfileService
         IPayrollRepository payrollRepository,
         IRequestFormRepository requestFormRepository,
         IRoleRepository roleRepository,
+        ISalaryRepository salaryRepository,
+        ISalaryCalculator salaryCalculator,
         ILogService logService)
     {
         _employeeRepository = employeeRepository;
@@ -43,6 +43,8 @@ public class ProfileService : IProfileService
         _payrollRepository = payrollRepository;
         _requestFormRepository = requestFormRepository;
         _roleRepository = roleRepository;
+        _salaryRepository = salaryRepository;
+        _salaryCalculator = salaryCalculator;
         _logService = logService;
     }
 
@@ -55,7 +57,8 @@ public class ProfileService : IProfileService
         var data = new ProfileData
         {
             Employee = employee,
-            RoleLabel = _roleRepository.GetById(employee.RoleId)?.RoleName ?? "Employee"
+            RoleLabel = _roleRepository.GetById(employee.RoleId)?.RoleName ?? "Employee",
+            Address = employee.Address
         };
 
         var department = _departmentRepository.GetById(employee.DepartmentId);
@@ -83,6 +86,9 @@ public class ProfileService : IProfileService
         }
 
         LoadDashboardStats(employee, data);
+        LoadGlobalStats(employee, currentContract, data);
+        LoadJobHistory(employee, data);
+        LoadCompensationAndBenefits(employee, currentContract, data);
 
         return data;
     }
@@ -91,7 +97,6 @@ public class ProfileService : IProfileService
     {
         var now = DateTime.Now;
 
-        // Attendance
         var attendanceRecords = _attendanceRepository
             .GetAttendancesForEmployeeMonth(employee.EmployeeId, now.Year, now.Month)
             .ToList();
@@ -106,7 +111,6 @@ public class ProfileService : IProfileService
             ? $"{presentCount} present / {totalAttendanceRecords - presentCount} other this month"
             : "No attendance records this month";
 
-        // Requests
         var thisYearRequests = _requestFormRepository.GetByEmployeeId(employee.EmployeeId)
             .Where(r => r.SubmitDate.Year == now.Year)
             .ToList();
@@ -121,7 +125,6 @@ public class ProfileService : IProfileService
             ? $"{approvedCount} approved / {totalRequests} total this year"
             : "No requests submitted this year";
 
-        // Latest evaluation / bonus
         var latestEvaluation = _evaluationRepository.GetLatestByEmployeeId(employee.EmployeeId);
         if (latestEvaluation != null)
         {
@@ -139,7 +142,6 @@ public class ProfileService : IProfileService
             .GetTotalBonusForYear(employee.EmployeeId, now.Year)
             .ToString("C0");
 
-        // Latest payslip
         var latestPayroll = _payrollRepository.GetLatestByEmployeeId(employee.EmployeeId);
         if (latestPayroll != null)
         {
@@ -156,6 +158,237 @@ public class ProfileService : IProfileService
             data.LatestPayslipDate = "No payroll yet";
             data.LatestPayslipAmount = "—";
         }
+    }
+
+    private void LoadGlobalStats(Employee employee, Contract? currentContract, ProfileData data)
+    {
+        var now = DateTime.Now;
+
+        var yearStart = new DateTime(now.Year, 1, 1);
+        var yearEnd = new DateTime(now.Year, 12, 31);
+
+        var approvedDayOffRequests = _requestFormRepository
+            .GetByEmployeeId(employee.EmployeeId)
+            .Where(r =>
+                string.Equals(r.RequestType, "Day Off", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(r.Status, "Approved", StringComparison.OrdinalIgnoreCase) &&
+                r.StartDate.HasValue && r.EndDate.HasValue)
+            .ToList();
+
+        var daysUsed = 0;
+        foreach (var request in approvedDayOffRequests)
+        {
+            var start = request.StartDate!.Value.Date;
+            var end = request.EndDate!.Value.Date;
+
+            var clippedStart = start < yearStart ? yearStart : start;
+            var clippedEnd = end > yearEnd ? yearEnd : end;
+
+            if (clippedEnd < clippedStart)
+                continue;
+
+            daysUsed += (clippedEnd - clippedStart).Days + 1;
+        }
+
+        data.PtoDaysUsed = daysUsed;
+        data.PtoDaysRemaining = Math.Max(0, AnnualPtoAllowanceDays - daysUsed);
+
+        var (years, months) = CalculateTenure(employee.HireDate, now);
+        data.TenureYears = years;
+        data.TenureMonths = months;
+        data.TenureDisplay = $"{years}y {months}m";
+
+        if (currentContract != null && years > 0)
+        {
+            var annualSalary = currentContract.BaseSalary * 12m;
+            data.RetirementSavings = annualSalary * RetirementContributionRate * years;
+        }
+        else
+        {
+            data.RetirementSavings = 0m;
+        }
+
+        var rewardCount = 0;
+        var penaltyCount = 0;
+
+        var cursorYear = Math.Max(employee.HireDate.Year, 2000);
+        var cursorMonth = employee.HireDate.Year >= 2000 ? employee.HireDate.Month : 1;
+        var cursor = new DateTime(cursorYear, cursorMonth, 1);
+        var evaluationScanEnd = new DateTime(now.Year, now.Month, 1);
+
+        while (cursor <= evaluationScanEnd)
+        {
+            var monthlyEvaluations = _evaluationRepository.GetEvaluationsByEmployee(
+                employee.EmployeeId, cursor.Month, cursor.Year);
+
+            foreach (var evaluation in monthlyEvaluations)
+            {
+                if (evaluation.IsReward)
+                    rewardCount++;
+                else if (evaluation.IsPenalty)
+                    penaltyCount++;
+            }
+
+            cursor = cursor.AddMonths(1);
+        }
+
+        data.TotalRewardCount = rewardCount;
+        data.TotalPenaltyCount = penaltyCount;
+
+        var totalEvaluations = rewardCount + penaltyCount;
+        data.PerformanceRewardRatio = totalEvaluations > 0
+            ? (double)rewardCount / totalEvaluations
+            : 0;
+
+        data.PerformanceSummaryDisplay = totalEvaluations > 0
+            ? $"{rewardCount} reward{(rewardCount == 1 ? "" : "s")} / {penaltyCount} penalt{(penaltyCount == 1 ? "y" : "ies")}"
+            : "No evaluations on file";
+    }
+
+    private static (int Years, int Months) CalculateTenure(DateTime hireDate, DateTime asOf)
+    {
+        var hire = hireDate.Date;
+        var today = asOf.Date;
+
+        if (today < hire)
+            return (0, 0);
+
+        var years = today.Year - hire.Year;
+        var months = today.Month - hire.Month;
+
+        if (today.Day < hire.Day)
+            months--;
+
+        if (months < 0)
+        {
+            years--;
+            months += 12;
+        }
+
+        return (Math.Max(0, years), Math.Max(0, months));
+    }
+
+    private void LoadJobHistory(Employee employee, ProfileData data)
+    {
+        var contracts = _contractRepository.GetAllByEmployeeId(employee.EmployeeId);
+
+        data.JobHistory = contracts
+            .OrderByDescending(c => c.StartDate)
+            .Select(c => new JobHistoryEntry
+            {
+                ContractType = c.ContractType,
+                Status = c.Status,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                IsCurrent = string.Equals(c.Status, "Active", StringComparison.OrdinalIgnoreCase),
+                DateRangeDisplay = c.EndDate.HasValue
+                    ? $"{c.StartDate:MMM yyyy} - {c.EndDate.Value:MMM yyyy}"
+                    : $"{c.StartDate:MMM yyyy} - Present"
+            })
+            .ToList();
+    }
+
+    private void LoadCompensationAndBenefits(Employee employee, Contract? currentContract, ProfileData data)
+    {
+        if (currentContract == null)
+        {
+            data.CurrentBaseSalaryDisplay = "—";
+            data.CurrentPayRateDisplay = "—";
+            data.CurrentNetSalaryDisplay = "—";
+            data.CurrentSalaryPeriodDisplay = "—";
+            data.Benefits = [];
+            return;
+        }
+
+        var role = _roleRepository.GetById(currentContract.RoleId);
+
+        data.CurrentBaseSalaryDisplay = currentContract.BaseSalary.ToString("C0");
+        data.CurrentPayRateDisplay = role != null ? role.PayRate.ToString("N2") : "—";
+
+        // Net salary for the current month, computed the same way
+        // SalaryView/ManageSalariesView do (ISalaryCalculator fed by
+        // ISalaryRepository), so this figure can never drift from what
+        // those pages would show for the same employee/period.
+        //
+        // Unlike SalaryView, this is NOT gated on PayrollExists() - the
+        // Profile page's Compensation card is meant to be a live estimate
+        // of the current month's earnings-to-date, not a record of an
+        // already-finalized payslip. Gating on PayrollExists would leave
+        // this card blank for most of every month (payroll is typically
+        // created at month end), which isn't useful here. The Quick Info
+        // card elsewhere on this same page already shows the actual last
+        // *finalized* payslip (LatestPayslipAmount/LatestPayslipDate) via
+        // IPayrollRepository - that one IS a record of a real created
+        // payroll row, so the two figures serve different purposes and can
+        // legitimately differ.
+        var now = DateTime.Now;
+
+        if (role != null)
+        {
+            var departmentName = _salaryRepository.GetDepartmentName(employee.DepartmentId);
+            var attendances = _salaryRepository.GetAttendances(employee.EmployeeId, now.Month, now.Year);
+            var evaluations = _salaryRepository.GetEvaluations(employee.EmployeeId, now.Month, now.Year);
+
+            var detail = _salaryCalculator.CalculateSalary(
+                employee,
+                currentContract,
+                role,
+                attendances,
+                evaluations,
+                departmentName,
+                now.Month,
+                now.Year);
+
+            data.CurrentNetSalaryDisplay = detail.TotalSalary.ToString("C0");
+            data.CurrentSalaryPeriodDisplay = $"{now.Month:00}/{now.Year}";
+        }
+        else
+        {
+            data.CurrentNetSalaryDisplay = "—";
+            data.CurrentSalaryPeriodDisplay = "—";
+        }
+
+        data.Benefits = ResolveBenefits(currentContract.ContractType);
+    }
+
+    private static List<string> ResolveBenefits(string contractType)
+    {
+        var normalized = contractType.Trim();
+
+        if (string.Equals(normalized, "Full-time", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                "Health insurance (full coverage)",
+                "Paid time off accrual",
+                "Retirement contribution plan"
+            ];
+        }
+
+        if (string.Equals(normalized, "Part-time", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                "Health insurance (partial coverage)",
+                "Prorated paid time off"
+            ];
+        }
+
+        if (string.Equals(normalized, "Internship", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+            [
+                "Mentorship program",
+                "Stipend allowance"
+            ];
+        }
+
+        if (string.Equals(normalized, "Seasonal", StringComparison.OrdinalIgnoreCase))
+        {
+            return ["Seasonal allowance"];
+        }
+
+        return ["Standard employment benefits"];
     }
 
     public ProfileUpdateResult UpdateProfile(int employeeId, ProfileUpdateInput input)
@@ -185,16 +418,19 @@ public class ProfileService : IProfileService
         var newEmail = input.Email.Trim();
         var newPhone = string.IsNullOrWhiteSpace(input.Phone) ? null : input.Phone.Trim();
         var newDateOfBirth = input.DateOfBirth ?? employee.DateOfBirth;
+        var newAddress = string.IsNullOrWhiteSpace(input.Address) ? null : input.Address.Trim();
 
         if (employee.FullName != newFullName) changes.Add("Full Name");
         if (employee.Email != newEmail) changes.Add("Email");
         if ((employee.Phone ?? "") != (newPhone ?? "")) changes.Add("Phone");
         if (employee.DateOfBirth != newDateOfBirth) changes.Add("Date of Birth");
+        if ((employee.Address ?? "") != (newAddress ?? "")) changes.Add("Address");
 
         employee.FullName = newFullName;
         employee.Email = newEmail;
         employee.Phone = newPhone;
         employee.DateOfBirth = newDateOfBirth;
+        employee.Address = newAddress;
 
         _employeeRepository.Update(employee);
 

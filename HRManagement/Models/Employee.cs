@@ -21,4 +21,9 @@ public class Employee
     public string Status { get; set; } = string.Empty;
 
     public string? Avatar { get; set; }
+
+    // Added for the Profile page's Personal Details card. Requires a
+    // matching nullable NVARCHAR(255) "Address" column on the Employee
+    // table - see the SQL note at the top of EmployeeRepository.cs.
+    public string? Address { get; set; }
 }

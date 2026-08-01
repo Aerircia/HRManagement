@@ -1,0 +1,114 @@
+﻿<UserControl x:Class="HRManagement.Controls.WeeklyCalendar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dashboard="clr-namespace:HRManagement.Models.Dashboard;assembly=HRManagement"
+             mc:Ignorable="d"
+             d:DesignHeight="90" d:DesignWidth="620">
+
+    <UserControl.Resources>
+
+        <!-- Pill for a single day cell. "Today" state is toggled via the
+             DataTemplate.Triggers below, matching the blue pill used for
+             "Tue 30" in the reference dashboard. -->
+        <Style x:Key="DayPillStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="72"/>
+        </Style>
+
+        <Style x:Key="DayNameTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="DayNumberTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <!-- Base look for the small status dot under the date. The actual
+             Fill color is decided per-item by StatusDotDynamicStyle below
+             (which is BasedOn this one), so this only carries size/layout. -->
+        <Style x:Key="StatusDotStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="5"/>
+            <Setter Property="Height" Value="5"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="Fill" Value="Transparent"/>
+        </Style>
+
+        <!-- Per-item color variant: green = checked in/out complete, amber =
+             checked in only, red = absent/late, transparent otherwise.
+             Declared once here (not inline per-item) so DataTemplate only
+             ever sets Style a single time on the Ellipse below. -->
+        <Style x:Key="StatusDotDynamicStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusDotStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCheckedIn}" Value="True">
+                    <Setter Property="Fill" Value="{DynamicResource WarningBrush}"/>
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsCheckedIn}" Value="True"/>
+                        <Condition Binding="{Binding IsCheckedOut}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Absent">
+                    <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Late">
+                    <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Padding="12">
+
+        <ItemsControl ItemsSource="{Binding WeekDays, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type dashboard:WeekDayItem}">
+                    <Border x:Name="Pill" Style="{StaticResource DayPillStyle}">
+                        <StackPanel>
+                            <TextBlock x:Name="DayNameText"
+                                       Text="{Binding DayName}"
+                                       Style="{StaticResource DayNameTextStyle}"/>
+                            <TextBlock x:Name="DayNumberText"
+                                       Text="{Binding Date, StringFormat={}{0:dd/MM}}"
+                                       Style="{StaticResource DayNumberTextStyle}"/>
+
+                            <Ellipse x:Name="StatusDot" Style="{StaticResource StatusDotDynamicStyle}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsToday}" Value="True">
+                            <Setter TargetName="Pill" Property="Background" Value="{DynamicResource PrimaryButtonBrush}"/>
+                            <Setter TargetName="DayNameText" Property="Foreground" Value="{DynamicResource WhiteBrush}"/>
+                            <Setter TargetName="DayNameText" Property="Opacity" Value="0.85"/>
+                            <Setter TargetName="DayNumberText" Property="Foreground" Value="{DynamicResource WhiteBrush}"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Border>
+</UserControl>

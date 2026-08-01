@@ -6,7 +6,7 @@
              xmlns:controls="clr-namespace:HRManagement.Controls"
              xmlns:utilities="clr-namespace:HRManagement.Utilities"
              mc:Ignorable="d"
-             d:DesignWidth="1240" d:DesignHeight="820"
+             d:DesignWidth="1300" d:DesignHeight="900"
              Background="{DynamicResource WindowBackgroundBrush}">
 
     <UserControl.Resources>
@@ -14,494 +14,492 @@
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
         <!--
-            FormLabelStyle / FormTextBoxStyle / FormDatePickerStyle now come
-            from the shared Resources/FormStyles.xaml (merged in App.xaml) so
-            this page's Edit Profile overlay matches Manage Profiles, Manage
-            Contracts, and Manage Announcements. DashboardCardStyle and the
-            other styles below are specific to this page's dashboard-style
-            layout and remain local.
+            Redesigned per User_Profile_Page_UI_Improvement_Task.md: left
+            profile card + right "At-a-glance Global Stats" row and detail
+            cards (Personal Details / Job History / Compensation & Benefits).
+
+            Reuses existing app-wide styles wherever possible:
+              - StatCardStyle / StatIconBadgeStyle (Resources/ManageRequestsStyles.xaml)
+              - SurfaceCardStyle / TableCellTextStyle (Resources/TableStyles.xaml)
+              - FormLabelStyle / FormTextBoxStyle / FormDatePickerStyle (Resources/FormStyles.xaml)
+              - PrimaryButtonStyle / SecondaryButtonStyle (Resources/ButtonStyles.xaml)
+              - controls:DonutProgress (Controls/DonutProgress.xaml) for the
+                performance ring, matching how the old dashboard tiles on this
+                same page already used it.
+
+            Only a handful of page-local styles remain below, for elements
+            that don't already have an app-wide equivalent (profile card
+            chrome, timeline connector, benefit pill).
         -->
 
-        <Style x:Key="DashboardCardStyle" TargetType="Border">
+        <Style x:Key="ProfileCardStyle" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
             <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="22"/>
+            <Setter Property="Padding" Value="24"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#1A2B3674" BlurRadius="18" ShadowDepth="4" Opacity="0.12" Direction="270"/>
+                    <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="18" ShadowDepth="4" Opacity="0.10" Direction="270"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="CardTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+        <Style x:Key="DetailCardStyle" TargetType="Border" BasedOn="{StaticResource ProfileCardStyle}">
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <Style x:Key="CardHeadingStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         </Style>
 
         <Style x:Key="CardSubtleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
         </Style>
 
+        <Style x:Key="ProfileFieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
 
-        <Style x:Key="InfoRowIconStyle" TargetType="Border">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+        <Style x:Key="ProfileFieldValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+
+        <!-- Global-stat number tile: icon badge + label + big value, reusing
+             StatIconBadgeStyle from ManageRequestsStyles.xaml for the badge
+             chrome so it matches Manage Requests' stat cards exactly. -->
+        <Style x:Key="GlobalStatValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        </Style>
+
+        <Style x:Key="GlobalStatLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        </Style>
+
+        <!-- Job-history timeline dot -->
+        <Style x:Key="TimelineDotStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Fill" Value="{DynamicResource BorderBrush}"/>
+        </Style>
+
+        <Style x:Key="TimelineDotCurrentStyle" TargetType="Ellipse" BasedOn="{StaticResource TimelineDotStyle}">
+            <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- Benefit pill -->
+        <Style x:Key="BenefitPillStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
 
     </UserControl.Resources>
 
     <Grid>
 
-        <Grid Margin="28">
+        <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <Grid Margin="28">
 
-            <!--Page Header  -->
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="My Profile"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    <TextBlock Text="{Binding SubHeading}"
-                           FontSize="13"
-                           Foreground="{DynamicResource SecondaryTextBrush}"
-                           Margin="0,4,0,0"/>
-                </StackPanel>
+                <!-- ================= Page Header ================= -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="1"
-                    Content="Edit Profile"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    Command="{Binding EditProfileCommand}"
-                    Width="150"/>
-            </Grid>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="My Profile"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        <TextBlock Text="{Binding SubHeading}"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
 
-            <!-- Body: info card + dashboard-->
-            <Grid Grid.Row="2">
+                <!-- ================= Body: Left profile card + Right content ================= -->
+                <Grid Grid.Row="2">
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="340"/>
-                    <ColumnDefinition Width="24"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <!--Profile Info Card -->
-                <Border Grid.Column="0"
-                    Style="{StaticResource DashboardCardStyle}"
-                    VerticalAlignment="Top" Height="549">
+                    <!-- ========== LEFT GRID: Profile Card ========== -->
+                    <Border Grid.Column="0" Style="{StaticResource ProfileCardStyle}" VerticalAlignment="Top">
 
-                    <StackPanel>
-
-                        <Ellipse Width="96" Height="96" HorizontalAlignment="Center">
-                            <Ellipse.Fill>
-                                <ImageBrush ImageSource="{Binding AvatarPath}" Stretch="UniformToFill"/>
-                            </Ellipse.Fill>
-                        </Ellipse>
-
-                        <TextBlock Text="{Binding FullName}"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource PrimaryTextBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,14,0,0"/>
-
-                        <Border Background="{DynamicResource InputBackgroundBrush}"
-                            CornerRadius="12"
-                            Padding="12,4"
-                            HorizontalAlignment="Center"
-                            Margin="0,8,0,0">
-                            <TextBlock Text="{Binding RoleLabel}"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource PrimaryBrush}"/>
-                        </Border>
-
-                        <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,20,0,16"/>
-
-                        <!-- Contact -->
-                        <StackPanel Margin="0,0,0,6">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Style="{StaticResource InfoRowIconStyle}">
-                                    <TextBlock Text="&#xE715;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{DynamicResource PrimaryBrush}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="Email" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding Email}"
-                                           FontSize="13" FontWeight="Medium"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Style="{StaticResource InfoRowIconStyle}">
-                                    <TextBlock Text="&#xE717;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{DynamicResource PrimaryBrush}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="Phone" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding Phone}"
-                                           FontSize="13" FontWeight="Medium"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Style="{StaticResource InfoRowIconStyle}">
-                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets"
-                                           Foreground="{DynamicResource PrimaryBrush}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="Date of Birth" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding DateOfBirthDisplay}"
-                                           FontSize="13" FontWeight="Medium"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,4,0,16"/>
-
-                        <!-- Employment -->
                         <StackPanel>
+
+                            <!-- Avatar -->
+                            <Ellipse Width="96" Height="96" HorizontalAlignment="Center">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="{Binding AvatarPath}" Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <!-- Full name / role -->
+                            <TextBlock Text="{Binding FullName}"
+                                       FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Margin="0,14,0,0"/>
+
+                            <TextBlock Text="{Binding RoleLabel}"
+                                       FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+
+                            <Border Background="{DynamicResource SuccessBadgeBrush}"
+                                    CornerRadius="10"
+                                    Padding="10,4"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,10,0,0">
+                                <TextBlock Text="{Binding Status}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SuccessBrush}"/>
+                            </Border>
+
+                            <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,20,0,16"/>
+
+                            <!-- Identity fields -->
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Employee ID" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding EmployeeIdDisplay}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Department" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding Department}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
+                                <TextBlock Grid.Column="0" Text="Employee ID" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                <TextBlock Grid.Column="1" Text="{Binding EmployeeIdDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Department" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Department}" Style="{StaticResource ProfileFieldValueStyle}"
+                                           HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Work Email" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Email}" Style="{StaticResource ProfileFieldValueStyle}"
+                                           HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Work Phone" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Phone}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
                             </Grid>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Status" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding Status}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Hire Date" Style="{StaticResource CardSubtleStyle}"/>
-                                    <TextBlock Text="{Binding HireDateDisplay}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                </StackPanel>
+                                <TextBlock Grid.Column="0" Text="Hire Date" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                <TextBlock Grid.Column="1" Text="{Binding HireDateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
                             </Grid>
+
+                            <TextBlock Text="{Binding LastUpdatedDisplay}"
+                                       Style="{StaticResource CardSubtleStyle}"
+                                       Margin="0,20,0,20"/>
+
+                            <!-- Edit Profile button anchored at the bottom -->
+                            <Button Content="Edit Profile"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding EditProfileCommand}"
+                                    HorizontalAlignment="Stretch"/>
+
                         </StackPanel>
 
-                        <TextBlock Text="{Binding LastUpdatedDisplay}"
-                               Style="{StaticResource CardSubtleStyle}"
-                               Margin="0,20,0,0"/>
+                    </Border>
 
-                    </StackPanel>
-                </Border>
+                    <!-- ========== RIGHT GRID ========== -->
+                    <StackPanel Grid.Column="2">
 
-                <!--Dashboard-->
-                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Hidden">
-                    <StackPanel>
+                        <!-- Top Row: At-a-glance Global Stats -->
+                        <TextBlock Text="At-a-glance Global Stats"
+                                   Style="{StaticResource CardHeadingStyle}"
+                                   Margin="4,0,0,12"/>
 
-                        <!-- Stat: Attendance / Leave Balance / Performance -->
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- PTO Balance -->
+                            <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource PrimaryBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="PTO BALANCE" Style="{StaticResource GlobalStatLabelStyle}"/>
+                                    <TextBlock Text="{Binding PtoBalanceDisplay}" Style="{StaticResource GlobalStatValueStyle}" Margin="0,4,0,4"/>
+                                    <TextBlock Text="{Binding PtoUsedDisplay}" Style="{StaticResource CardSubtleStyle}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Retirement Savings -->
+                            <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                                            <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SuccessBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="RETIREMENT SAVINGS" Style="{StaticResource GlobalStatLabelStyle}"/>
+                                    <TextBlock Text="{Binding RetirementSavingsDisplay}" Style="{StaticResource GlobalStatValueStyle}" Margin="0,4,0,4"/>
+                                    <TextBlock Text="7% of salary / year tenured" Style="{StaticResource CardSubtleStyle}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Tenure -->
+                            <Border Grid.Column="4" Style="{StaticResource StatCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                                            <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource WarningBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="TENURE" Style="{StaticResource GlobalStatLabelStyle}"/>
+                                    <TextBlock Text="{Binding TenureDisplay}" Style="{StaticResource GlobalStatValueStyle}" Margin="0,4,0,4"/>
+                                    <TextBlock Text="{Binding HireDateDisplay}" Style="{StaticResource CardSubtleStyle}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Performance Snapshot -->
+                            <Border Grid.Column="6" Style="{StaticResource StatCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                                            <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource DangerBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="PERFORMANCE SNAPSHOT" Style="{StaticResource GlobalStatLabelStyle}"/>
+                                    <TextBlock Text="{Binding PerformanceRewardRatioDisplay}" Style="{StaticResource GlobalStatValueStyle}" Margin="0,4,0,4"/>
+                                    <TextBlock Text="{Binding PerformanceSummaryDisplay}" Style="{StaticResource CardSubtleStyle}"/>
+                                </StackPanel>
+                            </Border>
+
+                        </Grid>
+
+                        <!-- Bottom Row: Personal Details / Job History / Compensation & Benefits -->
+                        <TextBlock Text="Structured Information"
+                                   Style="{StaticResource CardHeadingStyle}"
+                                   Margin="4,0,0,12"/>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Attendance Rate -->
-                            <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,27">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Attendance" Style="{StaticResource CardTitleStyle}"/>
-                                        <TextBlock Grid.Column="1" Text="This Month" Style="{StaticResource CardSubtleStyle}"/>
-                                    </Grid>
-                                    <controls:DonutProgress Percentage="{Binding AttendanceRate}"
-                                                         RingBrush="{DynamicResource PrimaryBrush}"
-                                                         TrackBrush="{DynamicResource InputBackgroundBrush}"
-                                                         Thickness="12"
-                                                         Width="175" Height="204">
-                                        <controls:DonutProgress.CenterContent>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding AttendanceRateDisplay}"
-                                                       FontSize="20" FontWeight="Bold"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                                <TextBlock Text="present" FontSize="11"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                            </StackPanel>
-                                        </controls:DonutProgress.CenterContent>
-                                    </controls:DonutProgress>
-
-                                    <TextBlock Text="{Binding AttendanceSummary}"
-                                           Style="{StaticResource CardSubtleStyle}"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Requests -->
-                            <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="0,0,10,27">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Requests" Style="{StaticResource CardTitleStyle}"/>
-                                        <TextBlock Grid.Column="1" Text="This Year" Style="{StaticResource CardSubtleStyle}"/>
-                                    </Grid>
-
-                                    <controls:DonutProgress Percentage="{Binding RequestApprovalRate}"
-                                                         RingBrush="{DynamicResource AccentBrush}"
-                                                         TrackBrush="{DynamicResource InputBackgroundBrush}"
-                                                         Thickness="12"
-                                                         Width="198" Height="202"
-                                                         HorizontalAlignment="Center"
-                                                         Margin="0,10,0,10">
-                                        <controls:DonutProgress.CenterContent>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding PendingRequestsCount}"
-                                                       FontSize="20" FontWeight="Bold"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                                <TextBlock Text="pending" FontSize="11"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                            </StackPanel>
-                                        </controls:DonutProgress.CenterContent>
-                                    </controls:DonutProgress>
-
-                                    <TextBlock Text="{Binding RequestsSummary}"
-                                           Style="{StaticResource CardSubtleStyle}"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Bonus / Evaluation -->
-                            <Border Grid.Column="4" Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,27">
-                                <StackPanel>
-                                    <TextBlock Text="Latest Evaluation" Style="{StaticResource CardTitleStyle}" Margin="0,0,0,16"/>
-
-                                    <StackPanel HorizontalAlignment="Center" Margin="0,10,0,14">
-                                        <TextBlock Text="{Binding LatestEvaluationAmountDisplay}"
-                                               FontSize="28" FontWeight="Bold"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                        <TextBlock Text="{Binding LatestEvaluationTypeDisplay}"
-                                               FontSize="12"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                    </StackPanel>
-
-                                    <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,12"/>
-
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Total bonus this year"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding TotalBonusThisYearDisplay}"
-                                               FontSize="13" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <!-- Employment details + Quick info -->
-                        <Grid Margin="0,24,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="1.3*"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Employment details -->
-                            <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,-13,0,0">
+                            <!-- Personal Details -->
+                            <Border Grid.Column="0" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
                                 <StackPanel>
-                                    <TextBlock Text="Employment Details" Style="{StaticResource CardTitleStyle}" Margin="0,0,0,16"/>
+                                    <TextBlock Text="Personal Details" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
 
-                                    <ItemsControl ItemsSource="{Binding EmploymentDetails}">
+                                    <TextBlock Text="Address" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding AddressDisplay}" Style="{StaticResource ProfileFieldValueStyle}"
+                                               TextWrapping="Wrap" Margin="0,0,0,14"/>
+
+                                    <TextBlock Text="Date of Birth" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding DateOfBirthDisplay}" Style="{StaticResource ProfileFieldValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Job History timeline -->
+                            <Border Grid.Column="2" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <TextBlock Text="Job History" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
+
+                                    <ItemsControl ItemsSource="{Binding JobHistory}"
+                                                  Visibility="{Binding HasJobHistory, Converter={StaticResource BoolToVisibility}}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid Margin="0,0,0,12">
+                                                <Grid Margin="0,0,0,16">
                                                     <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="20"/>
                                                         <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding Label}"
-                                                           Foreground="{DynamicResource SecondaryTextBrush}"
-                                                           FontSize="13"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding Value}"
-                                                           Foreground="{DynamicResource PrimaryTextBrush}"
-                                                           FontWeight="SemiBold"
-                                                           FontSize="13"/>
+
+                                                    <Ellipse Grid.Column="0" VerticalAlignment="Top" Margin="0,3,0,0">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse" BasedOn="{StaticResource TimelineDotStyle}">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                        <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+
+                                                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                        <TextBlock Text="{Binding ContractType}"
+                                                                   FontSize="13" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                        <TextBlock Text="{Binding DateRangeDisplay}"
+                                                                   Style="{StaticResource CardSubtleStyle}"
+                                                                   Margin="0,2,0,0"/>
+                                                        <TextBlock Text="{Binding Status}"
+                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                                   Margin="0,2,0,0"/>
+                                                    </StackPanel>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+
+                                    <TextBlock Text="No contract history on file."
+                                               Style="{StaticResource CardSubtleStyle}"
+                                               Visibility="{Binding HasNoJobHistory, Converter={StaticResource BoolToVisibility}}"/>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Quick info: payroll, evaluation, requests -->
-                            <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="0,-13,0,0">
+                            <!-- Compensation & Benefits -->
+                            <Border Grid.Column="4" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
                                 <StackPanel>
-                                    <TextBlock Text="Quick Info" Style="{StaticResource CardTitleStyle}" Margin="0,0,0,16"/>
+                                    <TextBlock Text="Compensation &amp; Benefits" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
 
-                                    <Grid Margin="0,0,0,14">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{DynamicResource InputBackgroundBrush}">
-                                            <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{DynamicResource SuccessBrush}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="Latest Payslip" Style="{StaticResource CardSubtleStyle}"/>
-                                            <TextBlock Text="{Binding LatestPayslipDate}" FontSize="12"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="{Binding LatestPayslipAmount}"
-                                               FontWeight="Bold" FontSize="15"
-                                               VerticalAlignment="Center"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                    </Grid>
+                                    <TextBlock Text="{Binding CurrentSalaryPeriodDisplay, StringFormat='Est. Net Salary ({0})'}"
+                                               Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding CurrentNetSalaryDisplay}"
+                                               FontSize="18" FontWeight="Bold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               Margin="0,0,0,14"/>
 
-                                    <Grid Margin="0,0,0,14">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{DynamicResource InputBackgroundBrush}">
-                                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{DynamicResource AccentBrush}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="Contract" Style="{StaticResource CardSubtleStyle}"/>
-                                            <TextBlock Text="{Binding ContractTypeDisplay}" FontSize="12"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="{Binding ContractStatusDisplay}"
-                                               FontWeight="Bold" FontSize="13"
-                                               VerticalAlignment="Center"
-                                               Foreground="{DynamicResource PrimaryBrush}"/>
-                                    </Grid>
+                                    <TextBlock Text="Current Base Salary" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding CurrentBaseSalaryDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="10"
-                                            Background="{DynamicResource InputBackgroundBrush}">
-                                            <TextBlock Text="&#xE9D5;" FontFamily="Segoe MDL2 Assets"
-                                                   Foreground="{DynamicResource PrimaryBrush}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="Pending Requests" Style="{StaticResource CardSubtleStyle}"/>
-                                            <TextBlock Text="Awaiting approval" FontSize="12"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="{Binding PendingRequestsCount}"
-                                               FontWeight="Bold" FontSize="15"
-                                               VerticalAlignment="Center"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                    </Grid>
+                                    <TextBlock Text="Pay Rate" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding CurrentPayRateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
+
+                                    <TextBlock Text="Benefits" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding Benefits}"
+                                                  Visibility="{Binding HasBenefits, Converter={StaticResource BoolToVisibility}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource BenefitPillStyle}">
+                                                    <TextBlock Text="{Binding}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource PrimaryBrush}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="No contract on file to derive benefits from."
+                                               Style="{StaticResource CardSubtleStyle}"
+                                               TextWrapping="Wrap"
+                                               Visibility="{Binding HasNoBenefits, Converter={StaticResource BoolToVisibility}}"/>
                                 </StackPanel>
                             </Border>
+
                         </Grid>
 
                     </StackPanel>
-                </ScrollViewer>
+
+                </Grid>
 
             </Grid>
-        </Grid>
 
-        <!-- Edit Profile overlay-->
+        </ScrollViewer>
+
+        <!-- ================= Edit Profile overlay ================= -->
         <Grid Style="{StaticResource ModalScrimStyle}"
-          Visibility="{Binding IsEditOpen, Converter={StaticResource BoolToVisibility}}">
+              Visibility="{Binding IsEditOpen, Converter={StaticResource BoolToVisibility}}">
 
-            <Border Style="{StaticResource DashboardCardStyle}"
-                Width="440"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
+            <Border Style="{StaticResource ProfileCardStyle}"
+                    Width="440"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
 
                 <StackPanel>
 
                     <TextBlock Text="Edit Profile"
-                           FontSize="18" FontWeight="Bold"
-                           Foreground="{DynamicResource PrimaryTextBrush}"
-                           Margin="0,0,0,18"/>
+                               FontSize="18" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               Margin="0,0,0,18"/>
 
                     <TextBlock Text="{Binding FormErrorMessage}"
-                           Foreground="{DynamicResource DangerBrush}"
-                           FontSize="12"
-                           Margin="0,0,0,10"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding HasFormError, Converter={StaticResource BoolToVisibility}}"/>
+                               Foreground="{DynamicResource DangerBrush}"
+                               FontSize="12"
+                               Margin="0,0,0,10"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding HasFormError, Converter={StaticResource BoolToVisibility}}"/>
 
                     <TextBlock Text="Full Name" Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding FormFullName, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
+                             Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
 
                     <TextBlock Text="Email" Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding FormEmail, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
+                             Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
 
                     <TextBlock Text="Phone" Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding FormPhone, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
+                             Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"/>
+
+                    <TextBlock Text="Address" Style="{StaticResource FormLabelStyle}"/>
+                    <TextBox Text="{Binding FormAddress, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource FormTextAreaStyle}" Height="70" Margin="0,0,0,14"/>
 
                     <TextBlock Text="Date of Birth" Style="{StaticResource FormLabelStyle}"/>
                     <DatePicker SelectedDate="{Binding FormDateOfBirth}"
-                            Style="{StaticResource FormDatePickerStyle}"
-                            Margin="0,0,0,20"/>
+                                Style="{StaticResource FormDatePickerStyle}"
+                                Margin="0,0,0,20"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -510,11 +508,11 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="Cancel"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding CancelEditCommand}"/>
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding CancelEditCommand}"/>
                         <Button Grid.Column="2" Content="Save"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding SaveProfileCommand}"/>
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding SaveProfileCommand}"/>
                     </Grid>
 
                 </StackPanel>

@@ -8,13 +8,16 @@ public class LoginViewModel : ViewModelBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IWindowService _windowService;
+    private readonly INavigationService _navigationService;
 
     public LoginViewModel(
         IAuthenticationService authenticationService,
-        IWindowService windowService)
+        IWindowService windowService,
+        INavigationService navigationService)
     {
         _authenticationService = authenticationService;
         _windowService = windowService;
+        _navigationService = navigationService;
 
         LoginCommand = new RelayCommand(Login);
     }
@@ -55,7 +58,7 @@ public class LoginViewModel : ViewModelBase
             ErrorMessage = "Invalid username or password.";
             return;
         }
-
+        _navigationService.Navigate<DashboardViewModel>();
         _windowService.ShowMainWindow();
     }
 }

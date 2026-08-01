@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="HRManagement.Controls.AnnouncementCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="620">
+
+    <Border Background="{DynamicResource CardBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="16"
+            Padding="20">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="Company Announcement"
+                       FontSize="15"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       Margin="0,0,0,12"/>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Announcements, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- ASSUMPTION: Announcement exposes Title, Message, CreatedAt.
+                                 Adjust bindings here if the real model differs -
+                                 this control isn't in the provided project files. -->
+                            <Border BorderBrush="{DynamicResource DividerBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="0,12">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Title}"
+                                                   FontSize="13.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding CreatedAt, StringFormat={}{0:MMM d}}"
+                                                   FontSize="11.5"
+                                                   Foreground="{DynamicResource HintTextBrush}"/>
+                                    </Grid>
+
+                                    <TextBlock Text="{Binding Message}"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

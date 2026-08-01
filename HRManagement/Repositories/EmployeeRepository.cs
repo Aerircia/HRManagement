@@ -5,6 +5,12 @@ using System.Collections.Generic;
 
 namespace HRManagement.Repositories;
 
+// SCHEMA NOTE: adds one nullable column used by the redesigned Profile page
+// (Personal Details -> Address). Run once against the existing database:
+//
+//   ALTER TABLE Employee ADD Address NVARCHAR(255) NULL;
+//
+// No other schema changes. Existing rows are unaffected (NULL by default).
 public class EmployeeRepository : RepositoryBase, IEmployeeRepository
 {
     public Employee? GetById(int id)
@@ -62,9 +68,9 @@ public class EmployeeRepository : RepositoryBase, IEmployeeRepository
         connection.Open();
 
         const string sql = """
-            INSERT INTO Employee (FullName, Date_of_birth, Phone, Email, Role_ID, Department_ID, HireDate, Status, Avatar)
+            INSERT INTO Employee (FullName, Date_of_birth, Phone, Email, Role_ID, Department_ID, HireDate, Status, Avatar, Address)
             OUTPUT INSERTED.EmployeeID
-            VALUES (@FullName, @DateOfBirth, @Phone, @Email, @RoleId, @DepartmentId, @HireDate, @Status, @Avatar)
+            VALUES (@FullName, @DateOfBirth, @Phone, @Email, @RoleId, @DepartmentId, @HireDate, @Status, @Avatar, @Address)
             """;
 
         using var command = new SqlCommand(sql, connection);
@@ -89,7 +95,8 @@ public class EmployeeRepository : RepositoryBase, IEmployeeRepository
                 Department_ID = @DepartmentId,
                 HireDate = @HireDate,
                 Status = @Status,
-                Avatar = @Avatar
+                Avatar = @Avatar,
+                Address = @Address
             WHERE EmployeeID = @Id
             """;
 
@@ -213,6 +220,7 @@ public class EmployeeRepository : RepositoryBase, IEmployeeRepository
         command.Parameters.AddWithValue("@HireDate", employee.HireDate);
         command.Parameters.AddWithValue("@Status", employee.Status);
         command.Parameters.AddWithValue("@Avatar", (object?)employee.Avatar ?? System.DBNull.Value);
+        command.Parameters.AddWithValue("@Address", (object?)employee.Address ?? System.DBNull.Value);
     }
 
     private static Employee Map(SqlDataReader reader)
@@ -228,9 +236,24 @@ public class EmployeeRepository : RepositoryBase, IEmployeeRepository
             DepartmentId = (int)reader["Department_ID"],
             HireDate = (System.DateTime)reader["HireDate"],
             Status = reader["Status"].ToString()!,
-            Avatar = reader["Avatar"] as string
+            Avatar = reader["Avatar"] as string,
+            // Column may not exist yet if the ALTER TABLE hasn't been run;
+            // guard so GetAll()/GetById() don't throw on older databases.
+            Address = HasColumn(reader, "Address") ? reader["Address"] as string : null
         };
     }
+
+    private static bool HasColumn(SqlDataReader reader, string columnName)
+    {
+        for (var i = 0; i < reader.FieldCount; i++)
+        {
+            if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
     public IEnumerable<Employee> GetByDepartment(int departmentId)
     {
         var list = new List<Employee>();

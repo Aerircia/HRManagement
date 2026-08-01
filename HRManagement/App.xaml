@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="/Resources/TableStyles.xaml"/>
                 <ResourceDictionary Source="Resources/AttendanceResources.xaml"/>
                 <ResourceDictionary Source="Resources/RequestFormStyles.xaml"/>
+                <ResourceDictionary Source="/Resources/DashboardStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ManageRequestsStyles.xaml"/>
                 <ResourceDictionary Source="Resources/FormStyles.xaml"/>
                 <ResourceDictionary Source="/Resources/LogsStyles.xaml"/>

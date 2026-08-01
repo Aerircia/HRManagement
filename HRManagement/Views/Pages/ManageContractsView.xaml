@@ -14,13 +14,14 @@
 
         <!--
             CardStyle -> SurfaceCardStyle, StatusPillStyle, RowIconButtonStyle,
-            GridCellTextStyle -> TableCellTextStyle, and FormLabelStyle /
-            FormTextBoxStyle / FormComboBoxStyle / FormDatePickerStyle all now
-            come from shared dictionaries (Resources/TableStyles.xaml,
-            Resources/FormStyles.xaml, merged in App.xaml) so this page matches
-            Manage Profiles, Requests, Manage Requests, Manage Attendances, and
-            the other Add/Edit forms (Manage Announcements, Profile). No
-            page-local style overrides remain here.
+            GridCellTextStyle -> TableCellTextStyle, StatCardStyle,
+            StatIconBadgeStyle, and FormLabelStyle / FormTextBoxStyle /
+            FormComboBoxStyle / FormDatePickerStyle all now come from shared
+            dictionaries (Resources/TableStyles.xaml, Resources/FormStyles.xaml,
+            merged in App.xaml) so this page matches Manage Profiles,
+            Manage Requests, Manage Attendances, and the other Add/Edit forms
+            (Manage Announcements, Profile). No page-local style overrides
+            remain here.
         -->
 
     </UserControl.Resources>
@@ -32,6 +33,8 @@
               Visibility="{Binding HasAccess, Converter={StaticResource BoolToVisibility}}">
 
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="Auto"/>
@@ -63,34 +66,154 @@
                         Width="170"/>
             </Grid>
 
-            <!-- Search -->
-            <Border Grid.Row="2"
-                    Background="{DynamicResource CardBackgroundBrush}"
-                    CornerRadius="14"
-                    Padding="14,0"
-                    Height="48"
-                    HorizontalAlignment="Left"
-                    Width="340">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
-                               VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox Grid.Column="1"
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             VerticalContentAlignment="Center"
-                             Foreground="{DynamicResource PrimaryTextBrush}"
-                             Tag="Search by employee or contract type..."/>
-                </Grid>
-            </Border>
+            <!-- Summary stat cards -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Total Contracts -->
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Total Contracts" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding TotalContractsCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource PrimaryBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Active -->
+                <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Active" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding ActiveContractsCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource SuccessBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Expired -->
+                <Border Grid.Column="4" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Expired" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding ExpiredContractsCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource WarningBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource WarningBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Terminated -->
+                <Border Grid.Column="6" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Terminated" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding TerminatedContractsCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource DangerBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource DangerBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Search + Sort -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="220"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        CornerRadius="14"
+                        Padding="14,0"
+                        Height="48"
+                        HorizontalAlignment="Left"
+                        Width="340">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalContentAlignment="Center"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Tag="Search by employee or contract type..."/>
+                    </Grid>
+                </Border>
+
+                <!-- Sort -->
+                <ComboBox Grid.Column="2"
+                          Style="{StaticResource ModernComboBox}"
+                          ItemsSource="{Binding SortOptions}"
+                          SelectedItem="{Binding SelectedSort}"/>
+
+            </Grid>
 
             <!-- Contract table -->
-            <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}" Padding="0">
+            <Border Grid.Row="6" Style="{StaticResource SurfaceCardStyle}" Padding="0">
 
                 <DataGrid ItemsSource="{Binding ContractsView}"
                           AutoGenerateColumns="False"

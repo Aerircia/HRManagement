@@ -1,88 +1,306 @@
-﻿using HRManagement.Repositories.Interfaces;
+﻿using HRManagement.Models;
+using HRManagement.Models.Dashboard;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
+using System.Collections.ObjectModel;
 
 namespace HRManagement.Services;
 
-// Aggregation layer for the dashboard. Deliberately does not re-derive the
-// payout formula: it batches ISalaryCalculator (same formula SalaryView
-// uses) across employees/months so the dashboard total can never drift from
-// what an individual employee sees on their own Salary page.
 public class DashboardService : IDashboardService
 {
-    private readonly ISalaryRepository _salaryRepository;
-    private readonly ISalaryCalculator _salaryCalculator;
-    private readonly IAttendanceRepository _attendanceRepository;
+    private readonly IDashboardRepository _dashboardRepository;
+    private readonly IAttendanceService _attendanceService;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly SessionManager _sessionManager;
 
     public DashboardService(
-        ISalaryRepository salaryRepository,
-        ISalaryCalculator salaryCalculator,
-        IAttendanceRepository attendanceRepository)
+        IDashboardRepository dashboardRepository,
+        IAttendanceService attendanceService,
+        IAuthorizationService authorizationService,
+        SessionManager sessionManager)
     {
-        _salaryRepository = salaryRepository;
-        _salaryCalculator = salaryCalculator;
-        _attendanceRepository = attendanceRepository;
+        _dashboardRepository = dashboardRepository;
+        _attendanceService = attendanceService;
+        _authorizationService = authorizationService;
+        _sessionManager = sessionManager;
     }
 
-    public List<MonthlyPayoutPoint> GetMonthlyPayoutTotals(IReadOnlyList<int> employeeIds, int year)
+    #region Public API
+    public DashboardData LoadDashboard()
     {
-        var points = new List<MonthlyPayoutPoint>(12);
+        var employee = GetCurrentEmployee();
 
-        for (var month = 1; month <= 12; month++)
+        var dashboard = new DashboardData
         {
-            decimal monthTotal = 0m;
+            TodayAttendance = _attendanceService.GetTodayAttendance(employee.EmployeeId),
 
-            foreach (var employeeId in employeeIds)
+            WeekDays = BuildCurrentWeek(employee),
+
+            WeeklyHours = BuildWeeklyHours(employee),
+
+            EmployeeAnalytics = BuildEmployeeAnalytics(employee),
+
+            Announcements = GetAnnouncements()
+        };
+
+        if (_authorizationService.IsManager || _authorizationService.IsAdmin)
+        {
+            dashboard.ManagerAnalytics =
+                BuildManagerAnalytics(employee);
+        }
+
+        return dashboard;
+    }
+
+    public bool CanCheckIn()
+    {
+        var employee = GetCurrentEmployee();
+
+        return _attendanceService.CanCheckIn(
+            employee.EmployeeId,
+            employee.HireDate);
+    }
+
+    public bool CanCheckOut()
+    {
+        var employee = GetCurrentEmployee();
+
+        return _attendanceService.CanCheckOut(
+            employee.EmployeeId,
+            employee.HireDate);
+    }
+
+    public void CheckIn()
+    {
+        var employee = GetCurrentEmployee();
+
+        _attendanceService.CheckIn(employee.EmployeeId);
+    }
+
+    public void CheckOut()
+    {
+        var employee = GetCurrentEmployee();
+
+        _attendanceService.CheckOut(employee.EmployeeId);
+    }
+
+    public Attendance? GetTodayAttendance()
+    {
+        return _attendanceService.GetTodayAttendance(
+            GetCurrentEmployee().EmployeeId);
+    }
+
+    public ObservableCollection<WeekDayItem> GetCurrentWeek()
+    {
+        return BuildCurrentWeek(GetCurrentEmployee());
+    }
+
+    public ObservableCollection<WeeklyHourPoint> GetWeeklyHours()
+    {
+        return BuildWeeklyHours(GetCurrentEmployee());
+    }
+
+    public EmployeeAnalytics GetEmployeeAnalytics()
+    {
+        return BuildEmployeeAnalytics(GetCurrentEmployee());
+    }
+
+    public ManagerAnalytics? GetManagerAnalytics()
+    {
+        if (!_authorizationService.IsManager &&
+            !_authorizationService.IsAdmin)
+        {
+            return null;
+        }
+
+        return BuildManagerAnalytics(GetCurrentEmployee());
+    }
+
+    public ObservableCollection<Announcement> GetAnnouncements()
+    {
+        return new ObservableCollection<Announcement>(
+            _dashboardRepository.GetAnnouncements());
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private Employee GetCurrentEmployee()
+    {
+        var employee = _sessionManager.CurrentUser?.Employee;
+
+        if (employee == null)
+            throw new InvalidOperationException(
+                "No logged in employee.");
+
+        return employee;
+    }
+
+    private static DateTime GetWeekStart(DateTime date)
+    {
+        int offset = ((int)date.DayOfWeek + 6) % 7;
+        return date.Date.AddDays(-offset);
+    }
+
+    private static double CalculateHours(Attendance attendance)
+    {
+        if (attendance.CheckIn == null ||
+            attendance.CheckOut == null)
+        {
+            return 0;
+        }
+
+        return Math.Round(
+            (attendance.CheckOut.Value -
+             attendance.CheckIn.Value).TotalHours,
+            2);
+    }
+
+    #endregion
+
+    #region Builder Methods
+
+    private ObservableCollection<WeekDayItem> BuildCurrentWeek(Employee employee)
+    {
+        var result = new ObservableCollection<WeekDayItem>();
+
+        var today = DateTime.Today;
+        var weekStart = GetWeekStart(today);
+
+        var attendances = _dashboardRepository
+            .GetEmployeeAttendanceMonth(
+                employee.EmployeeId,
+                today.Year,
+                today.Month)
+            .ToList();
+
+        var attendanceLookup = attendances
+            .Where(a => a.CheckIn != null || a.CheckOut != null)
+            .GroupBy(a => (a.CheckIn ?? a.CheckOut)!.Value.Date)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        for (int i = 0; i < 7; i++)
+        {
+            var date = weekStart.AddDays(i);
+
+            attendanceLookup.TryGetValue(
+                date.Date,
+                out var attendance);
+
+            result.Add(new WeekDayItem
             {
-                if (!_salaryRepository.PayrollExists(employeeId, month, year))
-                    continue;
-
-                var employee = _salaryRepository.GetEmployee(employeeId);
-                if (employee == null)
-                    continue;
-
-                var contract = _salaryRepository.GetContractForPeriod(employeeId, month, year);
-                if (contract == null)
-                    continue;
-
-                var role = _salaryRepository.GetRole(contract.RoleId);
-                if (role == null)
-                    continue;
-
-                var attendances = _salaryRepository.GetAttendances(employeeId, month, year);
-                var evaluations = _salaryRepository.GetEvaluations(employeeId, month, year);
-                var departmentName = _salaryRepository.GetDepartmentName(employee.DepartmentId);
-
-                var detail = _salaryCalculator.CalculateSalary(
-                    employee, contract, role, attendances, evaluations, departmentName, month, year);
-
-                monthTotal += detail.TotalSalary;
-            }
-
-            points.Add(new MonthlyPayoutPoint { Month = month, Total = monthTotal });
+                Date = date,
+                IsToday = date.Date == today,
+                HasAttendance = attendance != null,
+                IsCheckedIn = attendance?.CheckIn != null,
+                IsCheckedOut = attendance?.CheckOut != null,
+                Status = attendance?.Status ?? string.Empty
+            });
         }
 
-        return points;
+        return result;
     }
 
-    public TodayAttendanceStat GetTodayAttendanceStat(IReadOnlyList<int> employeeIds)
+    private ObservableCollection<WeeklyHourPoint> BuildWeeklyHours(Employee employee)
     {
-        var today = DateTime.Now.Date;
-        var checkedIn = 0;
+        var result = new ObservableCollection<WeeklyHourPoint>();
 
-        foreach (var employeeId in employeeIds)
+        var today = DateTime.Today;
+        var weekStart = GetWeekStart(today);
+
+        var attendances = _dashboardRepository
+            .GetEmployeeAttendanceMonth(
+                employee.EmployeeId,
+                today.Year,
+                today.Month)
+            .ToList();
+
+        var attendanceLookup = attendances
+            .Where(a => a.CheckIn != null || a.CheckOut != null)
+            .GroupBy(a => (a.CheckIn ?? a.CheckOut)!.Value.Date)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        for (int i = 0; i < 7; i++)
         {
-            var hasCheckedIn = _attendanceRepository
-                .GetAttendancesForEmployeeMonth(employeeId, today.Year, today.Month)
-                .Any(a => (a.CheckIn ?? a.CheckOut)?.Date == today && a.CheckIn.HasValue);
+            var date = weekStart.AddDays(i);
 
-            if (hasCheckedIn)
-                checkedIn++;
+            attendanceLookup.TryGetValue(
+                date.Date,
+                out var attendance);
+
+            result.Add(new WeeklyHourPoint
+            {
+                Date = date,
+                Hours = attendance == null
+                    ? 0
+                    : CalculateHours(attendance)
+            });
         }
 
-        return new TodayAttendanceStat
+        return result;
+    }
+
+    private EmployeeAnalytics BuildEmployeeAnalytics(Employee employee)
+    {
+        var today = DateTime.Today;
+
+        var attendances = _dashboardRepository
+            .GetEmployeeAttendanceMonth(
+                employee.EmployeeId,
+                today.Year,
+                today.Month);
+
+        double hoursThisMonth = attendances.Sum(CalculateHours);
+
+        var todayAttendance =
+            _attendanceService.GetTodayAttendance(employee.EmployeeId);
+
+        string attendanceText =
+            todayAttendance?.Status ?? "Not Checked In";
+
+        return new EmployeeAnalytics
         {
-            CheckedIn = checkedIn,
-            TotalEmployees = employeeIds.Count
+            HoursThisMonth = Math.Round(hoursThisMonth, 2),
+
+            TodayAttendance = attendanceText,
+
+            LatestEvaluation =
+                _dashboardRepository.GetLatestEvaluation(
+                    employee.EmployeeId),
+
+            TotalBonusThisMonth =
+                _dashboardRepository.GetTotalBonusThisMonth(
+                    employee.EmployeeId,
+                    today.Year,
+                    today.Month)
         };
     }
+
+    private ManagerAnalytics BuildManagerAnalytics(Employee employee)
+    {
+        var today = DateTime.Today;
+
+        return new ManagerAnalytics
+        {
+            TeamHoursThisMonth =
+                Math.Round(
+                    _dashboardRepository.GetDepartmentHoursThisMonth(
+                        employee.DepartmentId,
+                        today.Year,
+                        today.Month),
+                    2),
+
+            TodayAttendanceCount =
+                _dashboardRepository.GetTodayAttendanceCount(
+                    employee.DepartmentId),
+
+            TotalEmployees =
+                _dashboardRepository
+                    .GetDepartmentEmployees(
+                        employee.DepartmentId)
+                    .Count()
+        };
+    }
+    #endregion
 }

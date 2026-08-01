@@ -12,5 +12,7 @@ namespace HRManagement.Repositories.Interfaces
         public IEnumerable<Attendance> GetAttendancesForEmployeeMonth(int employeeId, int year, int month);
 
         void UpsertAttendance(Attendance attendance);
+        public int GetTodayAttendanceCount(int departmentId);
+        double GetDepartmentHoursThisMonth(int departmentId, int year, int month);
     }
 }

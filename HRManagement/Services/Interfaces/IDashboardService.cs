@@ -1,29 +1,57 @@
-﻿namespace HRManagement.Services.Interfaces;
+﻿using System.Collections.ObjectModel;
+using HRManagement.Models;
+using HRManagement.Models.Dashboard;
 
-public class MonthlyPayoutPoint
-{
-    public int Month { get; set; }
-    public decimal Total { get; set; }
-}
-
-public class TodayAttendanceStat
-{
-    public int CheckedIn { get; set; }
-    public int TotalEmployees { get; set; }
-}
+namespace HRManagement.Services.Interfaces;
 
 public interface IDashboardService
 {
     /// <summary>
-    /// Net salary totals for each month (1-12) of <paramref name="year"/>,
-    /// summed across every employee in <paramref name="employeeIds"/>.
-    /// Reuses ISalaryCalculator so the payout figure never drifts from the
-    /// Salary page's own math. Months with no payroll created yet return 0.
+    /// Builds the complete dashboard data for the currently logged-in user.
     /// </summary>
-    List<MonthlyPayoutPoint> GetMonthlyPayoutTotals(IReadOnlyList<int> employeeIds, int year);
+    DashboardData LoadDashboard();
 
     /// <summary>
-    /// How many of the given employees have checked in today.
+    /// Reloads all dashboard data after an action (check in/out, etc.).
     /// </summary>
-    TodayAttendanceStat GetTodayAttendanceStat(IReadOnlyList<int> employeeIds);
+
+    #region Attendance
+
+    bool CanCheckIn();
+
+    bool CanCheckOut();
+
+    void CheckIn();
+
+    void CheckOut();
+
+    Attendance? GetTodayAttendance();
+
+    #endregion
+
+    #region Calendar
+
+    ObservableCollection<WeekDayItem> GetCurrentWeek();
+
+    #endregion
+
+    #region Charts
+
+    ObservableCollection<WeeklyHourPoint> GetWeeklyHours();
+
+    #endregion
+
+    #region Analytics
+
+    EmployeeAnalytics GetEmployeeAnalytics();
+
+    ManagerAnalytics? GetManagerAnalytics();
+
+    #endregion
+
+    #region Announcement
+
+    ObservableCollection<Announcement> GetAnnouncements();
+
+    #endregion
 }

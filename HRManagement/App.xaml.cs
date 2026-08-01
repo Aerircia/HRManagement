@@ -53,6 +53,7 @@ public partial class App : Application
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IContractService, ContractService>();
         services.AddSingleton<IManageProfilesService, ManageProfilesService>();
+        services.AddSingleton<IDashboardService, DashboardService>();
 
 
         // Repositories
@@ -69,6 +70,7 @@ public partial class App : Application
         services.AddSingleton<IRequestFormRepository, RequestFormRepository>();
         services.AddSingleton<IAnnouncementRepository, AnnouncementRepository>();
         services.AddSingleton<ISystemLogRepository, SystemLogRepository>();
+        services.AddSingleton<IDashboardRepository, DashboardRepository>();
 
 
         // ViewModels

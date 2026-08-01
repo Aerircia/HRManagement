@@ -10,11 +10,12 @@
     <utilities:RequestDateRangeConverter x:Key="RequestDateRangeConverter"/>
     <utilities:FilterChipBrushConverter x:Key="FilterChipBrushConverter"/>
     <utilities:NavItemBrushConverter x:Key="NavItemBrushConverter"/>
-    <utilities:PercentageToStarConverter x:Key="PercentageToStarConverter"/>
-    <utilities:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter"/>
     <utilities:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+    <utilities:PercentageToStarConverter x:Key="PercentageToStarConverter"/>
     <utilities:CollapsedToWidthConverter x:Key="CollapsedToWidthConverter"/>
     <utilities:NavSearchVisibilityConverter x:Key="NavSearchVisibilityConverter"/>
     <utilities:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibility"/>
+    <utilities:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter"/>
+    <utilities:InitialsConverter x:Key="InitialsConverter"/>
 
 </ResourceDictionary>

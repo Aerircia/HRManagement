@@ -26,6 +26,10 @@ namespace HRManagement.ViewModels
             SaveProfileCommand = new RelayCommand(_ => SaveProfile());
             CancelEditCommand = new RelayCommand(_ => IsEditOpen = false);
 
+            EmploymentDetails = [];
+            JobHistory = [];
+            Benefits = [];
+
             LoadCurrentUser();
         }
 
@@ -116,6 +120,15 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _lastUpdatedDisplay, value);
         }
 
+        private string? _address;
+        public string? Address
+        {
+            get => _address;
+            set => SetProperty(ref _address, value);
+        }
+
+        public string AddressDisplay => string.IsNullOrWhiteSpace(Address) ? "Not provided" : Address;
+
         //Dashboard: Attendance 
 
         private double _attendanceRate;
@@ -131,7 +144,7 @@ namespace HRManagement.ViewModels
 
         public string AttendanceRateDisplay => $"{AttendanceRate:0}%";
 
-        private string _attendanceSummary;
+        private string _attendanceSummary = string.Empty;
         public string AttendanceSummary
         {
             get => _attendanceSummary;
@@ -147,7 +160,7 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _requestApprovalRate, value);
         }
 
-        private string _requestsSummary;
+        private string _requestsSummary = string.Empty;
         public string RequestsSummary
         {
             get => _requestsSummary;
@@ -179,7 +192,7 @@ namespace HRManagement.ViewModels
 
         // Employment details list
 
-        public ObservableCollection<KeyValueItem> EmploymentDetails { get; } = [];
+        public ObservableCollection<KeyValueItem> EmploymentDetails { get; }
 
         //Quick info
 
@@ -218,6 +231,102 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _pendingRequestsCount, value);
         }
 
+        // ===== At-a-glance global stats =====
+
+        private int _ptoDaysRemaining;
+        public int PtoDaysRemaining
+        {
+            get => _ptoDaysRemaining;
+            set => SetProperty(ref _ptoDaysRemaining, value);
+        }
+
+        private int _ptoDaysUsed;
+        public int PtoDaysUsed
+        {
+            get => _ptoDaysUsed;
+            set => SetProperty(ref _ptoDaysUsed, value);
+        }
+
+        public string PtoBalanceDisplay => $"{PtoDaysRemaining} Days Available";
+
+        public string PtoUsedDisplay => $"{PtoDaysUsed} used this year";
+
+        private string _retirementSavingsDisplay = string.Empty;
+        public string RetirementSavingsDisplay
+        {
+            get => _retirementSavingsDisplay;
+            set => SetProperty(ref _retirementSavingsDisplay, value);
+        }
+
+        private string _tenureDisplay = string.Empty;
+        public string TenureDisplay
+        {
+            get => _tenureDisplay;
+            set => SetProperty(ref _tenureDisplay, value);
+        }
+
+        private string _performanceSummaryDisplay = string.Empty;
+        public string PerformanceSummaryDisplay
+        {
+            get => _performanceSummaryDisplay;
+            set => SetProperty(ref _performanceSummaryDisplay, value);
+        }
+
+        private double _performanceRewardRatio;
+        public double PerformanceRewardRatio
+        {
+            get => _performanceRewardRatio;
+            set
+            {
+                if (SetProperty(ref _performanceRewardRatio, value))
+                    OnPropertyChanged(nameof(PerformanceRewardRatioDisplay));
+            }
+        }
+
+        public string PerformanceRewardRatioDisplay => $"{PerformanceRewardRatio * 100:0}% reward rate";
+
+        // ===== Job history =====
+
+        public ObservableCollection<JobHistoryEntry> JobHistory { get; }
+
+        public bool HasJobHistory => JobHistory.Count > 0;
+        public bool HasNoJobHistory => !HasJobHistory;
+
+        // ===== Compensation & Benefits =====
+
+        private string _currentBaseSalaryDisplay = string.Empty;
+        public string CurrentBaseSalaryDisplay
+        {
+            get => _currentBaseSalaryDisplay;
+            set => SetProperty(ref _currentBaseSalaryDisplay, value);
+        }
+
+        private string _currentPayRateDisplay = string.Empty;
+        public string CurrentPayRateDisplay
+        {
+            get => _currentPayRateDisplay;
+            set => SetProperty(ref _currentPayRateDisplay, value);
+        }
+
+        private string _currentNetSalaryDisplay = string.Empty;
+        public string CurrentNetSalaryDisplay
+        {
+            get => _currentNetSalaryDisplay;
+            set => SetProperty(ref _currentNetSalaryDisplay, value);
+        }
+
+        private string _currentSalaryPeriodDisplay = string.Empty;
+        public string CurrentSalaryPeriodDisplay
+        {
+            get => _currentSalaryPeriodDisplay;
+            set => SetProperty(ref _currentSalaryPeriodDisplay, value);
+        }
+
+        public ObservableCollection<string> Benefits { get; }
+
+        public bool HasBenefits => Benefits.Count > 0;
+        public bool HasNoBenefits => !HasBenefits;
+
         //Edit Profile overlay
 
         private bool _isEditOpen;
@@ -253,6 +362,13 @@ namespace HRManagement.ViewModels
         {
             get => _formDateOfBirth;
             set => SetProperty(ref _formDateOfBirth, value);
+        }
+
+        private string _formAddress = string.Empty;
+        public string FormAddress
+        {
+            get => _formAddress;
+            set => SetProperty(ref _formAddress, value);
         }
 
         private string? _formErrorMessage;
@@ -295,6 +411,8 @@ namespace HRManagement.ViewModels
             EmployeeIdDisplay = $"EMP-{employee.EmployeeId:0000}";
             Status = employee.Status;
             Department = profile.DepartmentName;
+            Address = profile.Address;
+            OnPropertyChanged(nameof(AddressDisplay));
 
             ContractTypeDisplay = profile.ContractTypeDisplay;
             ContractStatusDisplay = profile.ContractStatusDisplay;
@@ -319,6 +437,36 @@ namespace HRManagement.ViewModels
 
             LatestPayslipDate = profile.LatestPayslipDate;
             LatestPayslipAmount = profile.LatestPayslipAmount;
+
+            // Global stats
+            PtoDaysRemaining = profile.PtoDaysRemaining;
+            PtoDaysUsed = profile.PtoDaysUsed;
+            OnPropertyChanged(nameof(PtoBalanceDisplay));
+            OnPropertyChanged(nameof(PtoUsedDisplay));
+
+            RetirementSavingsDisplay = profile.RetirementSavings.ToString("C0");
+            TenureDisplay = profile.TenureDisplay;
+            PerformanceSummaryDisplay = profile.PerformanceSummaryDisplay;
+            PerformanceRewardRatio = profile.PerformanceRewardRatio;
+
+            // Job history
+            JobHistory.Clear();
+            foreach (var entry in profile.JobHistory)
+                JobHistory.Add(entry);
+            OnPropertyChanged(nameof(HasJobHistory));
+            OnPropertyChanged(nameof(HasNoJobHistory));
+
+            // Compensation & benefits
+            CurrentBaseSalaryDisplay = profile.CurrentBaseSalaryDisplay;
+            CurrentPayRateDisplay = profile.CurrentPayRateDisplay;
+            CurrentNetSalaryDisplay = profile.CurrentNetSalaryDisplay;
+            CurrentSalaryPeriodDisplay = profile.CurrentSalaryPeriodDisplay;
+
+            Benefits.Clear();
+            foreach (var benefit in profile.Benefits)
+                Benefits.Add(benefit);
+            OnPropertyChanged(nameof(HasBenefits));
+            OnPropertyChanged(nameof(HasNoBenefits));
         }
 
         private void OnEditProfile(object? parameter)
@@ -333,6 +481,7 @@ namespace HRManagement.ViewModels
             FormEmail = employee.Email;
             FormPhone = employee.Phone ?? string.Empty;
             FormDateOfBirth = employee.DateOfBirth;
+            FormAddress = employee.Address ?? string.Empty;
             FormErrorMessage = null;
             IsEditOpen = true;
         }
@@ -348,7 +497,8 @@ namespace HRManagement.ViewModels
                 FullName = FormFullName,
                 Email = FormEmail,
                 Phone = FormPhone,
-                DateOfBirth = FormDateOfBirth
+                DateOfBirth = FormDateOfBirth,
+                Address = FormAddress
             };
 
             var result = _profileService.UpdateProfile(signedInEmployeeId.Value, input);

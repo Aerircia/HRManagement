@@ -16,6 +16,8 @@
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="16"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="16"/>
@@ -46,34 +48,173 @@
                         Width="170"/>
             </Grid>
 
-            <!-- Search -->
-            <Border Grid.Row="2"
-                    Background="{DynamicResource CardBackgroundBrush}"
-                    CornerRadius="14"
-                    Padding="14,0"
-                    Height="48"
-                    HorizontalAlignment="Left"
-                    Width="340">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
-                               VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox Grid.Column="1"
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             VerticalContentAlignment="Center"
-                             Foreground="{DynamicResource PrimaryTextBrush}"
-                             Tag="Search by name or email..."/>
-                </Grid>
-            </Border>
+            <!-- ============ Summary stat cards ============ -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Total Employees -->
+                <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Total Employees" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding TotalEmployeesCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource PrimaryBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Active -->
+                <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Active Employees" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding ActiveEmployeesCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource SuccessBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- On Leave -->
+                <Border Grid.Column="4" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="On Leave" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding OnLeaveEmployeesCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource WarningBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource WarningBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Inactive -->
+                <Border Grid.Column="6" Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Inactive Employees" FontSize="12.5"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock Text="{Binding InactiveEmployeesCount}" FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatIconBadgeStyle}"
+                                Background="{DynamicResource DangerBadgeBrush}"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                                       Foreground="{DynamicResource DangerBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ============ Toolbar: Search + Department/Role filters + Sort ============ -->
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="220"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Search -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        CornerRadius="14"
+                        Padding="14,0"
+                        Height="48"
+                        HorizontalAlignment="Left"
+                        Width="340">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalContentAlignment="Center"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Tag="Search by name or email..."/>
+                    </Grid>
+                </Border>
+
+                <!-- Department filter -->
+                <ComboBox Grid.Column="2"
+                          Style="{StaticResource ModernComboBox}"
+                          ItemsSource="{Binding DepartmentFilterOptions}"
+                          SelectedItem="{Binding SelectedDepartmentFilter}"
+                          DisplayMemberPath="Name"/>
+
+                <!-- Role filter -->
+                <ComboBox Grid.Column="4"
+                          Style="{StaticResource ModernComboBox}"
+                          ItemsSource="{Binding RoleFilterOptions}"
+                          SelectedItem="{Binding SelectedRoleFilter}"
+                          DisplayMemberPath="Name"/>
+
+                <!-- Sort -->
+                <ComboBox Grid.Column="6"
+                          Style="{StaticResource ModernComboBox}"
+                          ItemsSource="{Binding SortOptions}"
+                          SelectedItem="{Binding SelectedSort}"/>
+
+            </Grid>
 
             <!-- Employee table -->
-            <Border Grid.Row="4" Style="{StaticResource SurfaceCardStyle}" Padding="0">
+            <Border Grid.Row="6" Style="{StaticResource SurfaceCardStyle}" Padding="0">
 
                 <DataGrid ItemsSource="{Binding EmployeesView}"
                           AutoGenerateColumns="False"
@@ -98,29 +239,54 @@
 
                     <DataGrid.Columns>
 
-                        <DataGridTemplateColumn Header="Employee" Width="2*">
+                        <!-- Employee name & Position (Role) -->
+                        <DataGridTemplateColumn Header="Employee Name &amp; Position" Width="2.2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding FullName}"
-                                                   FontWeight="SemiBold" FontSize="13"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Width="36" Height="36" CornerRadius="18"
+                                                Background="{DynamicResource PrimaryTintBrush}"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FullName, Converter={StaticResource InitialsConverter}}"
+                                                       FontSize="12" FontWeight="Bold"
+                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FullName}"
+                                                       FontWeight="SemiBold" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                            <TextBlock Text="{Binding RoleName}"
+                                                       FontSize="11.5"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*"
-                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
-
-                        <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="1.3*"
-                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
-
                         <DataGridTextColumn Header="Department" Binding="{Binding DepartmentName}" Width="1.3*"
                                              ElementStyle="{StaticResource TableCellTextStyle}"/>
 
-                        <DataGridTextColumn Header="Role" Binding="{Binding RoleName}" Width="*"
+                        <!-- Mail & Phone -->
+                        <DataGridTemplateColumn Header="Mail &amp; Phone" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Email}"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                        <TextBlock Text="{Binding Phone}"
+                                                   FontSize="11.5"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Hire Date" Binding="{Binding HireDateDisplay}" Width="1.2*"
                                              ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTemplateColumn Header="Status" Width="*">
@@ -133,9 +299,6 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
-                        <DataGridTextColumn Header="Hire Date" Binding="{Binding HireDateDisplay}" Width="1.2*"
-                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                         <DataGridTemplateColumn Header="" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
@@ -169,8 +332,8 @@
         <!-- ============ Add / Edit overlay ============ -->
         <Grid Style="{StaticResource ModalScrimStyle}"
               Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVisibility}}">
-            
-                <Border Style="{StaticResource SurfaceCardStyle}"
+
+            <Border Style="{StaticResource SurfaceCardStyle}"
                         Width="480"
                         MaxHeight="640"
                         HorizontalAlignment="Center"
@@ -310,9 +473,9 @@
                         </Grid>
 
                     </StackPanel>
-            </ScrollViewer>
+                </ScrollViewer>
             </Border>
-            
+
         </Grid>
 
         <!-- ============ Delete confirmation overlay ============ -->

@@ -1,7 +1,4 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories;
-using HRManagement.Repositories.Interfaces;
-using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 using System;
@@ -10,69 +7,50 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
+using System.Xml.Linq;
 
 namespace HRManagement.ViewModels
 {
     /// <summary>
     /// "Manage Contracts" page - full CRUD table over every employee's
-    /// contract. Admin/Manager only. This is the former "Contract" page;
-    /// renamed because the same view was trying to serve two very different
-    /// audiences (an employee reading their own contract vs. an admin
-    /// managing everyone's). The employee/manager-facing read-only page now
-    /// lives separately as ContractView/ContractViewModel.
+    /// contract. Admin/Manager only. All persistence, access-control, and
+    /// logging logic lives in IContractService; this ViewModel only talks
+    /// to that interface and has no knowledge of repositories.
     /// </summary>
     public class ManageContractsViewModel : PageViewModel
     {
-
-        private static readonly List<IdNamePair> Roles =
-        [
-            new IdNamePair(1, "Admin"),
-            new IdNamePair(2, "Manager"),
-            new IdNamePair(3, "Employee")
-        ];
-
         public static readonly List<string> ContractTypeOptions = ["Full-time", "Part-time", "Internship", "Seasonal"];
         public static readonly List<string> StatusOptions = ["Active", "Expired", "Terminated", "Pending"];
 
-        private static readonly HashSet<int> AllowedRoleIds = [1, 2]; // Admin, Manager
-
-        private readonly IContractRepository _contractRepository;
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly SessionManager _sessionManager;
-        private readonly ILogService _logService;
+        private readonly IContractService _contractService;
 
         public override string Title => "Manage Contracts";
 
-        public ManageContractsViewModel(
-            IContractRepository contractRepository,
-            IEmployeeRepository employeeRepository,
-            SessionManager sessionManager,
-            ILogService logService)
+        public ManageContractsViewModel(IContractService contractService)
         {
-            _contractRepository = contractRepository;
-            _employeeRepository = employeeRepository;
-            _sessionManager = sessionManager;
-            _logService = logService;
+            _contractService = contractService;
 
             Contracts = [];
             Employees = [];
-            RoleOptions = Roles;
+            RoleOptions = _contractService.GetRoleOptions();
             ContractTypeOptionsList = ContractTypeOptions;
             StatusOptionsList = StatusOptions;
+            SortOptions = ["Employee (A-Z)", "Employee (Z-A)", "Start Date (Newest)", "Start Date (Oldest)"];
+            _selectedSort = SortOptions[0];
 
             ContractsView = CollectionViewSource.GetDefaultView(Contracts);
             ContractsView.Filter = FilterContract;
+            ApplySort();
 
             AddCommand = new RelayCommand(_ => OpenAddForm());
-            EditCommand = new RelayCommand(param => OpenEditForm(param as ContractRow));
-            DeleteCommand = new RelayCommand(param => RequestDelete(param as ContractRow));
+            EditCommand = new RelayCommand(param => OpenEditForm(param as ContractItemModel));
+            DeleteCommand = new RelayCommand(param => RequestDelete(param as ContractItemModel));
             SaveCommand = new RelayCommand(_ => SaveForm());
             CancelCommand = new RelayCommand(_ => CloseForm());
             ConfirmDeleteCommand = new RelayCommand(_ => ConfirmDelete());
             CancelDeleteCommand = new RelayCommand(_ => CancelDelete());
 
-            var currentRoleId = _sessionManager.CurrentUser?.Employee?.RoleId;
-            HasAccess = currentRoleId.HasValue && AllowedRoleIds.Contains(currentRoleId.Value);
+            HasAccess = _contractService.CurrentUserHasAccess();
             HasNoAccess = !HasAccess;
 
             if (HasAccess)
@@ -89,12 +67,43 @@ namespace HRManagement.ViewModels
 
         // List
 
-        public ObservableCollection<ContractRow> Contracts { get; }
+        public ObservableCollection<ContractItemModel> Contracts { get; }
         public ICollectionView ContractsView { get; }
         public ObservableCollection<IdNamePair> Employees { get; }
         public List<IdNamePair> RoleOptions { get; }
         public List<string> ContractTypeOptionsList { get; }
         public List<string> StatusOptionsList { get; }
+        public List<string> SortOptions { get; }
+
+        // Summary stat cards (Total / Active / Expired / Terminated)
+
+        private int _totalContractsCount;
+        public int TotalContractsCount
+        {
+            get => _totalContractsCount;
+            private set => SetProperty(ref _totalContractsCount, value);
+        }
+
+        private int _activeContractsCount;
+        public int ActiveContractsCount
+        {
+            get => _activeContractsCount;
+            private set => SetProperty(ref _activeContractsCount, value);
+        }
+
+        private int _expiredContractsCount;
+        public int ExpiredContractsCount
+        {
+            get => _expiredContractsCount;
+            private set => SetProperty(ref _expiredContractsCount, value);
+        }
+
+        private int _terminatedContractsCount;
+        public int TerminatedContractsCount
+        {
+            get => _terminatedContractsCount;
+            private set => SetProperty(ref _terminatedContractsCount, value);
+        }
 
         private string _searchText = string.Empty;
         public string SearchText
@@ -104,6 +113,17 @@ namespace HRManagement.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                     ContractsView.Refresh();
+            }
+        }
+
+        private string _selectedSort;
+        public string SelectedSort
+        {
+            get => _selectedSort;
+            set
+            {
+                if (SetProperty(ref _selectedSort, value))
+                    ApplySort();
             }
         }
 
@@ -202,8 +222,8 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _isDeleteConfirmOpen, value);
         }
 
-        private ContractRow? _pendingDelete;
-        public ContractRow? PendingDelete
+        private ContractItemModel? _pendingDelete;
+        public ContractItemModel? PendingDelete
         {
             get => _pendingDelete;
             set => SetProperty(ref _pendingDelete, value);
@@ -217,39 +237,30 @@ namespace HRManagement.ViewModels
         private void LoadEmployees()
         {
             Employees.Clear();
-            foreach (var employee in _employeeRepository.GetAll())
-                Employees.Add(new IdNamePair(employee.EmployeeId, employee.FullName));
+            foreach (var employee in _contractService.GetEmployees())
+                Employees.Add(employee);
         }
 
         private void LoadContracts()
         {
             Contracts.Clear();
-            foreach (var contract in _contractRepository.GetAll())
-                Contracts.Add(ToRow(contract));
+            foreach (var contract in _contractService.GetContracts())
+                Contracts.Add(contract);
+
+            UpdateStats();
         }
 
-        private ContractRow ToRow(Contract contract)
+        private void UpdateStats()
         {
-            var employeeName = Employees.FirstOrDefault(e => e.Id == contract.EmployeeId)?.Name
-                ?? $"Employee #{contract.EmployeeId}";
-            var roleName = Roles.FirstOrDefault(r => r.Id == contract.RoleId)?.Name ?? "—";
-
-            return new ContractRow
-            {
-                Contract = contract,
-                EmployeeName = employeeName,
-                RoleName = roleName,
-                ContractType = contract.ContractType,
-                StartDateDisplay = contract.StartDate.ToString("MMM dd, yyyy"),
-                EndDateDisplay = contract.EndDate.HasValue ? contract.EndDate.Value.ToString("MMM dd, yyyy") : "No end date",
-                Status = contract.Status,
-                BaseSalaryDisplay = contract.BaseSalary.ToString("C0")
-            };
+            TotalContractsCount = Contracts.Count;
+            ActiveContractsCount = Contracts.Count(c => string.Equals(c.Status, "Active", StringComparison.OrdinalIgnoreCase));
+            ExpiredContractsCount = Contracts.Count(c => string.Equals(c.Status, "Expired", StringComparison.OrdinalIgnoreCase));
+            TerminatedContractsCount = Contracts.Count(c => string.Equals(c.Status, "Terminated", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool FilterContract(object obj)
         {
-            if (obj is not ContractRow row)
+            if (obj is not ContractItemModel row)
                 return false;
 
             if (string.IsNullOrWhiteSpace(SearchText))
@@ -259,6 +270,30 @@ namespace HRManagement.ViewModels
 
             return row.EmployeeName.Contains(term, StringComparison.OrdinalIgnoreCase)
                 || row.ContractType.Contains(term, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ApplySort()
+        {
+            ContractsView.SortDescriptions.Clear();
+
+            switch (SelectedSort)
+            {
+                case "Employee (Z-A)":
+                    ContractsView.SortDescriptions.Add(new SortDescription(nameof(ContractItemModel.EmployeeName), ListSortDirection.Descending));
+                    break;
+
+                case "Start Date (Newest)":
+                    ContractsView.SortDescriptions.Add(new SortDescription($"{nameof(ContractItemModel.Contract)}.{nameof(Models.Contract.StartDate)}", ListSortDirection.Descending));
+                    break;
+
+                case "Start Date (Oldest)":
+                    ContractsView.SortDescriptions.Add(new SortDescription($"{nameof(ContractItemModel.Contract)}.{nameof(Models.Contract.StartDate)}", ListSortDirection.Ascending));
+                    break;
+
+                default: // "Employee (A-Z)"
+                    ContractsView.SortDescriptions.Add(new SortDescription(nameof(ContractItemModel.EmployeeName), ListSortDirection.Ascending));
+                    break;
+            }
         }
 
         // Add / Edit
@@ -278,7 +313,7 @@ namespace HRManagement.ViewModels
             IsFormOpen = true;
         }
 
-        private void OpenEditForm(ContractRow? row)
+        private void OpenEditForm(ContractItemModel? row)
         {
             if (row?.Contract == null)
                 return;
@@ -335,63 +370,49 @@ namespace HRManagement.ViewModels
                 return;
             }
 
-            Contract? oldContract = null;
-            if (_formContractId != 0) oldContract = _contractRepository.GetCurrentByEmployeeId(_formContractId);
-            var contract = new Contract
+            var input = new ContractInput
             {
                 ContractId = _formContractId,
                 EmployeeId = FormSelectedEmployee.Id,
                 RoleId = FormSelectedRole.Id,
-                ContractType = FormContractType.Trim(),
+                ContractType = FormContractType,
                 StartDate = FormStartDate.Value,
                 EndDate = FormEndDate,
                 Status = FormStatus,
                 BaseSalary = baseSalary
             };
 
-            if (_formContractId == 0)
+            try
             {
-                var newId = _contractRepository.Insert(contract);
-                contract.ContractId = newId;
-                Contracts.Add(ToRow(contract));
-                string employeeName = Employees.FirstOrDefault(x => x.Id == contract.EmployeeId)?.Name ?? "Unknown";
-                _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Added contract for {employeeName}");
+                if (_formContractId == 0)
+                {
+                    var saved = _contractService.AddContract(input);
+                    Contracts.Add(saved);
+                }
+                else
+                {
+                    var saved = _contractService.UpdateContract(input);
+                    var existing = Contracts.FirstOrDefault(c => c.Contract.ContractId == _formContractId);
+                    if (existing != null)
+                    {
+                        var index = Contracts.IndexOf(existing);
+                        Contracts[index] = saved;
+                    }
+                }
+
+                UpdateStats();
+
+                IsFormOpen = false;
             }
-            else
+            catch (Exception ex)
             {
-                _contractRepository.Update(contract);
-                var existing = Contracts.FirstOrDefault(c => c.Contract.ContractId == _formContractId);
-                if (existing != null)
-                {
-                    var index = Contracts.IndexOf(existing);
-                    Contracts[index] = ToRow(contract);
-                }
-                if (oldContract != null)
-                {
-                    List<string> changes = new();
-                    if (oldContract.EmployeeId != contract.EmployeeId) changes.Add("Employee");
-                    if (oldContract.RoleId != contract.RoleId) changes.Add("Role");
-                    if (oldContract.ContractType != contract.ContractType) changes.Add("Contract Type");
-                    if (oldContract.StartDate != contract.StartDate) changes.Add("Start Date");
-                    if (oldContract.EndDate != contract.EndDate) changes.Add("End Date");
-                    if (oldContract.Status != contract.Status) changes.Add("Status");
-                    if (oldContract.BaseSalary != contract.BaseSalary) changes.Add("Base Salary");
-
-                    string employeeName = Employees.FirstOrDefault(x => x.Id == contract.EmployeeId)?.Name ?? "Unknown";
-                    string message = changes.Count > 0
-                        ? $"Updated contract of {employeeName}: {string.Join(", ", changes)}"
-                        : $"Updated contract of {employeeName}";
-
-                    _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, message);
-                }
+                FormErrorMessage = ex.Message;
             }
-
-            IsFormOpen = false;
         }
 
         //Delete 
 
-        private void RequestDelete(ContractRow? row)
+        private void RequestDelete(ContractItemModel? row)
         {
             if (row == null)
                 return;
@@ -405,11 +426,17 @@ namespace HRManagement.ViewModels
             if (PendingDelete == null)
                 return;
 
-            _contractRepository.Delete(PendingDelete.Contract.ContractId);
-            Contracts.Remove(PendingDelete);
-            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted contract of {PendingDelete.EmployeeName}");
-            PendingDelete = null;
-            IsDeleteConfirmOpen = false;
+            try
+            {
+                _contractService.DeleteContract(PendingDelete.Contract.ContractId);
+                Contracts.Remove(PendingDelete);
+                UpdateStats();
+            }
+            finally
+            {
+                PendingDelete = null;
+                IsDeleteConfirmOpen = false;
+            }
         }
 
         private void CancelDelete()
@@ -417,17 +444,5 @@ namespace HRManagement.ViewModels
             PendingDelete = null;
             IsDeleteConfirmOpen = false;
         }
-    }
-
-    public class ContractRow
-    {
-        public Contract Contract { get; set; } = null!;
-        public string EmployeeName { get; set; } = string.Empty;
-        public string RoleName { get; set; } = string.Empty;
-        public string ContractType { get; set; } = string.Empty;
-        public string StartDateDisplay { get; set; } = string.Empty;
-        public string EndDateDisplay { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string BaseSalaryDisplay { get; set; } = string.Empty;
     }
 }
