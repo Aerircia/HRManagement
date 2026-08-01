@@ -9,6 +9,12 @@ namespace HRManagement.ViewModels;
 
 public class ManageSalariesViewModel : PageViewModel
 {
+    private const int StandardHoursPerDay = 8;
+
+    private const decimal WeekdayOtCoefficient = 1.5m;
+
+    private const decimal WeekendOtCoefficient = 2.0m;
+
     private readonly IManageSalariesService
         _manageSalariesService;
     private readonly ILogService _logService;
@@ -90,6 +96,8 @@ public class ManageSalariesViewModel : PageViewModel
 
             OnPropertyChanged(
                 nameof(CanEditSelectedSalary));
+
+            NotifyPreviewProperties();
 
             CommandManager
                 .InvalidateRequerySuggested();
@@ -200,17 +208,7 @@ public class ManageSalariesViewModel : PageViewModel
                 return;
             }
 
-            OnPropertyChanged(
-                nameof(PreviewRoleSalary));
-
-            OnPropertyChanged(
-                nameof(PreviewDailySalary));
-
-            OnPropertyChanged(
-                nameof(PreviewAttendanceSalary));
-
-            OnPropertyChanged(
-                nameof(PreviewTotalSalary));
+            NotifyPreviewProperties();
 
             CommandManager
                 .InvalidateRequerySuggested();
@@ -230,44 +228,120 @@ public class ManageSalariesViewModel : PageViewModel
                 return;
             }
 
-            OnPropertyChanged(
-                nameof(PreviewRoleSalary));
-
-            OnPropertyChanged(
-                nameof(PreviewDailySalary));
-
-            OnPropertyChanged(
-                nameof(PreviewAttendanceSalary));
-
-            OnPropertyChanged(
-                nameof(PreviewTotalSalary));
+            NotifyPreviewProperties();
 
             CommandManager
                 .InvalidateRequerySuggested();
         }
     }
 
-    public decimal PreviewRoleSalary =>
+    public decimal PreviewFullMonthRoleSalary =>
         EditingBaseSalary
         * EditingPayRate;
 
     public decimal PreviewDailySalary =>
-        PreviewRoleSalary / 26m;
+        SelectedSalary == null
+            || SelectedSalary.CalendarWorkingDays <= 0
+                ? 0
+                : PreviewFullMonthRoleSalary
+                  / SelectedSalary.CalendarWorkingDays;
+
+    /*
+     * Salary preview mirrors SalaryCalculator:
+     *
+     * DailySalary =
+     * FullMonthRoleSalary / CalendarWorkingDays
+     *
+     * RoleSalary =
+     * DailySalary * EffectiveWorkingDays
+     */
+    public decimal PreviewRoleSalary =>
+        SelectedSalary == null
+            ? 0
+            : PreviewDailySalary
+              * SelectedSalary.EffectiveWorkingDays;
+
+    public decimal PreviewHourlySalary =>
+        PreviewDailySalary
+        / StandardHoursPerDay;
+
+    public decimal PreviewWeekdayOtSalary =>
+        SelectedSalary == null
+            ? 0
+            : PreviewHourlySalary
+              * SelectedSalary.WeekdayOtHours
+              * WeekdayOtCoefficient;
+
+    public decimal PreviewWeekendOtSalary =>
+        SelectedSalary == null
+            ? 0
+            : PreviewHourlySalary
+              * SelectedSalary.WeekendOtHours
+              * WeekendOtCoefficient;
+
+    public decimal PreviewOvertimeSalary =>
+        PreviewWeekdayOtSalary
+        + PreviewWeekendOtSalary;
+
+    public decimal PreviewAbsentDeduction =>
+        SelectedSalary == null
+            ? 0
+            : PreviewDailySalary
+              * SelectedSalary.AbsentDays;
+
+    public decimal PreviewUnpaidDayOffDeduction =>
+        SelectedSalary == null
+            ? 0
+            : PreviewDailySalary
+              * SelectedSalary.UnpaidDayOffDays;
+
+    /*
+     * Late penalty is currently produced by the salary service.
+     * Editing BaseSalary/PayRate does not change it until a
+     * dedicated monetary late policy is introduced.
+     */
+    public decimal PreviewLatePenalty =>
+        SelectedSalary == null
+            ? 0
+            : PreviewHourlySalary
+              * (
+                    SelectedSalary.LateMinutes
+                    / 60m
+                );
 
     public decimal PreviewAttendanceSalary =>
         SelectedSalary == null
             ? 0
-            : PreviewDailySalary
-              * SelectedSalary.WorkingDays;
+            : Math.Max(
+                0,
+                PreviewRoleSalary
+                - PreviewAbsentDeduction
+                - PreviewUnpaidDayOffDeduction);
+
+    public decimal PreviewGrossSalary =>
+        SelectedSalary == null
+            ? 0
+            : PreviewRoleSalary
+              + PreviewOvertimeSalary
+              + SelectedSalary.Reward;
+
+    public decimal PreviewTotalDeductions =>
+        SelectedSalary == null
+            ? 0
+            : SelectedSalary.Penalty
+              + PreviewLatePenalty
+              + PreviewAbsentDeduction
+              + PreviewUnpaidDayOffDeduction;
 
     public decimal PreviewTotalSalary =>
         SelectedSalary == null
             ? 0
             : decimal.Round(
-                PreviewAttendanceSalary
-                + SelectedSalary.Reward
-                - SelectedSalary.Penalty,
-                0,
+                Math.Max(
+                    0,
+                    PreviewGrossSalary
+                    - PreviewTotalDeductions),
+                2,
                 MidpointRounding.AwayFromZero);
 
     // =========================================================
@@ -916,6 +990,51 @@ public class ManageSalariesViewModel : PageViewModel
     // =========================================================
     // Property notifications
     // =========================================================
+
+    private void NotifyPreviewProperties()
+    {
+        OnPropertyChanged(
+            nameof(PreviewFullMonthRoleSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewRoleSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewDailySalary));
+
+        OnPropertyChanged(
+            nameof(PreviewHourlySalary));
+
+        OnPropertyChanged(
+            nameof(PreviewWeekdayOtSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewWeekendOtSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewOvertimeSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewAbsentDeduction));
+
+        OnPropertyChanged(
+            nameof(PreviewUnpaidDayOffDeduction));
+
+        OnPropertyChanged(
+            nameof(PreviewLatePenalty));
+
+        OnPropertyChanged(
+            nameof(PreviewAttendanceSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewGrossSalary));
+
+        OnPropertyChanged(
+            nameof(PreviewTotalDeductions));
+
+        OnPropertyChanged(
+            nameof(PreviewTotalSalary));
+    }
 
     private void NotifySummaryProperties()
     {
