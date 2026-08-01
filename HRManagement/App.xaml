@@ -13,7 +13,6 @@
                 <!--<ResourceDictionary Source="Resources/DarkBrushes.xaml"/>-->
                 <ResourceDictionary Source="Resources/Converters.xaml"/>
                 <ResourceDictionary Source="Resources/Brushes.xaml"/>
-                <ResourceDictionary Source="Resources/FontSizes.xaml"/>
                 <ResourceDictionary Source="Resources/ButtonStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ComboBoxStyles.xaml"/>
                 <ResourceDictionary Source="Resources/DataTemplates.xaml"/>

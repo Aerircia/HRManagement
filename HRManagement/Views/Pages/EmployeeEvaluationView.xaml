@@ -915,7 +915,7 @@
 
                                         <TextBlock Text="{Binding TotalReward,
                                                                   Mode=OneWay,
-                                                                  StringFormat={}{0:N0} VND}"
+                                                                  StringFormat={}{0:N0} $}"
                                                    Foreground="{DynamicResource SuccessBrush}"
                                                    Style="{StaticResource SummaryValueStyle}" />
 
@@ -934,7 +934,7 @@
 
                                         <TextBlock Text="{Binding TotalPenalty,
                                                                   Mode=OneWay,
-                                                                  StringFormat={}{0:N0} VND}"
+                                                                  StringFormat={}{0:N0} $}"
                                                    Foreground="{DynamicResource DangerBrush}"
                                                    Style="{StaticResource SummaryValueStyle}" />
 
@@ -953,7 +953,7 @@
 
                                         <TextBlock Text="{Binding NetAdjustment,
                                                                   Mode=OneWay,
-                                                                  StringFormat={}{0:N0} VND}"
+                                                                  StringFormat={}{0:N0} $}"
                                                    Foreground="{DynamicResource PrimaryBrush}"
                                                    Style="{StaticResource SummaryValueStyle}" />
 

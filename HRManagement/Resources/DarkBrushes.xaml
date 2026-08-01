@@ -93,4 +93,23 @@
     <!-- ========= Shadows ========= -->
     <Color x:Key="CardShadowColor">#40000000</Color>
 
+    <!-- ========= Attendance calendar status fills ========= -->
+    <!-- Status colors kept close to their light-mode hue but nudged for
+         legibility on dark cards. WeekendBgBrush/NeutralBgBrush are the
+         important fix here: the light theme's #F3F5FA (near-white) was
+         previously the ONLY value that existed (AttendanceResources.xaml
+         was never swapped by theme), so weekend/empty cells and their
+         date-number/status text were nearly invisible against the dark
+         canvas. Now a muted dark-slate fill that still contrasts with
+         PrimaryTextBrush/SecondaryTextBrush above it. -->
+    <SolidColorBrush x:Key="SuccessBgBrush" Color="#22C77E"/>
+    <SolidColorBrush x:Key="WarningBgBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="DangerBgBrush" Color="#F1594B"/>
+    <SolidColorBrush x:Key="OtBgBrush" Color="#9678FF"/>
+    <SolidColorBrush x:Key="DayOffBgBrush" Color="#4C9BC4"/>
+    <SolidColorBrush x:Key="WeekendBgBrush" Color="#232B48"/>
+    <SolidColorBrush x:Key="NeutralBgBrush" Color="#232B48"/>
+
+    <SolidColorBrush x:Key="StatusHeaderTextBrush" Color="#FFFFFF"/>
+
 </ResourceDictionary>

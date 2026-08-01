@@ -9,11 +9,14 @@
     [HireDate]      DATETIME2 (7)  NOT NULL,
     [Status]        NVARCHAR (50)  NOT NULL,
     [Avatar]        NVARCHAR (MAX) NULL,
+    [Address]       NVARCHAR (255) NULL,
     PRIMARY KEY CLUSTERED ([EmployeeID] ASC),
     CONSTRAINT [FK_Employee_Department] FOREIGN KEY ([Department_ID]) REFERENCES [dbo].[Department] ([Department_ID]),
     CONSTRAINT [FK_Employee_Role] FOREIGN KEY ([Role_ID]) REFERENCES [dbo].[Role] ([Role_ID]),
     CONSTRAINT [UQ_Employee_Email] UNIQUE NONCLUSTERED ([Email] ASC)
 );
+
+
 
 
 GO

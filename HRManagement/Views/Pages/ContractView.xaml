@@ -91,16 +91,14 @@
                                 <Run Text="Employer: " FontWeight="Bold"/>
                                 <Run Text="{Binding EmployerNameDisplay, Mode=OneWay}" Style="{StaticResource DynamicDataStyle}"/>
                                 <Run Text=", (&quot;Employer&quot;) with a mailing address of"/>
-                                <LineBreak/>
                                 <Run Text="{Binding EmployerAddressDisplay, Mode=OneWay}" Style="{StaticResource DynamicDataStyle}"/>
-                                <Run Text=" and"/>
+                                <Run Text="."/>
                             </TextBlock>
 
                             <TextBlock Grid.Row="2" Style="{StaticResource DocumentTextStyle}" Margin="0">
                                 <Run Text="Employee: " FontWeight="Bold"/>
                                 <Run Text="{Binding EmployeeNameDisplay, Mode=OneWay}" Style="{StaticResource DynamicDataStyle}"/>
                                 <Run Text=", (&quot;Employee&quot;) with a mailing address of"/>
-                                <LineBreak/>
                                 <Run Text="{Binding EmployeeAddressDisplay, Mode=OneWay}" Style="{StaticResource DynamicDataStyle}"/>
                                 <Run Text="."/>
                             </TextBlock>

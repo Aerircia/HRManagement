@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using HRManagement.Resources;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
 
@@ -9,18 +10,47 @@ public class LoginViewModel : ViewModelBase
     private readonly IAuthenticationService _authenticationService;
     private readonly IWindowService _windowService;
     private readonly INavigationService _navigationService;
+    private readonly ISettingService _settingService;
 
     public LoginViewModel(
         IAuthenticationService authenticationService,
         IWindowService windowService,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        ISettingService settingService)
     {
         _authenticationService = authenticationService;
         _windowService = windowService;
         _navigationService = navigationService;
+        _settingService = settingService;
+
+        // The rest of the app (SettingService.Initialize, called from
+        // App.xaml.cs on startup) already applies the persisted theme before
+        // the login window shows, so this just reflects that current state
+        // rather than assuming light mode - otherwise the toggle would show
+        // as "off" even when dark mode was already active from last session.
+        _isDarkTheme = _settingService.CurrentTheme == SettingResources.ThemeDark;
 
         LoginCommand = new RelayCommand(Login);
+        ToggleThemeCommand = new RelayCommand(_ => IsDarkTheme = !IsDarkTheme);
     }
+
+    private bool _isDarkTheme;
+    public bool IsDarkTheme
+    {
+        get => _isDarkTheme;
+        set
+        {
+            if (SetProperty(ref _isDarkTheme, value))
+            {
+                if (value)
+                    _settingService.SetDarkTheme();
+                else
+                    _settingService.SetLightTheme();
+            }
+        }
+    }
+
+    public ICommand ToggleThemeCommand { get; }
 
     private string _username = string.Empty;
     public string Username

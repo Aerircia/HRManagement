@@ -29,21 +29,22 @@
 
             <!-- App icon + name (replaces the old plain "HR Manager" text) -->
 
+            <!-- App branding: collapses to just the icon -->
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
 
-                <Image Source="/Resources/Images/AppLogo.png"
-                       Width="18"
-                       Height="18"
-                       Stretch="Uniform"/>
+                <Border Style="{StaticResource AppLogoBadgeStyle}" Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}">
+                    <Image Source="/Assets/logo.png"
+                           Margin="-10"
+                           Width="40" Height="40"
+                           Stretch="Uniform"/>
+                </Border>
 
-                <TextBlock VerticalAlignment="Center"
-                           FontWeight="SemiBold"
-                           FontSize="14"
+                <TextBlock Text="HR Management"
+                           Style="{StaticResource AppNameTextStyle}"
                            Margin="10,0,0,0"
-                           Foreground="{DynamicResource PrimaryTextBrush}"
-                           Text="HR Manager"/>
+                           Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
             </StackPanel>
 

@@ -42,6 +42,19 @@ public class AttendanceDayViewModel : ViewModelBase
         LatenessMinutes = model.LatenessMinutes;
     }
 
+    // The calendar cell's Background binds directly to Status through
+    // AttendanceStatusToBrushConverter, which resolves the brush live via
+    // Application.Current.FindResource - but WPF only re-runs a converter
+    // when the bound source value itself changes, not when a resource the
+    // converter happens to look up changes underneath it. After a theme
+    // swap the Status value hasn't changed, so without this the cell would
+    // stay painted with whatever brush instance the last theme resolved to
+    // until something else (e.g. navigating away and back) re-touches
+    // Status. This re-raises PropertyChanged for Status only, forcing the
+    // binding - and therefore the converter - to re-evaluate against the
+    // now-current theme dictionary.
+    public void RefreshThemeDependentDisplay() => OnPropertyChanged(nameof(Status));
+
     private DateTime _date;
     public DateTime Date { get => _date; private set => SetProperty(ref _date, value); }
 

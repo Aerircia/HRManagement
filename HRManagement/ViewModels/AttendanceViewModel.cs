@@ -15,16 +15,24 @@ public class AttendanceViewModel : PageViewModel
 {
     private readonly IAttendanceService _attendanceService;
     private readonly SessionManager _sessionManager;
+    private readonly ISettingService? _settingService;
 
     private int? _displayEmployeeId;
     private DateTime? _displayHireDate;
 
-    public AttendanceViewModel(SessionManager sessionManager, IAttendanceService attendanceService)
+    public AttendanceViewModel(
+        SessionManager sessionManager,
+        IAttendanceService attendanceService,
+        ISettingService? settingService = null)
     {
         _sessionManager = sessionManager;
         _attendanceService = attendanceService;
+        _settingService = settingService;
         _attendanceService.AttendanceChanged += AttendanceService_OnAttendanceChanged;
         _sessionManager.OnUserChanged += SessionManager_OnUserChanged;
+
+        if (_settingService != null)
+            _settingService.ThemeChanged += SettingService_OnThemeChanged;
 
         Days = [];
 
@@ -33,15 +41,7 @@ public class AttendanceViewModel : PageViewModel
         _checkInCommand = new RelayCommand(_ => CheckIn(), _ => CanCheckIn());
         _checkOutCommand = new RelayCommand(_ => CheckOut(), _ => CanCheckOut());
 
-        if (_sessionManager.CurrentUser != null)
-        {
-            var hire = _sessionManager.CurrentUser.Employee.HireDate.Date;
-            CurrentMonth = new DateTime(hire.Year, hire.Month, 1);
-        }
-        else
-        {
-            CurrentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-        }
+        CurrentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
         Refresh();
     }
@@ -74,9 +74,12 @@ public class AttendanceViewModel : PageViewModel
         _displayEmployeeId = employeeId;
         _displayHireDate = hireDate;
 
+        CurrentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+
         if (HireDate.HasValue)
         {
             var hireMonth = new DateTime(HireDate.Value.Year, HireDate.Value.Month, 1);
+
             if (CurrentMonth < hireMonth)
                 CurrentMonth = hireMonth;
         }
@@ -200,6 +203,12 @@ public class AttendanceViewModel : PageViewModel
         _checkOutCommand.RaiseCanExecuteChanged();
     }
 
+    private void SettingService_OnThemeChanged(object? sender, EventArgs e)
+    {
+        foreach (var day in Days)
+            day.RefreshThemeDependentDisplay();
+    }
+
     private void SessionManager_OnUserChanged(object? sender, EventArgs e)
     {
         // Only reset to the session user's own calendar if nobody has
@@ -208,10 +217,7 @@ public class AttendanceViewModel : PageViewModel
         if (_displayEmployeeId.HasValue)
             return;
 
-        CurrentMonth = _sessionManager.CurrentUser != null
-            ? new DateTime(_sessionManager.CurrentUser.Employee.HireDate.Date.Year,
-                            _sessionManager.CurrentUser.Employee.HireDate.Date.Month, 1)
-            : new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        CurrentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
         Refresh();
     }

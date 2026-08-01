@@ -6,7 +6,6 @@
              xmlns:controls="clr-namespace:HRManagement.Controls"
              mc:Ignorable="d"
              Background="{DynamicResource WindowBackgroundBrush}"
-             FontSize="{DynamicResource AppFontSize}"
              d:DesignHeight="820" d:DesignWidth="900">
 
     <UserControl.Resources>
@@ -98,26 +97,6 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" />
-                    </Grid>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Large Text" Style="{StaticResource RowLabelStyle}"/>
-                            <TextBlock Text="Increase text size across the application."
-                                       Style="{StaticResource RowDescriptionStyle}"/>
-                        </StackPanel>
-
-                        <controls:ToggleSwitch
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            IsChecked="{Binding IsLargeText, Mode=TwoWay}" />
                     </Grid>
                 </StackPanel>
             </Border>

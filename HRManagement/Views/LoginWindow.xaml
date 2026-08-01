@@ -164,6 +164,34 @@
                             VerticalAlignment="Top"
                             Margin="0,16,16,0">
 
+                    <!-- Dark mode toggle. Reuses the same ghost-button chrome
+                         as Minimize/Close (LoginWindowButtonStyle) and the
+                         same command/property pattern as Settings' theme
+                         toggle (LoginViewModel.IsDarkTheme/ToggleThemeCommand),
+                         so the login window can offer dark mode too instead
+                         of only being reachable after signing in. Icon swaps
+                         between sun/moon based on the current state so the
+                         button communicates what it will switch TO on the
+                         next click, matching the moon/sun convention used
+                         elsewhere for theme toggles. -->
+                    <Button Style="{StaticResource LoginWindowButtonStyle}"
+                            Margin="0,0,8,0"
+                            Command="{Binding ToggleThemeCommand}"
+                            ToolTip="Toggle dark mode">
+                        <fa:IconBlock Width="14" Height="14">
+                            <fa:IconBlock.Style>
+                                <Style TargetType="fa:IconBlock">
+                                    <Setter Property="Icon" Value="Moon"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDarkTheme}" Value="True">
+                                            <Setter Property="Icon" Value="Sun"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:IconBlock.Style>
+                        </fa:IconBlock>
+                    </Button>
+
                     <Button Style="{StaticResource LoginWindowButtonStyle}"
                             Margin="0,0,8,0"
                             Click="Minimize_Click">

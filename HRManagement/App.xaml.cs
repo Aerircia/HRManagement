@@ -23,6 +23,13 @@ public partial class App : Application
 
         Services = services.BuildServiceProvider();
 
+        // Apply the persisted theme (Brushes.xaml vs DarkBrushes.xaml) before
+        // any window is shown. This previously never ran anywhere, so the app
+        // always launched in light mode - including the login window -
+        // regardless of what the user last chose in Settings, until they
+        // happened to toggle it again after logging in.
+        Services.GetRequiredService<ISettingService>().Initialize();
+
         var loginWindow = Services.GetRequiredService<LoginWindow>();
 
         loginWindow.Show();

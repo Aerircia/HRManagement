@@ -897,7 +897,7 @@
             <Border Grid.Column="2"
                     Style="{StaticResource SectionCardBorderStyle}">
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                <ScrollViewer VerticalScrollBarVisibility="Hidden"
                               HorizontalScrollBarVisibility="Disabled">
 
                     <StackPanel>

@@ -128,4 +128,22 @@
          slightly different color/opacity by hand. -->
     <Color x:Key="CardShadowColor">#1A2B3674</Color>
 
+    <!-- ========= Attendance calendar status fills ========= -->
+    <!-- Moved here (and mirrored in DarkBrushes.xaml) from AttendanceResources.xaml
+         so they swap with the rest of the palette via SettingService.ApplyTheme.
+         AttendanceResources.xaml is merged once, globally, and never swapped -
+         so any brush defined only there is frozen at whatever it was set to at
+         startup regardless of theme. Keeping the same keys means
+         AttendanceCalendarView.xaml, AttendanceStatusToBrushConverter, and the
+         legend swatches don't need any changes beyond DynamicResource lookups. -->
+    <SolidColorBrush x:Key="SuccessBgBrush" Color="#12B76A"/>
+    <SolidColorBrush x:Key="WarningBgBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="DangerBgBrush" Color="#F04438"/>
+    <SolidColorBrush x:Key="OtBgBrush" Color="#7C5CFC"/>
+    <SolidColorBrush x:Key="DayOffBgBrush" Color="#63ADD0"/>
+    <SolidColorBrush x:Key="WeekendBgBrush" Color="#F3F5FA"/>
+    <SolidColorBrush x:Key="NeutralBgBrush" Color="#F3F5FA"/>
+
+    <SolidColorBrush x:Key="StatusHeaderTextBrush" Color="#FFFFFF"/>
+
 </ResourceDictionary>

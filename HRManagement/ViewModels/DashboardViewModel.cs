@@ -26,7 +26,10 @@ public class DashboardViewModel : PageViewModel
         SendRequestCommand = new RelayCommand(_ => _navigationService.Navigate<RequestsViewModel>());
         ViewPayslipCommand = new RelayCommand(_ => _navigationService.Navigate<SalaryViewModel>());
 
-        Load();
+        if (_authorizationService.IsLoggedIn)
+        {
+            Load();
+        }
     }
 
     #region Bound Properties
@@ -38,11 +41,11 @@ public class DashboardViewModel : PageViewModel
         private set => SetProperty(ref _weekDays, value);
     }
 
-    private ObservableCollection<WeeklyHourPoint> _weeklyHours = [];
-    public ObservableCollection<WeeklyHourPoint> WeeklyHours
+    private ObservableCollection<MonthlyPayoutPoint> _monthlyPayoutHistory = [];
+    public ObservableCollection<MonthlyPayoutPoint> MonthlyPayoutHistory
     {
-        get => _weeklyHours;
-        private set => SetProperty(ref _weeklyHours, value);
+        get => _monthlyPayoutHistory;
+        private set => SetProperty(ref _monthlyPayoutHistory, value);
     }
 
     private ObservableCollection<Announcement> _announcements = [];
@@ -122,22 +125,16 @@ public class DashboardViewModel : PageViewModel
 
     #region Loading
 
-    /// <summary>
-    /// Reloads all dashboard data in one shot (per the design summary:
-    /// "Refresh logic should simply reload DashboardData instead of
-    /// maintaining duplicated loading paths").
-    /// </summary>
     private void Load()
     {
         var data = _dashboardService.LoadDashboard();
 
         WeekDays = data.WeekDays;
-        WeeklyHours = data.WeeklyHours;
+        MonthlyPayoutHistory = data.MonthlyPayoutHistory;
         Announcements = data.Announcements;
         EmployeeAnalytics = data.EmployeeAnalytics;
         ManagerAnalytics = data.ManagerAnalytics;
         TodayAttendance = data.TodayAttendance;
-
         CanCheckIn = _dashboardService.CanCheckIn();
         CanCheckOut = _dashboardService.CanCheckOut();
 

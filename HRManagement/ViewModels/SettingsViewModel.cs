@@ -25,10 +25,8 @@ public class SettingsViewModel : PageViewModel
         _sessionService = sessionService;
 
         _isDarkTheme = _settingService.CurrentTheme == SettingResources.ThemeDark;
-        _isLargeText = _settingService.IsLargeText;
 
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
-        ToggleLargeTextCommand = new RelayCommand(_ => ToggleLargeText());
         SavePasswordCommand = new RelayCommand(_ => SavePassword(), _ => CanSavePassword());
 
         LoadAboutInfo();
@@ -52,23 +50,9 @@ public class SettingsViewModel : PageViewModel
         }
     }
 
-    private bool _isLargeText;
-    public bool IsLargeText
-    {
-        get => _isLargeText;
-        set
-        {
-            if (SetProperty(ref _isLargeText, value))
-                _settingService.SetLargeText(value);
-        }
-    }
-
     public ICommand ToggleThemeCommand { get; }
-    public ICommand ToggleLargeTextCommand { get; }
 
     private void ToggleTheme() => IsDarkTheme = !IsDarkTheme;
-
-    private void ToggleLargeText() => IsLargeText = !IsLargeText;
 
     #endregion
 
@@ -140,7 +124,7 @@ public class SettingsViewModel : PageViewModel
             PasswordStatusMessage = "New password and confirmation do not match.";
             return;
         }
-            
+
         if (NewPassword.Length < 8)
         {
             PasswordStatusMessage = "New password must be at least 8 characters long.";

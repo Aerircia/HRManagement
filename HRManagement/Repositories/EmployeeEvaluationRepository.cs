@@ -87,7 +87,16 @@ public class EmployeeEvaluationRepository : RepositoryBase, IEmployeeEvaluationR
         connection.Open();
 
         const string sql = """
-        SELECT ISNULL(SUM(Amount), 0)
+        SELECT ISNULL(
+            SUM(
+                CASE
+                    WHEN BonusType = 'Reward' THEN Amount
+                    WHEN BonusType = 'Penalty' THEN -Amount
+                    ELSE 0
+                END
+            ),
+            0
+        )
         FROM EmployeeEvaluation
         WHERE Employee_ID = @EmployeeId
           AND YEAR(Bonus_Date) = @Year

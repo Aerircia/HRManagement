@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:HRManagement.Controls"
-             xmlns:vm="clr-namespace:HRManagement.ViewModels"
+             xmlns:vm="clr-namespace:HRManagement.ViewModels" xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              mc:Ignorable="d"
              d:DesignHeight="900" d:DesignWidth="1200"
              Background="{DynamicResource WindowBackgroundBrush}">
@@ -12,11 +12,37 @@
     <UserControl.Resources>
 
         <Style x:Key="LatestEvaluationValueStyle" TargetType="TextBlock" BasedOn="{StaticResource AnalyticsValueStyle}">
+            <Setter Property="Visibility" Value="Visible"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding LatestEvaluation}" Value="{x:Null}">
-                    <Setter Property="Text" Value="None yet"/>
+                    <Setter Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LatestEvaluationNoneStyle" TargetType="TextBlock" BasedOn="{StaticResource AnalyticsValueStyle}">
+            <Setter Property="Text" Value="None yet"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding LatestEvaluation}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Hours-this-month progress bar: two-column Grid (filled | remainder)
+             sized via PercentageToStarConverter off a 0-100 HoursProgress value,
+             so it never needs pixel/ActualWidth math. -->
+        <Style x:Key="HoursProgressTrackStyle" TargetType="Border">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+
+        <Style x:Key="HoursProgressFillStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
 
     </UserControl.Resources>
@@ -50,17 +76,21 @@
                             Background="{DynamicResource PrimaryButtonBrush}"
                             Command="{Binding CheckInCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}">
+                                <fa:IconBlock Icon="CalendarCheck" Width="18" Height="18" FontSize="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                             <TextBlock Text="Check In" Style="{StaticResource ActivityLabelStyle}"/>
                         </StackPanel>
                     </Button>
 
                     <Button Grid.Row="0" Grid.Column="2"
                             Style="{StaticResource ActivityCardStyle}"
-                            Background="{DynamicResource SuccessBrush}"
+                            Background="{DynamicResource SuccessBgBrush}"
                             Command="{Binding CheckOutCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}">
+                                <fa:IconBlock Icon="CalendarTimes" Width="18" Height="18" FontSize="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                             <TextBlock Text="Check Out" Style="{StaticResource ActivityLabelStyle}"/>
                         </StackPanel>
                     </Button>
@@ -70,7 +100,9 @@
                             Background="{DynamicResource OtBrush}"
                             Command="{Binding SendRequestCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}">
+                                <fa:IconBlock Icon="ClipboardQuestion" Width="18" Height="18" FontSize="18" Foreground="{DynamicResource NeutralBgBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                             <TextBlock Text="Send Requests" Style="{StaticResource ActivityLabelStyle}"/>
                         </StackPanel>
                     </Button>
@@ -80,7 +112,9 @@
                             Background="{DynamicResource PrimaryDarkBrush}"
                             Command="{Binding ViewPayslipCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource ActivityIconBadgeStyle}"/>
+                            <Border Style="{StaticResource ActivityIconBadgeStyle}">
+                                <fa:IconBlock Icon="MoneyBill1Wave" Width="18" Height="18" FontSize="15" Foreground="{DynamicResource PrimaryLightBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                             <TextBlock Text="View Payslip" Style="{StaticResource ActivityLabelStyle}"/>
                         </StackPanel>
                     </Button>
@@ -92,14 +126,26 @@
                     <StackPanel DataContext="{Binding EmployeeAnalytics}">
 
                         <Border Style="{StaticResource AnalyticsRowDividerStyle}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Hours this month" Style="{StaticResource AnalyticsLabelStyle}"/>
-                                <TextBlock Grid.Column="1" Text="{Binding HoursThisMonth, StringFormat={}{0:0.##} hrs}" Style="{StaticResource AnalyticsValueStyle}"/>
-                            </Grid>
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Hours this month" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding HoursThisMonthDisplay}" Style="{StaticResource AnalyticsValueStyle}"/>
+                                </Grid>
+
+                                <Border Style="{StaticResource HoursProgressTrackStyle}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{Binding HoursProgress, Converter={StaticResource PercentageToStarConverter}}"/>
+                                            <ColumnDefinition Width="{Binding HoursProgress, Converter={StaticResource PercentageToStarConverter}, ConverterParameter=Remainder}"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource HoursProgressFillStyle}"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource AnalyticsRowDividerStyle}">
@@ -120,11 +166,14 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Latest evaluation" Style="{StaticResource AnalyticsLabelStyle}"/>
-                                <TextBlock Grid.Column="1" Style="{StaticResource LatestEvaluationValueStyle}">
-                                    <Run Text="{Binding LatestEvaluation.BonusType, TargetNullValue=''}"/>
-                                    <Run Text=" · "/>
-                                    <Run Text="{Binding LatestEvaluation.Amount, StringFormat={}{0:N0} VND, TargetNullValue=''}"/>
-                                </TextBlock>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource LatestEvaluationValueStyle}">
+                                        <Run Text="{Binding LatestEvaluation.BonusType, TargetNullValue=''}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding LatestEvaluation.Amount, StringFormat={}{0:N0} $, TargetNullValue=''}"/>
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource LatestEvaluationNoneStyle}"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
 
@@ -134,7 +183,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Total bonus this month" Style="{StaticResource AnalyticsLabelStyle}"/>
-                            <TextBlock Grid.Column="1" Text="{Binding TotalBonusThisMonth, StringFormat={}{0:N0} VND}" Style="{StaticResource AnalyticsValueStyle}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TotalBonusThisMonth, StringFormat={}{0:N0} $}" Style="{StaticResource AnalyticsValueStyle}"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -144,14 +193,29 @@
                     <StackPanel DataContext="{Binding ManagerAnalytics}">
 
                         <Border Style="{StaticResource AnalyticsRowDividerStyle}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Team hours this month" Style="{StaticResource AnalyticsLabelStyle}"/>
-                                <TextBlock Grid.Column="1" Text="{Binding TeamHoursThisMonth, StringFormat={}{0:0.##} hrs}" Style="{StaticResource AnalyticsValueStyle}"/>
-                            </Grid>
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Style="{StaticResource AnalyticsLabelStyle}">
+                                        <Run Text="{Binding ScopeLabel, Mode=OneWay}"/>
+                                        <Run Text="hours this month"/>
+                                    </TextBlock>
+                                    <TextBlock Grid.Column="1" Text="{Binding HoursThisMonthDisplay}" Style="{StaticResource AnalyticsValueStyle}"/>
+                                </Grid>
+
+                                <Border Style="{StaticResource HoursProgressTrackStyle}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{Binding HoursProgress, Converter={StaticResource PercentageToStarConverter}}"/>
+                                            <ColumnDefinition Width="{Binding HoursProgress, Converter={StaticResource PercentageToStarConverter}, ConverterParameter=Remainder}"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource HoursProgressFillStyle}"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource AnalyticsRowDividerStyle}">
@@ -160,7 +224,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Team attendance today" Style="{StaticResource AnalyticsLabelStyle}"/>
+                                <TextBlock Grid.Column="0" Style="{StaticResource AnalyticsLabelStyle}">
+                                    <Run Text="{Binding ScopeLabel, Mode=OneWay}"/>
+                                    <Run Text="attendances today"/>
+                                </TextBlock>
                                 <TextBlock Grid.Column="1" Style="{StaticResource AnalyticsValueStyle}">
                                     <Run Text="{Binding TodayAttendanceCount, Mode=OneWay}"/>
                                     <Run Text=" / "/>
@@ -189,11 +256,11 @@
                 <controls:WeeklyCalendar WeekDays="{Binding WeekDays}" Margin="0,0,0,24"/>
 
                 <TextBlock Text="Monthly Payout Review" Style="{StaticResource SectionHeaderStyle}"/>
-                
-                <controls:AttendanceChart WeeklyHours="{Binding WeeklyHours}" Margin="0,0,0,24"/>
+
+                <controls:MonthlyPayoutChart PayoutHistory="{Binding MonthlyPayoutHistory}" Height="280" Margin="0,0,0,24"/>
 
                 <TextBlock Text="Company Announcement" Style="{StaticResource SectionHeaderStyle}"/>
-                
+
                 <controls:AnnouncementCard Announcements="{Binding Announcements}"/>
 
             </StackPanel>

@@ -135,6 +135,14 @@ public class RequestsViewModel : PageViewModel
         get => _otDate;
         set => SetProperty(ref _otDate, value);
     }
+    public ObservableCollection<string> OtTimeOptions { get; } = new()
+    {
+        "18:00",
+        "19:00",
+        "20:00",
+        "21:00",
+        "22:00"
+    };
 
     private string _otStartTime = "18:00";
     public string OtStartTime
@@ -143,7 +151,7 @@ public class RequestsViewModel : PageViewModel
         set => SetProperty(ref _otStartTime, value);
     }
 
-    private string _otEndTime = "20:00";
+    private string _otEndTime = "19:00";
     public string OtEndTime
     {
         get => _otEndTime;
@@ -292,9 +300,17 @@ public class RequestsViewModel : PageViewModel
                     return;
                 }
 
-                if (otEnd <= otStart)
+                var duration = otEnd - otStart;
+
+                if (duration.TotalHours < 1)
                 {
-                    ShowError("End time must be after start time.");
+                    ShowError("Minimum OT duration is 1 hour.");
+                    return;
+                }
+
+                if (duration.TotalHours > 4)
+                {
+                    ShowError("Maximum OT duration is 4 hours.");
                     return;
                 }
 
@@ -358,7 +374,7 @@ public class RequestsViewModel : PageViewModel
 
         OtDate = null;
         OtStartTime = "18:00";
-        OtEndTime = "20:00";
+        OtEndTime = "19:00";
         OtReason = string.Empty;
 
         OtherSubject = string.Empty;

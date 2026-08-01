@@ -9,6 +9,13 @@ public class AttendanceService : IAttendanceService
 {
     private const int LateGraceMinutes = 5;
     private static readonly TimeSpan ShiftStart = TimeSpan.FromHours(8);
+    private static readonly TimeSpan ShiftEnd = TimeSpan.FromHours(17);
+
+    // Employees can no longer check in more than 2 hours after the shift
+    // start (i.e. after 10:00 AM). CheckIn is still marked "Late" as soon as
+    // they're past the LateGraceMinutes window (8:05 AM) - this cutoff is a
+    // separate, harder stop that blocks check-in entirely.
+    private static readonly TimeSpan CheckInCutoff = ShiftStart.Add(TimeSpan.FromHours(2));
 
     private readonly IAttendanceRepository _attendanceRepository;
 
@@ -465,7 +472,8 @@ public class AttendanceService : IAttendanceService
 
     public bool CanCheckIn(int employeeId, DateTime hireDate)
     {
-        var today = DateTime.Now.Date;
+        var now = DateTime.Now;
+        var today = now.Date;
         if (today < hireDate.Date)
             return false;
 
@@ -476,12 +484,19 @@ public class AttendanceService : IAttendanceService
         if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return string.Equals(existing?.Status, "OT", StringComparison.OrdinalIgnoreCase);
 
+        // Weekday check-in is no longer allowed more than 2 hours after
+        // shift start (i.e. after 10:00 AM).
+        var cutoff = today.Add(CheckInCutoff);
+        if (now > cutoff)
+            return false;
+
         return true;
     }
 
     public bool CanCheckOut(int employeeId, DateTime hireDate)
     {
-        var today = DateTime.Now.Date;
+        var now = DateTime.Now;
+        var today = now.Date;
         if (today < hireDate.Date)
             return false;
 
@@ -491,6 +506,11 @@ public class AttendanceService : IAttendanceService
 
         if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return string.Equals(existing.Status, "OT", StringComparison.OrdinalIgnoreCase);
+
+        // Weekday check-out is no longer allowed before the 5:00 PM shift end.
+        var shiftEnd = today.Add(ShiftEnd);
+        if (now < shiftEnd)
+            return false;
 
         return true;
     }

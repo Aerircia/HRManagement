@@ -121,6 +121,22 @@ public class AttendanceRepository : RepositoryBase, IAttendanceRepository
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
+    public int GetTodayAttendanceCountOrgWide()
+    {
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+        SELECT COUNT(*)
+        FROM Attendance a
+        WHERE CAST(ISNULL(a.Check_in, a.Check_out) AS date) = CAST(GETDATE() AS date)
+          AND a.Check_in IS NOT NULL;
+    ";
+
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
     public double GetDepartmentHoursThisMonth(
     int departmentId,
     int year,
@@ -152,6 +168,52 @@ public class AttendanceRepository : RepositoryBase, IAttendanceRepository
         {
             Value = departmentId
         });
+
+        cmd.Parameters.Add(new SqlParameter("@start", SqlDbType.DateTime)
+        {
+            Value = start
+        });
+
+        cmd.Parameters.Add(new SqlParameter("@end", SqlDbType.DateTime)
+        {
+            Value = end
+        });
+
+        double totalHours = 0;
+
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var checkIn = reader.GetDateTime(0);
+            var checkOut = reader.GetDateTime(1);
+
+            totalHours += (checkOut - checkIn).TotalHours;
+        }
+
+        return totalHours;
+    }
+
+    public double GetOrgHoursThisMonth(int year, int month)
+    {
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1);
+
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+
+        cmd.CommandText = @"
+        SELECT
+            Check_in,
+            Check_out
+        FROM Attendance a
+        WHERE
+            Check_in IS NOT NULL
+            AND Check_out IS NOT NULL
+            AND Check_in >= @start
+            AND Check_in < @end";
 
         cmd.Parameters.Add(new SqlParameter("@start", SqlDbType.DateTime)
         {

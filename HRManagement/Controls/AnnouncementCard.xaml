@@ -9,8 +9,7 @@
     <Border Background="{DynamicResource CardBackgroundBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
-            CornerRadius="16"
-            Padding="20">
+            CornerRadius="16">
 
         <Grid>
             <Grid.RowDefinitions>
@@ -18,53 +17,50 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0"
-                       Text="Company Announcement"
-                       FontSize="15"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource PrimaryTextBrush}"
-                       Margin="0,0,0,12"/>
-
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Announcements, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                          Visibility="{Binding DisplayAnnouncements.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}">
+                <ItemsControl ItemsSource="{Binding DisplayAnnouncements, RelativeSource={RelativeSource AncestorType=UserControl}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- ASSUMPTION: Announcement exposes Title, Message, CreatedAt.
-                                 Adjust bindings here if the real model differs -
-                                 this control isn't in the provided project files. -->
-                            <Border BorderBrush="{DynamicResource DividerBrush}"
-                                    BorderThickness="0,0,0,1"
-                                    Padding="0,12">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource AnnouncementRowDividerStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Title}"
-                                                   FontSize="13.5"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                    <!-- Date column -->
+                                    <StackPanel Grid.Column="0" Style="{StaticResource AnnouncementRowDateBadgeStyle}">
+                                        <TextBlock Text="{Binding PostedDateDisplay}" Style="{StaticResource AnnouncementRowDayStyle}"/>
+                                    </StackPanel>
 
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding CreatedAt, StringFormat={}{0:MMM d}}"
-                                                   FontSize="11.5"
-                                                   Foreground="{DynamicResource HintTextBrush}"/>
-                                    </Grid>
+                                    <!-- Title + preview -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
 
-                                    <TextBlock Text="{Binding Message}"
-                                               FontSize="13"
-                                               Foreground="{DynamicResource SecondaryTextBrush}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0"/>
-                                </StackPanel>
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource AnnouncementRowTitleStyle}"/>
+
+                                        <TextBlock Text="{Binding Content}" Style="{StaticResource AnnouncementRowPreviewStyle}"/>
+
+                                        <TextBlock Style="{StaticResource AnnouncementRowMetaStyle}">
+                                            <Run Text="{Binding PostedByName, Mode=OneWay}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding PostedDateDisplay, Mode=OneWay}"/>
+                                        </TextBlock>
+
+                                    </StackPanel>
+
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+
+            <TextBlock Grid.Row="1"
+                       Text="No announcements yet."
+                       Style="{StaticResource TableEmptyStateStyle}"
+                       Visibility="{Binding Announcements.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ZeroToVisibleConverter}}"/>
         </Grid>
     </Border>
 </UserControl>

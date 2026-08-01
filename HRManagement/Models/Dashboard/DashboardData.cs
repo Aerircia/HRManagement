@@ -10,7 +10,7 @@ public class DashboardData
 
     public ManagerAnalytics? ManagerAnalytics { get; set; }
 
-    public ObservableCollection<WeeklyHourPoint> WeeklyHours { get; set; } = [];
+    public ObservableCollection<MonthlyPayoutPoint> MonthlyPayoutHistory { get; set; } = [];
 
     public ObservableCollection<Announcement> Announcements { get; set; } = [];
 

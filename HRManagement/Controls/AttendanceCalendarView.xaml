@@ -42,6 +42,8 @@
                     Style="{StaticResource CalendarNavButtonStyle}"
                     Command="{Binding PrevMonthCommand}" />
             <TextBlock Text="{Binding CurrentMonth, StringFormat='MMMM yyyy'}"
+                       Width="150"
+                       TextAlignment="Center"
                        FontWeight="Bold" FontSize="16"
                        Foreground="{DynamicResource PrimaryTextBrush}"
                        VerticalAlignment="Center" Margin="16,0" />
@@ -183,31 +185,31 @@
             </UniformGrid.Resources>
 
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource SuccessBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource SuccessBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Ontime" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource WarningBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource WarningBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Late" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource DangerBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource DangerBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Absent" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource WeekendBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource WeekendBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Weekend" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource OtBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource OtBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" OT" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource DayOffBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource DayOffBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Day Off" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
             <StackPanel>
-                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{StaticResource NeutralBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
+                <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" Fill="{DynamicResource NeutralBgBrush}" Stroke="{DynamicResource BorderBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text=" Before hire date" Margin="6,0,0,0" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}"/>
             </StackPanel>
         </UniformGrid>

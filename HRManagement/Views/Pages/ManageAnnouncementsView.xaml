@@ -48,6 +48,7 @@
                 <Border Grid.Column="0" Style="{StaticResource AnnouncementHeroIconBadgeStyle}">
                     <fa:IconBlock Icon="Bullhorn"
                                   Width="24" Height="24"
+                                  FontSize="20"
                                   Foreground="{DynamicResource PrimaryBrush}"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center"/>

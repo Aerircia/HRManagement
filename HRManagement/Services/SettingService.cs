@@ -14,7 +14,7 @@ public class SettingService : ISettingService
 
     public string CurrentTheme => CurrentSettings.Theme;
 
-    public bool IsLargeText => CurrentSettings.IsLargeText;
+    public event EventHandler? ThemeChanged;
 
     private readonly string _settingsFilePath;
 
@@ -33,7 +33,6 @@ public class SettingService : ISettingService
     {
         Load();
         ApplyTheme(CurrentSettings.Theme);
-        ApplyFontSize(CurrentSettings.IsLargeText);
     }
 
     public void SetLightTheme()
@@ -41,6 +40,7 @@ public class SettingService : ISettingService
         CurrentSettings.Theme = SettingResources.ThemeLight;
         ApplyTheme(SettingResources.ThemeLight);
         Save();
+        ThemeChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void SetDarkTheme()
@@ -48,6 +48,7 @@ public class SettingService : ISettingService
         CurrentSettings.Theme = SettingResources.ThemeDark;
         ApplyTheme(SettingResources.ThemeDark);
         Save();
+        ThemeChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void ToggleTheme()
@@ -56,18 +57,6 @@ public class SettingService : ISettingService
             SetLightTheme();
         else
             SetDarkTheme();
-    }
-
-    public void SetLargeText(bool isLarge)
-    {
-        CurrentSettings.IsLargeText = isLarge;
-        ApplyFontSize(isLarge);
-        Save();
-    }
-
-    public void ToggleLargeText()
-    {
-        SetLargeText(!CurrentSettings.IsLargeText);
     }
 
     public void Save()
@@ -137,11 +126,5 @@ public class SettingService : ISettingService
         {
             dictionaries.Add(newDictionary);
         }
-    }
-
-    private static void ApplyFontSize(bool isLarge)
-    {
-        Application.Current.Resources[SettingResources.FontSizeResourceKey] =
-            isLarge ? SettingResources.LargeFontSize : SettingResources.NormalFontSize;
     }
 }

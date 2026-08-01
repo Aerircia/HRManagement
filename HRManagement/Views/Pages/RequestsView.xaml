@@ -370,14 +370,18 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Start Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Style="{StaticResource PaperInputLineStyle}"
-                             Text="{Binding OtStartTime, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ComboBox Width="120"
+                                              Style="{StaticResource ModernComboBox}"
+                                              ItemsSource="{Binding OtTimeOptions}"
+                                              SelectedItem="{Binding OtStartTime}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="End Time (HH:mm)" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,4"/>
-                                    <TextBox Style="{StaticResource PaperInputLineStyle}"
-                             Text="{Binding OtEndTime, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ComboBox Width="120"
+                                              Style="{StaticResource ModernComboBox}"
+                                              ItemsSource="{Binding OtTimeOptions}"
+                                              SelectedItem="{Binding OtEndTime}" />
                                 </StackPanel>
 
                             </Grid>

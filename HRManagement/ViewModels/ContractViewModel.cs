@@ -108,7 +108,7 @@ namespace HRManagement.ViewModels
 
             EmployerNameDisplay = data.EmployerName;
             EmployerAddressDisplay = data.EmployerAddress;
-            EmployeeAddressDisplay = data.EmployeeAddress;
+            EmployeeAddressDisplay = (data.EmployeeAddress==null)?"NO ADDRESS":data.EmployeeAddress;
             NoticePeriodDaysDisplay = data.NoticePeriodDays;
         }
     }

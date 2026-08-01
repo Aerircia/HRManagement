@@ -14,5 +14,17 @@ namespace HRManagement.Repositories.Interfaces
         void UpsertAttendance(Attendance attendance);
         public int GetTodayAttendanceCount(int departmentId);
         double GetDepartmentHoursThisMonth(int departmentId, int year, int month);
+
+        /// <summary>
+        /// Org-wide variant of GetTodayAttendanceCount: counts today's
+        /// check-ins across every department (Admin scope).
+        /// </summary>
+        int GetTodayAttendanceCountOrgWide();
+
+        /// <summary>
+        /// Org-wide variant of GetDepartmentHoursThisMonth: sums worked
+        /// hours across every department (Admin scope).
+        /// </summary>
+        double GetOrgHoursThisMonth(int year, int month);
     }
 }

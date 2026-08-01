@@ -63,4 +63,19 @@ public class DashboardRepository(
         return _attendanceRepository
             .GetTodayAttendanceCount(departmentId);
     }
+
+    public IEnumerable<Employee> GetAllEmployees()
+    {
+        return _employeeRepository.GetAll();
+    }
+
+    public double GetOrgHoursThisMonth(int year, int month)
+    {
+        return _attendanceRepository.GetOrgHoursThisMonth(year, month);
+    }
+
+    public int GetTodayAttendanceCountOrgWide()
+    {
+        return _attendanceRepository.GetTodayAttendanceCountOrgWide();
+    }
 }

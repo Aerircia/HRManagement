@@ -21,15 +21,15 @@ namespace HRManagement.Models
         public string Comment { get; set; } = string.Empty;
 
         public bool IsReward =>
-            EvaluationType.Equals("Reward", StringComparison.OrdinalIgnoreCase);
+            BonusType.Equals("Reward", StringComparison.OrdinalIgnoreCase);
 
         public bool IsPenalty =>
-            EvaluationType.Equals("Penalty", StringComparison.OrdinalIgnoreCase);
+            BonusType.Equals("Penalty", StringComparison.OrdinalIgnoreCase);
 
         public string DisplayDate =>
             BonusDate.ToString("dd/MM/yyyy");
 
         public string DisplayAmount =>
-            $"{Amount:N0} VND";
+            $"{Amount:N0} $";
     }
 }

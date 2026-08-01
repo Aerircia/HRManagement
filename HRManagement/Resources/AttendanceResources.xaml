@@ -20,21 +20,17 @@
     <util:AttendanceStatusToBrushConverter x:Key="AttendanceStatusToBrushConverter" />
 
     <!-- ========= Attendance status fills ========= -->
-    <!-- Looked up by key from AttendanceStatusToBrushConverter; also used
-         directly by legend swatches so the two never drift out of sync.
-         Colors updated to the softer, slightly desaturated status palette
-         (see Brushes.xaml) so calendar cells read calmly against the new
-         light canvas instead of the previous saturated fills. -->
-
-    <SolidColorBrush x:Key="SuccessBgBrush" Color="#12B76A"/>
-    <SolidColorBrush x:Key="WarningBgBrush" Color="#F5A623"/>
-    <SolidColorBrush x:Key="DangerBgBrush" Color="#F04438"/>
-    <SolidColorBrush x:Key="OtBgBrush" Color="#7C5CFC"/>
-    <SolidColorBrush x:Key="DayOffBgBrush" Color="#63ADD0"/>
-    <SolidColorBrush x:Key="WeekendBgBrush" Color="#F3F5FA"/>
-    <SolidColorBrush x:Key="NeutralBgBrush" Color="#F3F5FA"/>
-
-    <SolidColorBrush x:Key="StatusHeaderTextBrush" Color="#FFFFFF"/>
+    <!-- The actual SuccessBgBrush/WarningBgBrush/DangerBgBrush/OtBgBrush/
+         DayOffBgBrush/WeekendBgBrush/NeutralBgBrush/StatusHeaderTextBrush
+         values now live in Brushes.xaml (light) and DarkBrushes.xaml (dark),
+         NOT here - this dictionary is merged once, globally, in App.xaml and
+         is never swapped when the theme changes (only Brushes.xaml/
+         DarkBrushes.xaml are, via SettingService.ApplyTheme), so any brush
+         defined only in this file would be frozen at its light-mode value
+         forever. AttendanceStatusToBrushConverter and the legend swatches in
+         AttendanceCalendarView.xaml still reference these keys via
+         DynamicResource - they resolve correctly now because the owning
+         dictionary itself gets swapped. -->
 
     <!-- ========= Month navigation button (the "<" / ">" arrows) ========= -->
     <!-- Round, flat icon button using the app's primary brand color, matching

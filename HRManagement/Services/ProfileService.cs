@@ -7,7 +7,6 @@ namespace HRManagement.Services;
 
 public class ProfileService : IProfileService
 {
-    private const int AnnualPtoAllowanceDays = ProfileData.AnnualPtoAllowanceDays;
     private const decimal RetirementContributionRate = 0.07m;
 
     private readonly IEmployeeRepository _employeeRepository;
@@ -20,6 +19,7 @@ public class ProfileService : IProfileService
     private readonly IRoleRepository _roleRepository;
     private readonly ISalaryRepository _salaryRepository;
     private readonly ISalaryCalculator _salaryCalculator;
+    private readonly IPaidTimeOffService _paidTimeOffService;
     private readonly ILogService _logService;
 
     public ProfileService(
@@ -33,6 +33,7 @@ public class ProfileService : IProfileService
         IRoleRepository roleRepository,
         ISalaryRepository salaryRepository,
         ISalaryCalculator salaryCalculator,
+        IPaidTimeOffService paidTimeOffService,
         ILogService logService)
     {
         _employeeRepository = employeeRepository;
@@ -45,6 +46,7 @@ public class ProfileService : IProfileService
         _roleRepository = roleRepository;
         _salaryRepository = salaryRepository;
         _salaryCalculator = salaryCalculator;
+        _paidTimeOffService = paidTimeOffService;
         _logService = logService;
     }
 
@@ -164,34 +166,17 @@ public class ProfileService : IProfileService
     {
         var now = DateTime.Now;
 
-        var yearStart = new DateTime(now.Year, 1, 1);
-        var yearEnd = new DateTime(now.Year, 12, 31);
+        // Reuse IPaidTimeOffService - the same PTO source of record used by
+        // the salary/payroll pipeline (weekday-only day-off counting,
+        // capped at the annual allowance) - so this figure can never drift
+        // from what's actually paid out. The previous implementation here
+        // summed raw calendar days (including weekends) per approved
+        // request and never capped at AnnualPtoAllowanceDays, so it could
+        // both overcount and disagree with the real PTO balance.
+        var ptoSummary = _paidTimeOffService.GetYearSummary(employee.EmployeeId, now.Year);
 
-        var approvedDayOffRequests = _requestFormRepository
-            .GetByEmployeeId(employee.EmployeeId)
-            .Where(r =>
-                string.Equals(r.RequestType, "Day Off", StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(r.Status, "Approved", StringComparison.OrdinalIgnoreCase) &&
-                r.StartDate.HasValue && r.EndDate.HasValue)
-            .ToList();
-
-        var daysUsed = 0;
-        foreach (var request in approvedDayOffRequests)
-        {
-            var start = request.StartDate!.Value.Date;
-            var end = request.EndDate!.Value.Date;
-
-            var clippedStart = start < yearStart ? yearStart : start;
-            var clippedEnd = end > yearEnd ? yearEnd : end;
-
-            if (clippedEnd < clippedStart)
-                continue;
-
-            daysUsed += (clippedEnd - clippedStart).Days + 1;
-        }
-
-        data.PtoDaysUsed = daysUsed;
-        data.PtoDaysRemaining = Math.Max(0, AnnualPtoAllowanceDays - daysUsed);
+        data.PtoDaysUsed = ptoSummary.UsedPaidDays;
+        data.PtoDaysRemaining = ptoSummary.RemainingPaidDays;
 
         var (years, months) = CalculateTenure(employee.HireDate, now);
         data.TenureYears = years;

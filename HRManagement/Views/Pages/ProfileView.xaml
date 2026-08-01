@@ -73,7 +73,7 @@
              StatIconBadgeStyle from ManageRequestsStyles.xaml for the badge
              chrome so it matches Manage Requests' stat cards exactly. -->
         <Style x:Key="GlobalStatValueStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         </Style>
@@ -146,115 +146,156 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- ========== LEFT GRID: Profile Card ========== -->
-                    <Border Grid.Column="0" Style="{StaticResource ProfileCardStyle}" VerticalAlignment="Top">
+                    <!-- Stretches to fill the row (matches the right column's
+                         full height, see Grid.Row="2" below) so the card's
+                         bottom - and its Edit Profile button - lines up with
+                         the bottom of the Structured Information row instead
+                         of the card floating at a shorter, content-sized
+                         height while the right side runs taller. Internally
+                         a 2-row Grid keeps the identity fields pinned to the
+                         top and the Edit Profile button pinned to the
+                         bottom, with the divider/spacer absorbing the extra
+                         vertical space in between. -->
+                    <Border Grid.Column="0" Style="{StaticResource ProfileCardStyle}" VerticalAlignment="Stretch">
 
-                        <StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                            <!-- Avatar -->
-                            <Ellipse Width="96" Height="96" HorizontalAlignment="Center">
-                                <Ellipse.Fill>
-                                    <ImageBrush ImageSource="{Binding AvatarPath}" Stretch="UniformToFill"/>
-                                </Ellipse.Fill>
-                            </Ellipse>
+                            <!-- Top: avatar / name / role / status / identity fields -->
+                            <StackPanel Grid.Row="0">
 
-                            <!-- Full name / role -->
-                            <TextBlock Text="{Binding FullName}"
-                                       FontSize="18" FontWeight="Bold"
-                                       Foreground="{DynamicResource PrimaryTextBrush}"
-                                       HorizontalAlignment="Center"
-                                       TextAlignment="Center"
-                                       Margin="0,14,0,0"/>
+                                <!-- Avatar -->
+                                <Ellipse Width="96" Height="96" HorizontalAlignment="Center">
+                                    <Ellipse.Fill>
+                                        <ImageBrush ImageSource="{Binding AvatarPath}" Stretch="UniformToFill"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
 
-                            <TextBlock Text="{Binding RoleLabel}"
-                                       FontSize="12.5"
-                                       Foreground="{DynamicResource SecondaryTextBrush}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,4,0,0"/>
+                                <!-- Full name / role -->
+                                <TextBlock Text="{Binding FullName}"
+                                           FontSize="18" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Margin="0,14,0,0"/>
 
-                            <Border Background="{DynamicResource SuccessBadgeBrush}"
-                                    CornerRadius="10"
-                                    Padding="10,4"
-                                    HorizontalAlignment="Center"
-                                    Margin="0,10,0,0">
-                                <TextBlock Text="{Binding Status}"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource SuccessBrush}"/>
-                            </Border>
+                                <TextBlock Text="{Binding RoleLabel}"
+                                           FontSize="12.5"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,4,0,0"/>
 
-                            <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,20,0,16"/>
+                                <Border Background="{DynamicResource SuccessBadgeBrush}"
+                                        CornerRadius="10"
+                                        Padding="10,4"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,10,0,0">
+                                    <TextBlock Text="{Binding Status}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SuccessBrush}"/>
+                                </Border>
 
-                            <!-- Identity fields -->
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Employee ID" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
-                                <TextBlock Grid.Column="1" Text="{Binding EmployeeIdDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
-                            </Grid>
+                                <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,20,0,16"/>
 
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Department" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Department}" Style="{StaticResource ProfileFieldValueStyle}"
-                                           HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
-                            </Grid>
+                                <!-- Identity fields -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Employee ID" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding EmployeeIdDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
+                                </Grid>
 
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Work Email" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Email}" Style="{StaticResource ProfileFieldValueStyle}"
-                                           HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
-                            </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Department" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Department}" Style="{StaticResource ProfileFieldValueStyle}"
+                                               HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
 
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Work Phone" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Phone}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
-                            </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Work Email" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Email}" Style="{StaticResource ProfileFieldValueStyle}"
+                                               HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
 
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Hire Date" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
-                                <TextBlock Grid.Column="1" Text="{Binding HireDateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
-                            </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Work Phone" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Phone}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
+                                </Grid>
 
-                            <TextBlock Text="{Binding LastUpdatedDisplay}"
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Hire Date" Style="{StaticResource ProfileFieldLabelStyle}" Width="100"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding HireDateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                            </StackPanel>
+
+                            <!-- Middle: flexible spacer - absorbs whatever
+                                 extra height the card has once it's
+                                 stretched to match the right column, keeping
+                                 the button pinned to the bottom instead of
+                                 riding up under the identity fields. -->
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding LastUpdatedDisplay}"
                                        Style="{StaticResource CardSubtleStyle}"
+                                       VerticalAlignment="Bottom"
                                        Margin="0,20,0,20"/>
 
                             <!-- Edit Profile button anchored at the bottom -->
-                            <Button Content="Edit Profile"
+                            <Button Grid.Row="2"
+                                    Content="Edit Profile"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding EditProfileCommand}"
                                     HorizontalAlignment="Stretch"/>
 
-                        </StackPanel>
+                        </Grid>
 
                     </Border>
 
                     <!-- ========== RIGHT GRID ========== -->
-                    <StackPanel Grid.Column="2">
+                    <!-- 3-row Grid instead of a StackPanel: the Structured
+                         Information detail row (row 2) is given "*" height
+                         so it stretches to fill the same overall height as
+                         the left profile card (both sit in the Grid.Row="2"
+                         "*" row above), rather than sizing to its own
+                         content and leaving a gap under a short left card
+                         or a gap under itself when its content is short. -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
                         <!-- Top Row: At-a-glance Global Stats -->
-                        <TextBlock Text="At-a-glance Global Stats"
+                        <TextBlock Grid.Row="0"
+                                   Text="At-a-glance Global Stats"
                                    Style="{StaticResource CardHeadingStyle}"
                                    Margin="4,0,0,12"/>
 
-                        <Grid Margin="0,0,0,24">
+                        <Grid Grid.Row="1" Margin="0,0,0,24">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="16"/>
@@ -328,128 +369,136 @@
                         </Grid>
 
                         <!-- Bottom Row: Personal Details / Job History / Compensation & Benefits -->
-                        <TextBlock Text="Structured Information"
-                                   Style="{StaticResource CardHeadingStyle}"
-                                   Margin="4,0,0,12"/>
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="1.3*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="Structured Information"
+                                       Style="{StaticResource CardHeadingStyle}"
+                                       Margin="4,0,0,12"/>
 
-                            <!-- Personal Details -->
-                            <Border Grid.Column="0" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
-                                <StackPanel>
-                                    <TextBlock Text="Personal Details" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="1.3*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="Address" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
-                                    <TextBlock Text="{Binding AddressDisplay}" Style="{StaticResource ProfileFieldValueStyle}"
-                                               TextWrapping="Wrap" Margin="0,0,0,14"/>
+                                <!-- Personal Details -->
+                                <Border Grid.Column="0" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Stretch">
+                                    <StackPanel>
+                                        <TextBlock Text="Personal Details" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
 
-                                    <TextBlock Text="Date of Birth" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
-                                    <TextBlock Text="{Binding DateOfBirthDisplay}" Style="{StaticResource ProfileFieldValueStyle}"/>
-                                </StackPanel>
-                            </Border>
+                                        <TextBlock Text="Address" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                        <TextBlock Text="{Binding AddressDisplay}" Style="{StaticResource ProfileFieldValueStyle}"
+                                                   TextWrapping="Wrap" Margin="0,0,0,14"/>
 
-                            <!-- Job History timeline -->
-                            <Border Grid.Column="2" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
-                                <StackPanel>
-                                    <TextBlock Text="Job History" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
+                                        <TextBlock Text="Date of Birth" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                        <TextBlock Text="{Binding DateOfBirthDisplay}" Style="{StaticResource ProfileFieldValueStyle}"/>
+                                    </StackPanel>
+                                </Border>
 
-                                    <ItemsControl ItemsSource="{Binding JobHistory}"
-                                                  Visibility="{Binding HasJobHistory, Converter={StaticResource BoolToVisibility}}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="0,0,0,16">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
+                                <!-- Job History timeline -->
+                                <Border Grid.Column="2" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Stretch">
+                                    <StackPanel>
+                                        <TextBlock Text="Job History" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
 
-                                                    <Ellipse Grid.Column="0" VerticalAlignment="Top" Margin="0,3,0,0">
-                                                        <Ellipse.Style>
-                                                            <Style TargetType="Ellipse" BasedOn="{StaticResource TimelineDotStyle}">
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                                                        <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Ellipse.Style>
-                                                    </Ellipse>
+                                        <ItemsControl ItemsSource="{Binding JobHistory}"
+                                                      Visibility="{Binding HasJobHistory, Converter={StaticResource BoolToVisibility}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,16">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="20"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                                        <TextBlock Text="{Binding ContractType}"
-                                                                   FontSize="13" FontWeight="SemiBold"
-                                                                   Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                                        <TextBlock Text="{Binding DateRangeDisplay}"
-                                                                   Style="{StaticResource CardSubtleStyle}"
-                                                                   Margin="0,2,0,0"/>
-                                                        <TextBlock Text="{Binding Status}"
-                                                                   FontSize="11" FontWeight="SemiBold"
-                                                                   Foreground="{DynamicResource PrimaryBrush}"
-                                                                   Margin="0,2,0,0"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                                        <Ellipse Grid.Column="0" VerticalAlignment="Top" Margin="0,3,0,0">
+                                                            <Ellipse.Style>
+                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource TimelineDotStyle}">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                            <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Ellipse.Style>
+                                                        </Ellipse>
 
-                                    <TextBlock Text="No contract history on file."
-                                               Style="{StaticResource CardSubtleStyle}"
-                                               Visibility="{Binding HasNoJobHistory, Converter={StaticResource BoolToVisibility}}"/>
-                                </StackPanel>
-                            </Border>
+                                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                            <TextBlock Text="{Binding ContractType}"
+                                                                       FontSize="13" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                            <TextBlock Text="{Binding DateRangeDisplay}"
+                                                                       Style="{StaticResource CardSubtleStyle}"
+                                                                       Margin="0,2,0,0"/>
+                                                            <TextBlock Text="{Binding Status}"
+                                                                       FontSize="11" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource PrimaryBrush}"
+                                                                       Margin="0,2,0,0"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                            <!-- Compensation & Benefits -->
-                            <Border Grid.Column="4" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Top">
-                                <StackPanel>
-                                    <TextBlock Text="Compensation &amp; Benefits" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
+                                        <TextBlock Text="No contract history on file."
+                                                   Style="{StaticResource CardSubtleStyle}"
+                                                   Visibility="{Binding HasNoJobHistory, Converter={StaticResource BoolToVisibility}}"/>
+                                    </StackPanel>
+                                </Border>
 
-                                    <TextBlock Text="{Binding CurrentSalaryPeriodDisplay, StringFormat='Est. Net Salary ({0})'}"
-                                               Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
-                                    <TextBlock Text="{Binding CurrentNetSalaryDisplay}"
-                                               FontSize="18" FontWeight="Bold"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"
-                                               Margin="0,0,0,14"/>
+                                <!-- Compensation & Benefits -->
+                                <Border Grid.Column="4" Style="{StaticResource DetailCardStyle}" VerticalAlignment="Stretch">
+                                    <StackPanel>
+                                        <TextBlock Text="Compensation &amp; Benefits" Style="{StaticResource CardHeadingStyle}" FontSize="13" Margin="0,0,0,14"/>
 
-                                    <TextBlock Text="Current Base Salary" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
-                                    <TextBlock Text="{Binding CurrentBaseSalaryDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
+                                        <TextBlock Text="{Binding CurrentSalaryPeriodDisplay, StringFormat='Est. Net Salary ({0})'}"
+                                                   Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                        <TextBlock Text="{Binding CurrentNetSalaryDisplay}"
+                                                   FontSize="18" FontWeight="Bold"
+                                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                                   Margin="0,0,0,14"/>
 
-                                    <TextBlock Text="Pay Rate" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
-                                    <TextBlock Text="{Binding CurrentPayRateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
+                                        <TextBlock Text="Current Base Salary" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                        <TextBlock Text="{Binding CurrentBaseSalaryDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
 
-                                    <TextBlock Text="Benefits" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="Pay Rate" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,3"/>
+                                        <TextBlock Text="{Binding CurrentPayRateDisplay}" Style="{StaticResource ProfileFieldValueStyle}" Margin="0,0,0,14"/>
 
-                                    <ItemsControl ItemsSource="{Binding Benefits}"
-                                                  Visibility="{Binding HasBenefits, Converter={StaticResource BoolToVisibility}}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Style="{StaticResource BenefitPillStyle}">
-                                                    <TextBlock Text="{Binding}"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextWrapping="Wrap"
-                                                               Foreground="{DynamicResource PrimaryBrush}"/>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                        <TextBlock Text="Benefits" Style="{StaticResource ProfileFieldLabelStyle}" Margin="0,0,0,6"/>
 
-                                    <TextBlock Text="No contract on file to derive benefits from."
-                                               Style="{StaticResource CardSubtleStyle}"
-                                               TextWrapping="Wrap"
-                                               Visibility="{Binding HasNoBenefits, Converter={StaticResource BoolToVisibility}}"/>
-                                </StackPanel>
-                            </Border>
+                                        <ItemsControl ItemsSource="{Binding Benefits}"
+                                                      Visibility="{Binding HasBenefits, Converter={StaticResource BoolToVisibility}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource BenefitPillStyle}">
+                                                        <TextBlock Text="{Binding}"
+                                                                   FontSize="12"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap"
+                                                                   Foreground="{DynamicResource PrimaryBrush}"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
+                                        <TextBlock Text="No contract on file to derive benefits from."
+                                                   Style="{StaticResource CardSubtleStyle}"
+                                                   TextWrapping="Wrap"
+                                                   Visibility="{Binding HasNoBenefits, Converter={StaticResource BoolToVisibility}}"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </Grid>
                         </Grid>
 
-                    </StackPanel>
+                    </Grid>
 
                 </Grid>
 
