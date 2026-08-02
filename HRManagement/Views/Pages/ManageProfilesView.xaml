@@ -246,25 +246,67 @@
                         <DataGridTemplateColumn Header="Employee Name &amp; Position" Width="2.2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Width="36" Height="36" CornerRadius="18"
-                                                Background="{DynamicResource PrimaryTintBrush}"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding FullName, Converter={StaticResource InitialsConverter}}"
-                                                       FontSize="12" FontWeight="Bold"
-                                                       Foreground="{DynamicResource PrimaryBrush}"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding FullName}"
-                                                       FontWeight="SemiBold" FontSize="13"
-                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                            <TextBlock Text="{Binding RoleName}"
-                                                       FontSize="11.5"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"
-                                                       Margin="0,2,0,0"/>
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="36" Height="36" CornerRadius="18"
+                                                    Background="{DynamicResource PrimaryTintBrush}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FullName, Converter={StaticResource InitialsConverter}}"
+                                                           FontSize="12" FontWeight="Bold"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FullName}"
+                                                           FontWeight="SemiBold" FontSize="13"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                <TextBlock Text="{Binding RoleName}"
+                                                           FontSize="11.5"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           Margin="0,2,0,0"/>
+                                            </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
+
+                                        <!-- Account status pill: green "Account" when a login already
+                                             exists, muted "No Account" when one still needs to be
+                                             created for this employee. -->
+                                        <Border Grid.Column="1"
+                                                CornerRadius="10"
+                                                Padding="9,4"
+                                                Margin="10,0,0,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasAccount}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource SuccessBadgeBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock FontSize="10.5" FontWeight="SemiBold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="No Account"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasAccount}" Value="True">
+                                                                <Setter Property="Text" Value="Account"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
