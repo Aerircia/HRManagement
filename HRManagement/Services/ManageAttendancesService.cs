@@ -73,7 +73,7 @@ public class ManageAttendancesService : IManageAttendancesService
 
     public ManageAttendanceOverview GetEmployeeAttendanceOverview(
         int? selectedDepartmentId,
-        string? employeeIdFilter)
+        string? employeeFilter)
     {
         IEnumerable<Employee> list;
 
@@ -91,11 +91,10 @@ public class ManageAttendancesService : IManageAttendancesService
             list = _employeeRepository.GetAll();
         }
 
-        if (!string.IsNullOrWhiteSpace(employeeIdFilter))
+        if (!string.IsNullOrWhiteSpace(employeeFilter))
         {
-            list = int.TryParse(employeeIdFilter, out var filterId)
-                ? list.Where(e => e.EmployeeId == filterId)
-                : Enumerable.Empty<Employee>();
+            list = list.Where(e => e.FullName != null &&
+                           e.FullName.Contains(employeeFilter, StringComparison.OrdinalIgnoreCase));
         }
 
         var scopedEmployees = list.ToList();

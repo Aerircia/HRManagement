@@ -90,7 +90,7 @@
                     <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,8">
                         
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <TextBlock Text="Employee ID:" VerticalAlignment="Center" Width="90" Foreground="{DynamicResource SecondaryTextBrush}" />
+                                <TextBlock Text="Employee:" VerticalAlignment="Center" Width="90" Foreground="{DynamicResource SecondaryTextBrush}" />
                                     <Border Grid.Column="0"
                                             Background="{DynamicResource CardBackgroundBrush    }"
                                             BorderBrush="{DynamicResource BorderBrush}"
@@ -99,7 +99,7 @@
                                             Width="210"
                                             Height="28"
                                             HorizontalAlignment="Left">
-                                        <TextBox Text="{Binding EmployeeIdFilter, UpdateSourceTrigger=PropertyChanged}"
+                                        <TextBox Text="{Binding EmployeeFilter, UpdateSourceTrigger=PropertyChanged}"
                                              BorderThickness="0"
                                              Width="180"
                                              Background="Transparent"

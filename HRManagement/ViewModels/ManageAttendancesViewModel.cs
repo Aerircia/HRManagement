@@ -74,11 +74,11 @@ public class ManageAttendancesViewModel : PageViewModel
         set { SetProperty(ref _selectedDepartment, value); LoadEmployees(); }
     }
 
-    private string _employeeIdFilter = string.Empty;
-    public string EmployeeIdFilter
+    private string _employeeFilter = string.Empty;
+    public string EmployeeFilter
     {
-        get => _employeeIdFilter;
-        set { if (SetProperty(ref _employeeIdFilter, value)) LoadEmployees(); }
+        get => _employeeFilter;
+        set { if (SetProperty(ref _employeeFilter, value)) LoadEmployees(); }
     }
 
     public ICommand LoadDepartmentsCommand { get; }
@@ -124,7 +124,7 @@ public class ManageAttendancesViewModel : PageViewModel
 
         var overview = _manageAttendancesService.GetEmployeeAttendanceOverview(
             SelectedDepartment?.DepartmentId,
-            EmployeeIdFilter);
+            EmployeeFilter);
 
         foreach (var row in overview.Rows)
         {
