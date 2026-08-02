@@ -17,6 +17,14 @@ public interface ISettingService
     void Save();
 
     /// <summary>
+    /// Changes the password for the given account, verifying the current
+    /// password first. Returns false if the current password does not
+    /// match; throws for invalid input the caller should have already
+    /// validated (empty new password, etc. are left to the caller/UI).
+    /// </summary>
+    bool ChangePassword(int accountId, string currentPassword, string newPassword);
+
+    /// <summary>
     /// Raised after the merged brush dictionary (Brushes.xaml/DarkBrushes.xaml)
     /// has actually been swapped. DynamicResource bindings in XAML pick up the
     /// new palette automatically, but anything that resolves a brush/color

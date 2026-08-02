@@ -47,6 +47,13 @@ namespace HRManagement.Services.Interfaces
     {
         bool CurrentUserHasAccess();
 
+        /// <summary>
+        /// True for Admin. False for Manager (who is scoped to their own
+        /// department and cannot see/set the department filter or move
+        /// employees to other departments).
+        /// </summary>
+        bool CurrentUserIsAdmin();
+
         List<IdNamePair> GetRoleOptions();
 
         List<IdNamePair> GetDepartments();

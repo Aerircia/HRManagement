@@ -10,19 +10,38 @@ public class SidebarViewModel : ViewModelBase
 {
     private readonly INavigationService _navigationService;
     private readonly IAuthorizationService _authorizationService;
+    private readonly ISettingService _settingService;
 
     public SidebarViewModel(
         INavigationService navigationService,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        ISettingService settingService)
     {
         _navigationService = navigationService;
         _authorizationService = authorizationService;
+        _settingService = settingService;
 
         NavigateCommand = new RelayCommand(Navigate);
 
         _navigationService.PropertyChanged += NavigationService_OnPropertyChanged;
+        _settingService.ThemeChanged += SettingService_OnThemeChanged;
         ToggleCollapseCommand = new RelayCommand(_ => IsCollapsed = !IsCollapsed);
         CurrentPageType = _navigationService.CurrentView?.GetType();
+    }
+
+    // Each nav Button's Background/Foreground come from a MultiBinding
+    // (CurrentPageType, CommandParameter) through NavItemBrushConverter,
+    // which - like AttendanceStatusToBrushConverter - resolves brushes live
+    // via Application.Current.FindResource but only re-runs when one of its
+    // OWN bound values changes. A theme swap changes neither CurrentPageType
+    // nor CommandParameter, so without this the selected nav pill (and every
+    // other item's text color) stayed on the old palette until the next
+    // actual navigation re-touched CurrentPageType. Re-raising
+    // CurrentPageType's PropertyChanged (with the same value) forces the
+    // MultiBinding - and therefore the converter - to re-evaluate now.
+    private void SettingService_OnThemeChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(CurrentPageType));
     }
 
     public ICommand NavigateCommand { get; }

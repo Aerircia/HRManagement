@@ -11,6 +11,7 @@ namespace HRManagement.Services
     {
         // Admin, Manager
         private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 };
+        private const int AdminRoleId = 1;
 
         private static readonly List<IdNamePair> Roles = new()
         {
@@ -54,11 +55,31 @@ namespace HRManagement.Services
             return currentRoleId.HasValue && AllowedRoleIds.Contains(currentRoleId.Value);
         }
 
+        public bool CurrentUserIsAdmin()
+        {
+            return _sessionManager.CurrentUser?.Employee?.RoleId == AdminRoleId;
+        }
+
+        private int? CurrentUserDepartmentId()
+        {
+            return _sessionManager.CurrentUser?.Employee?.DepartmentId;
+        }
+
         public List<IdNamePair> GetRoleOptions() => Roles;
 
         public List<IdNamePair> GetEmployees()
         {
-            return _employeeRepository.GetAll()
+            var employees = _employeeRepository.GetAll();
+
+            // Managers can only create/assign contracts for employees in
+            // their own department.
+            if (!CurrentUserIsAdmin())
+            {
+                var ownDepartmentId = CurrentUserDepartmentId();
+                employees = employees.Where(e => e.DepartmentId == ownDepartmentId).ToList();
+            }
+
+            return employees
                 .Select(e => new IdNamePair(e.EmployeeId, e.FullName))
                 .ToList();
         }
@@ -66,8 +87,22 @@ namespace HRManagement.Services
         public List<ContractItemModel> GetContracts()
         {
             var employees = _employeeRepository.GetAll();
+            var contracts = _contractRepository.GetAll();
 
-            return _contractRepository.GetAll()
+            // Managers only see contracts belonging to employees in their
+            // own department.
+            if (!CurrentUserIsAdmin())
+            {
+                var ownDepartmentId = CurrentUserDepartmentId();
+                var ownDepartmentEmployeeIds = employees
+                    .Where(e => e.DepartmentId == ownDepartmentId)
+                    .Select(e => e.EmployeeId)
+                    .ToHashSet();
+
+                contracts = contracts.Where(c => ownDepartmentEmployeeIds.Contains(c.EmployeeId)).ToList();
+            }
+
+            return contracts
                 .Select(c => ToItem(c, employees))
                 .ToList();
         }
@@ -75,6 +110,7 @@ namespace HRManagement.Services
         public ContractItemModel AddContract(ContractInput input)
         {
             ValidateInput(input);
+            EnforceDepartmentScope(input);
 
             var contract = new Contract
             {
@@ -101,6 +137,7 @@ namespace HRManagement.Services
         public ContractItemModel UpdateContract(ContractInput input)
         {
             ValidateInput(input);
+            EnforceDepartmentScope(input);
 
             if (input.ContractId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(input.ContractId), "Contract ID must be greater than 0.");
@@ -167,6 +204,15 @@ namespace HRManagement.Services
             if (contractId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(contractId), "Contract ID must be greater than 0.");
 
+            if (!CurrentUserIsAdmin())
+            {
+                var contract = _contractRepository.GetAll().FirstOrDefault(c => c.ContractId == contractId);
+                var employee = contract != null ? _employeeRepository.GetById(contract.EmployeeId) : null;
+
+                if (employee == null || employee.DepartmentId != CurrentUserDepartmentId())
+                    throw new InvalidOperationException("You can only manage contracts for employees in your own department.");
+            }
+
             _contractRepository.Delete(contractId);
 
             _logService.WriteLog(CurrentAccountId(), $"Deleted contract (ID: {contractId})");
@@ -215,6 +261,23 @@ namespace HRManagement.Services
                 Status = contract.Status,
                 BaseSalaryDisplay = contract.BaseSalary.ToString("C0")
             };
+        }
+
+        /// <summary>
+        /// Managers may only create/edit contracts for employees in their
+        /// own department, and cannot move a contract to an employee
+        /// outside it.
+        /// </summary>
+        private void EnforceDepartmentScope(ContractInput input)
+        {
+            if (CurrentUserIsAdmin())
+                return;
+
+            var ownDepartmentId = CurrentUserDepartmentId();
+            var employee = _employeeRepository.GetById(input.EmployeeId);
+
+            if (employee == null || employee.DepartmentId != ownDepartmentId)
+                throw new InvalidOperationException("You can only manage contracts for employees in your own department.");
         }
 
         private static void ValidateInput(ContractInput input)

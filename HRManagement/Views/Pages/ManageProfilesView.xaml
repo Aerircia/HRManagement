@@ -191,19 +191,21 @@
                     </Grid>
                 </Border>
 
-                <!-- Department filter -->
+                <!-- Department filter (Admin only - Manager is scoped to their own department) -->
                 <ComboBox Grid.Column="2"
                           Style="{StaticResource ModernComboBox}"
                           ItemsSource="{Binding DepartmentFilterOptions}"
                           SelectedItem="{Binding SelectedDepartmentFilter}"
-                          DisplayMemberPath="Name"/>
+                          DisplayMemberPath="Name"
+                          Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}"/>
 
-                <!-- Role filter -->
+                <!-- Role filter (Admin only) -->
                 <ComboBox Grid.Column="4"
                           Style="{StaticResource ModernComboBox}"
                           ItemsSource="{Binding RoleFilterOptions}"
                           SelectedItem="{Binding SelectedRoleFilter}"
-                          DisplayMemberPath="Name"/>
+                          DisplayMemberPath="Name"
+                          Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}"/>
 
                 <!-- Sort -->
                 <ComboBox Grid.Column="6"
@@ -229,6 +231,7 @@
                           Background="Transparent"
                           RowBackground="Transparent"
                           AlternatingRowBackground="Transparent"
+                          VerticalScrollBarVisibility="Hidden"
                           HorizontalScrollBarVisibility="Disabled">
 
                     <DataGrid.Resources>

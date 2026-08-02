@@ -104,7 +104,7 @@
             <Border Grid.Row="5" Style="{StaticResource AnnouncementListCardStyle}">
 
                 <Grid>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding Announcements.Count, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}">
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden" Visibility="{Binding Announcements.Count, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}">
                         <ItemsControl ItemsSource="{Binding AnnouncementsView}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>

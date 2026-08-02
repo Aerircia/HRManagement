@@ -1,5 +1,4 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
@@ -17,24 +16,20 @@ namespace HRManagement.ViewModels
     /// board shown on DashboardView. Follows the same Add/Edit + Delete
     /// confirmation overlay pattern as ManageContractsViewModel /
     /// ManageProfilesViewModel so it looks and behaves consistently with
-    /// the rest of the Manage* pages.
+    /// the rest of the Manage* pages. All persistence/authorization/logging
+    /// lives in IManageAnnouncementsService; this ViewModel only owns
+    /// presentation state (form fields, row mapping, filtering).
     /// </summary>
     public class ManageAnnouncementsViewModel : PageViewModel
     {
-        private readonly IAnnouncementRepository _announcementRepository;
-        private readonly SessionManager _sessionManager;
-        private readonly ILogService _logService;
+        private readonly IManageAnnouncementsService _manageAnnouncementsService;
 
         public override string Title => "Manage Announcements";
 
         public ManageAnnouncementsViewModel(
-            IAnnouncementRepository announcementRepository,
-            SessionManager sessionManager,
-            ILogService logService)
+            IManageAnnouncementsService manageAnnouncementsService)
         {
-            _announcementRepository = announcementRepository;
-            _sessionManager = sessionManager;
-            _logService = logService;
+            _manageAnnouncementsService = manageAnnouncementsService;
 
             Announcements = [];
 
@@ -49,8 +44,7 @@ namespace HRManagement.ViewModels
             ConfirmDeleteCommand = new RelayCommand(_ => ConfirmDelete());
             CancelDeleteCommand = new RelayCommand(_ => CancelDelete());
 
-            var currentRoleId = _sessionManager.CurrentUser?.Employee?.RoleId;
-            HasAccess = currentRoleId.HasValue && currentRoleId.Value == 1; // Admin only
+            HasAccess = _manageAnnouncementsService.CurrentUserHasAccess();
             HasNoAccess = !HasAccess;
 
             if (HasAccess)
@@ -160,7 +154,7 @@ namespace HRManagement.ViewModels
         private void LoadAnnouncements()
         {
             Announcements.Clear();
-            foreach (var announcement in _announcementRepository.GetAll())
+            foreach (var announcement in _manageAnnouncementsService.GetAnnouncements())
                 Announcements.Add(ToRow(announcement));
         }
 
@@ -227,59 +221,44 @@ namespace HRManagement.ViewModels
 
         private void SaveForm()
         {
-            if (string.IsNullOrWhiteSpace(FormTitle) || string.IsNullOrWhiteSpace(FormContent))
+            var input = new AnnouncementInput
             {
-                FormErrorMessage = "Title and content are required.";
-                return;
-            }
+                AnnouncementId = _formAnnouncementId,
+                Title = FormTitle,
+                Content = FormContent,
+                IsActive = FormIsActive
+            };
 
-            if (_formAnnouncementId == 0)
+            try
             {
-                var accountId = _sessionManager.CurrentUser?.Account.AccountId;
-                if (accountId == null)
+                var savedAnnouncement = _manageAnnouncementsService.SaveAnnouncement(input);
+
+                if (_formAnnouncementId == 0)
                 {
-                    FormErrorMessage = "Your session could not be found. Please log in again.";
-                    return;
+                    Announcements.Insert(0, ToRow(savedAnnouncement));
+                }
+                else
+                {
+                    var existing = Announcements.FirstOrDefault(
+                        a => a.Announcement.AnnouncementId == _formAnnouncementId);
+
+                    if (existing != null)
+                    {
+                        var index = Announcements.IndexOf(existing);
+                        Announcements[index] = ToRow(savedAnnouncement);
+                    }
                 }
 
-                var announcement = new Announcement
-                {
-                    Title = FormTitle.Trim(),
-                    Content = FormContent.Trim(),
-                    PostedBy = accountId.Value,
-                    PostedDate = DateTime.Now,
-                    IsActive = FormIsActive
-                };
-
-                var newId = _announcementRepository.Insert(announcement);
-                announcement.AnnouncementId = newId;
-                announcement.PostedByName = _sessionManager.CurrentUser!.Employee.FullName;
-
-                Announcements.Insert(0, ToRow(announcement));
-                _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId,  $"Created announcement: {announcement.Title}");
+                IsFormOpen = false;
             }
-            else
+            catch (ArgumentException exception)
             {
-                var existing = Announcements.FirstOrDefault(a => a.Announcement.AnnouncementId == _formAnnouncementId);
-                if (existing == null)
-                {
-                    FormErrorMessage = "Announcement could not be found.";
-                    return;
-                }
-
-                var announcement = existing.Announcement;
-                announcement.Title = FormTitle.Trim();
-                announcement.Content = FormContent.Trim();
-                announcement.IsActive = FormIsActive;
-
-                _announcementRepository.Update(announcement);
-
-                var index = Announcements.IndexOf(existing);
-                Announcements[index] = ToRow(announcement);
-                _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId, $"Updated announcement: {announcement.Title}");
+                FormErrorMessage = exception.Message;
             }
-
-            IsFormOpen = false;
+            catch (InvalidOperationException exception)
+            {
+                FormErrorMessage = exception.Message;
+            }
         }
 
         // Delete
@@ -298,9 +277,11 @@ namespace HRManagement.ViewModels
             if (PendingDelete == null)
                 return;
 
-            _announcementRepository.Delete(PendingDelete.Announcement.AnnouncementId);
+            _manageAnnouncementsService.DeleteAnnouncement(
+                PendingDelete.Announcement.AnnouncementId,
+                PendingDelete.Title);
+
             Announcements.Remove(PendingDelete);
-            _logService.WriteLog(_sessionManager.CurrentUser!.Account.AccountId, $"Deleted announcement: {PendingDelete.Title}");
             PendingDelete = null;
             IsDeleteConfirmOpen = false;
         }
@@ -312,5 +293,5 @@ namespace HRManagement.ViewModels
         }
     }
 
-    
+
 }

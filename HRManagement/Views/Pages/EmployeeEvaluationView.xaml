@@ -735,6 +735,7 @@
                                   Style="{StaticResource EvaluationDataGridStyle}"
                                   RowStyle="{StaticResource EvaluationDataGridRowStyle}"
                                   ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                                  VerticalScrollBarVisibility="Hidden"
                                   RowBackground="Transparent">
 
                             <DataGrid.Columns>

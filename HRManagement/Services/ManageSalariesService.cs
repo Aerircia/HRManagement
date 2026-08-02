@@ -35,12 +35,18 @@ namespace HRManagement.Services
         private readonly IPaidTimeOffService
             _paidTimeOffService;
 
+        private readonly ILogService _logService;
+
+        private readonly SessionManager _sessionManager;
+
         public ManageSalariesService(
             ISalaryRepository salaryRepository,
             IManageSalariesRepository manageSalariesRepository,
             ISalaryCalculator salaryCalculator,
             IAttendanceService attendanceService,
-            IPaidTimeOffService paidTimeOffService)
+            IPaidTimeOffService paidTimeOffService,
+            ILogService logService,
+            SessionManager sessionManager)
         {
             _salaryRepository = salaryRepository
                 ?? throw new ArgumentNullException(
@@ -62,7 +68,20 @@ namespace HRManagement.Services
             _paidTimeOffService = paidTimeOffService
                 ?? throw new ArgumentNullException(
                     nameof(paidTimeOffService));
+
+            _logService = logService
+                ?? throw new ArgumentNullException(
+                    nameof(logService));
+
+            _sessionManager = sessionManager
+                ?? throw new ArgumentNullException(
+                    nameof(sessionManager));
         }
+
+        // Account_ID of whoever is currently logged in, or 0 when there's
+        // no active session.
+        private int CurrentAccountId =>
+            _sessionManager.CurrentUser?.Account.AccountId ?? 0;
 
         // =========================================================
         // Salary information
@@ -123,6 +142,73 @@ namespace HRManagement.Services
                 year);
         }
 
+        public SalaryDetailResult GetMySalaryDetail(
+            int employeeId,
+            int month,
+            int year)
+        {
+            ValidateEmployeeId(employeeId);
+            ValidateSalaryPeriod(month, year);
+
+            if (!_salaryRepository.PayrollExists(employeeId, month, year))
+            {
+                return SalaryDetailResult.NotFound(
+                    $"Payroll for {month:00}/{year} has not been created.");
+            }
+
+            EmployeeModel? employee =
+                _salaryRepository.GetEmployee(employeeId);
+
+            if (employee == null)
+            {
+                return SalaryDetailResult.NotFound(
+                    "Employee information could not be found.");
+            }
+
+            ContractModel? contract =
+                _salaryRepository.GetContractForPeriod(
+                    employeeId,
+                    month,
+                    year);
+
+            if (contract == null)
+            {
+                return SalaryDetailResult.NotFound(
+                    $"No valid contract was found for {month:00}/{year}.");
+            }
+
+            RoleModel? role =
+                _salaryRepository.GetRole(contract.RoleId);
+
+            if (role == null)
+            {
+                return SalaryDetailResult.NotFound(
+                    "The role associated with the contract could not be found.");
+            }
+
+            try
+            {
+                var salary = CalculateSalary(
+                    employee,
+                    contract,
+                    role,
+                    month,
+                    year);
+
+                return SalaryDetailResult.Found(
+                    salary,
+                    $"Salary information for {month:00}/{year} was loaded successfully.");
+            }
+            catch (ArgumentException exception)
+            {
+                return SalaryDetailResult.NotFound(exception.Message);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return SalaryDetailResult.NotFound(exception.Message);
+            }
+        }
+
         // =========================================================
         // Salary components
         // =========================================================
@@ -142,6 +228,10 @@ namespace HRManagement.Services
                 .UpdateContractBaseSalary(
                     contractId,
                     baseSalary);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Base salary updated for contract {contractId} to {baseSalary:N2}");
         }
 
         public void UpdatePayRate(
@@ -159,6 +249,10 @@ namespace HRManagement.Services
                 .UpdateRolePayRate(
                     roleId,
                     payRate);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Pay rate updated for role {roleId} to {payRate:N2}");
         }
 
         public void UpdateSalaryComponents(
@@ -189,6 +283,11 @@ namespace HRManagement.Services
                 .UpdateRolePayRate(
                     roleId,
                     payRate);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Salary components updated for contract {contractId} " +
+                $"(base salary {baseSalary:N2}, role {roleId} pay rate {payRate:N2})");
         }
 
         // =========================================================
@@ -209,8 +308,15 @@ namespace HRManagement.Services
 
             ValidateAttendance(attendance);
 
-            return _manageSalariesRepository
+            var newAttendanceId = _manageSalariesRepository
                 .AddAttendance(attendance);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Attendance record {newAttendanceId} added for employee {attendance.EmployeeId} " +
+                $"(status: {attendance.Status})");
+
+            return newAttendanceId;
         }
 
         public void UpdateAttendance(
@@ -232,6 +338,11 @@ namespace HRManagement.Services
 
             _manageSalariesRepository
                 .UpdateAttendance(attendance);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Attendance record {attendance.AttendanceId} updated for employee {attendance.EmployeeId} " +
+                $"(status: {attendance.Status})");
         }
 
         public void DeleteAttendance(
@@ -241,6 +352,10 @@ namespace HRManagement.Services
 
             _manageSalariesRepository
                 .DeleteAttendance(attendanceId);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Attendance record {attendanceId} deleted");
         }
 
         // =========================================================
@@ -261,8 +376,15 @@ namespace HRManagement.Services
 
             ValidateEvaluation(evaluation);
 
-            return _manageSalariesRepository
+            var newEvaluationId = _manageSalariesRepository
                 .AddEvaluation(evaluation);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Evaluation {newEvaluationId} ({evaluation.BonusType}, {evaluation.Amount:N2}) " +
+                $"added for employee {evaluation.EmployeeId}");
+
+            return newEvaluationId;
         }
 
         public void UpdateEvaluation(
@@ -284,6 +406,11 @@ namespace HRManagement.Services
 
             _manageSalariesRepository
                 .UpdateEvaluation(evaluation);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Evaluation {evaluation.EvaluationId} updated for employee {evaluation.EmployeeId} " +
+                $"({evaluation.BonusType}, {evaluation.Amount:N2})");
         }
 
         public void DeleteEvaluation(
@@ -293,6 +420,10 @@ namespace HRManagement.Services
 
             _manageSalariesRepository
                 .DeleteEvaluation(evaluationId);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Evaluation {evaluationId} deleted");
         }
 
         // =========================================================
@@ -370,8 +501,14 @@ namespace HRManagement.Services
                 Year = year
             };
 
-            return _manageSalariesRepository
+            var payrollId = _manageSalariesRepository
                 .CreatePayroll(payroll);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Created payroll for {employee.FullName} ({month:00}/{year})");
+
+            return payrollId;
         }
 
         public int CreateMonthlyPayroll(
@@ -438,8 +575,14 @@ namespace HRManagement.Services
                     });
             }
 
-            return _manageSalariesRepository
+            var createdCount = _manageSalariesRepository
                 .CreateMonthlyPayroll(payrolls);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Created {createdCount} payroll(s) for {month:00}/{year}");
+
+            return createdCount;
         }
 
         public void DeleteEmployeePayroll(
@@ -463,11 +606,19 @@ namespace HRManagement.Services
                     $"in {month:00}/{year} does not exist.");
             }
 
+            EmployeeModel? employee =
+                _salaryRepository.GetEmployee(
+                    employeeId);
+
             _manageSalariesRepository
                 .DeletePayroll(
                     employeeId,
                     month,
                     year);
+
+            _logService.WriteLog(
+                CurrentAccountId,
+                $"Deleted payroll for {employee?.FullName ?? $"employee {employeeId}"} ({month:00}/{year})");
         }
 
         // =========================================================
@@ -1026,9 +1177,7 @@ namespace HRManagement.Services
         {
             if (value < 0)
             {
-                throw new ArgumentOutOfRangeException(
-                    parameterName,
-                    $"{displayName} cannot be negative.");
+                throw new ArgumentOutOfRangeException(parameterName, $"{displayName} cannot be negative.");
             }
         }
 
@@ -1039,9 +1188,7 @@ namespace HRManagement.Services
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException(
-                    parameterName,
-                    $"{displayName} must be greater than 0.");
+                throw new ArgumentOutOfRangeException(parameterName, $"{displayName} must be greater than 0.");
             }
         }
     }

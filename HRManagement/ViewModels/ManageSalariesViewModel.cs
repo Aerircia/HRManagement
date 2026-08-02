@@ -800,7 +800,6 @@ public class ManageSalariesViewModel : PageViewModel
             StatusMessage =
                 $"Payroll for {employeeName} in " +
                 $"{SelectedPeriod} was created successfully.";
-            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Created payroll for {employeeName} ({SelectedPeriod})");
         }
         catch (ArgumentException exception)
         {
@@ -849,7 +848,6 @@ public class ManageSalariesViewModel : PageViewModel
                         SelectedYear);
 
             ReloadSalaryData();
-            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Created {createdCount} payroll(s) for {SelectedPeriod}");
             StatusMessage =
                 createdCount == 0
                     ? $"No new payroll records were " +
@@ -918,7 +916,6 @@ public class ManageSalariesViewModel : PageViewModel
 
             ReloadAndSelectEmployee(
                 employeeId);
-            _logService.WriteLog(_sessionManager.CurrentUser!.Employee.EmployeeId, $"Deleted payroll for {employeeName} ({SelectedPeriod})");
             StatusMessage =
                 $"Payroll for {employeeName} in " +
                 $"{SelectedPeriod} was deleted successfully.";

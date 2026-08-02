@@ -7,6 +7,12 @@ namespace HRManagement.Services.Interfaces
     {
         bool CurrentUserHasAccess();
 
+        /// <summary>
+        /// True for Admin. False for Manager, who is scoped to employees
+        /// in their own department when listing/adding contracts.
+        /// </summary>
+        bool CurrentUserIsAdmin();
+
         List<IdNamePair> GetRoleOptions();
         List<IdNamePair> GetEmployees();
         List<ContractItemModel> GetContracts();

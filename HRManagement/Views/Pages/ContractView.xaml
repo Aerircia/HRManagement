@@ -12,7 +12,7 @@
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
         <Style x:Key="DocumentPaperStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource NeutralBgBrush}"/>
             <Setter Property="CornerRadius" Value="2"/>
             <Setter Property="Padding" Value="64,48"/>
             <Setter Property="Margin" Value="0,20,0,40"/>
@@ -25,7 +25,7 @@
 
         <Style x:Key="DocumentTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
             <Setter Property="LineHeight" Value="22"/>
@@ -69,7 +69,7 @@
                     <StackPanel>
                         <!-- Document Title -->
                         <TextBlock Text="EMPLOYMENT CONTRACT"
-                                   FontSize="18" FontWeight="Bold" Foreground="Black"
+                                   FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"
                                    HorizontalAlignment="Center" Margin="0,0,0,32"/>
 
                         <!-- Introduction -->
@@ -168,11 +168,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" FontSize="11" Foreground="Black">
+                            <TextBlock Grid.Column="0" FontSize="11" Foreground="{DynamicResource PrimaryTextBrush}">
                                 <Run Text="Employee's Initials: "/>
                                 <Run Text="____________"/>
                             </TextBlock>
-                            <TextBlock Grid.Column="1" FontSize="11" Foreground="Black" HorizontalAlignment="Right">
+                            <TextBlock Grid.Column="1" FontSize="11" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Right">
                                 <Run Text="Employer's Initials: "/>
                                 <Run Text="____________"/>
                             </TextBlock>

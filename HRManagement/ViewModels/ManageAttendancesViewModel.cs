@@ -1,5 +1,4 @@
 using HRManagement.Models;
-using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
@@ -13,21 +12,15 @@ namespace HRManagement.ViewModels;
 public class ManageAttendancesViewModel : PageViewModel
 {
     private readonly SessionManager _sessionManager;
-    private readonly IEmployeeRepository _employeeRepository;
-    private readonly IDepartmentRepository _departmentRepository;
-    private readonly IAttendanceService _attendanceService;
+    private readonly IManageAttendancesService _manageAttendancesService;
 
     public ManageAttendancesViewModel(
         SessionManager sessionManager,
-        IEmployeeRepository employeeRepository,
-        IDepartmentRepository departmentRepository,
-        IAttendanceService attendanceService,
+        IManageAttendancesService manageAttendancesService,
         AttendanceViewModel childAttendanceViewModel)
     {
         _sessionManager = sessionManager;
-        _employeeRepository = employeeRepository;
-        _departmentRepository = departmentRepository;
-        _attendanceService = attendanceService;
+        _manageAttendancesService = manageAttendancesService;
 
         Departments = new ObservableCollection<Department>();
         Employees = new ObservableCollection<ManageEmployeeRowViewModel>();
@@ -66,8 +59,8 @@ public class ManageAttendancesViewModel : PageViewModel
 
             if (_selectedEmployee != null)
             {
-                var emp = _employeeRepository.GetById(_selectedEmployee.EmployeeId);
-                ChildAttendanceViewModel.SetDisplayedEmployee(_selectedEmployee.EmployeeId, emp?.HireDate.Date);
+                var hireDate = _manageAttendancesService.GetEmployeeHireDate(_selectedEmployee.EmployeeId);
+                ChildAttendanceViewModel.SetDisplayedEmployee(_selectedEmployee.EmployeeId, hireDate);
             }
         }
     }
@@ -115,133 +108,48 @@ public class ManageAttendancesViewModel : PageViewModel
     private void LoadDepartments()
     {
         Departments.Clear();
-        Departments.Add(new Department { DepartmentId = 0, DepartmentName = "All Departments" });
 
-        if (IsAdmin)
-        {
-            foreach (var d in _departmentRepository.GetAll())
-                Departments.Add(d);
-        }
-        else if (_sessionManager.CurrentUser != null)
-        {
-            // Non-admin (manager): only include the manager's own department
-            // so filtering still works without exposing other departments.
-            var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
-            var dept = _departmentRepository.GetAll().FirstOrDefault(d => d.DepartmentId == deptId);
-            Departments.Add(dept ?? new Department { DepartmentId = deptId, DepartmentName = $"Department {deptId}" });
-        }
+        foreach (var d in _manageAttendancesService.GetDepartmentOptions())
+            Departments.Add(d);
 
-        if (_sessionManager.CurrentUser != null &&
-            _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
-        {
-            var deptId = _sessionManager.CurrentUser.Employee.DepartmentId;
-            SelectedDepartment = Departments.FirstOrDefault(x => x.DepartmentId == deptId) ?? Departments.First();
-        }
-        else
-        {
-            SelectedDepartment = Departments.First();
-        }
+        var defaultDepartment = _manageAttendancesService.GetDefaultDepartment(Departments.ToList());
+        SelectedDepartment = defaultDepartment != null
+            ? Departments.FirstOrDefault(x => x.DepartmentId == defaultDepartment.DepartmentId)
+            : Departments.FirstOrDefault();
     }
 
     private void LoadEmployees()
     {
         Employees.Clear();
 
-        IEnumerable<Employee> list;
-        if (_sessionManager.CurrentUser != null &&
-            _sessionManager.CurrentUser.Role.RoleName.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+        var overview = _manageAttendancesService.GetEmployeeAttendanceOverview(
+            SelectedDepartment?.DepartmentId,
+            EmployeeIdFilter);
+
+        foreach (var row in overview.Rows)
         {
-            list = _employeeRepository.GetByDepartment(_sessionManager.CurrentUser.Employee.DepartmentId);
-        }
-        else if (SelectedDepartment != null && SelectedDepartment.DepartmentId != 0)
-        {
-            list = _employeeRepository.GetByDepartment(SelectedDepartment.DepartmentId);
-        }
-        else
-        {
-            list = _employeeRepository.GetAll();
-        }
-
-        if (!string.IsNullOrWhiteSpace(EmployeeIdFilter))
-        {
-            list = int.TryParse(EmployeeIdFilter, out var fid)
-                ? list.Where(e => e.EmployeeId == fid)
-                : Enumerable.Empty<Employee>();
-        }
-
-        var scopedEmployees = list.ToList();
-
-        var now = DateTime.Now;
-
-        var presentToday = 0;
-        var lateToday = 0;
-        var absentToday = 0;
-        var expectedTodayCount = 0;
-
-        var isWeekendToday = now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-
-        var dayOffCount = 0;
-        var otCount = 0;
-        var teamMinutes = 0;
-
-        foreach (var e in scopedEmployees)
-        {
-            // Single source of truth for the summary math - same service
-            // method used by the calendar itself, so the row list and the
-            // detail calendar can never disagree.
-            var summary = _attendanceService.GetMonthSummary(e.EmployeeId, e.HireDate.Date, now);
-
-            var today = _attendanceService.GetTodayAttendance(e.EmployeeId);
-
             Employees.Add(new ManageEmployeeRowViewModel
             {
-                EmployeeId = e.EmployeeId,
-                EmployeeName = e.FullName,
-                WorkingDays = summary.TotalDaysWorked,
-                OnTimeDays = summary.TotalOnTime,
-                LateDays = summary.TotalLate,
-                AbsentDays = summary.TotalAbsent,
-                CheckInToday = today?.CheckIn,
-                CheckOutToday = today?.CheckOut
+                EmployeeId = row.EmployeeId,
+                EmployeeName = row.EmployeeName,
+                WorkingDays = row.WorkingDays,
+                OnTimeDays = row.OnTimeDays,
+                LateDays = row.LateDays,
+                AbsentDays = row.AbsentDays,
+                CheckInToday = row.CheckInToday,
+                CheckOutToday = row.CheckOutToday
             });
-
-            dayOffCount += summary.TotalDayOffDays;
-            otCount += summary.TotalOtDays;
-            teamMinutes += summary.TotalWorkedMinutes;
-
-            // "Expected today" excludes weekends and employees not yet hired,
-            // mirroring the exclusion logic already used for absence
-            // counting in AttendanceService.BuildMonth/GetMonthSummary.
-            var expectedToday = !isWeekendToday && e.HireDate.Date <= now.Date;
-            if (!expectedToday)
-                continue;
-
-            expectedTodayCount++;
-
-            if (string.Equals(today?.Status, "Late", StringComparison.OrdinalIgnoreCase))
-                lateToday++;
-            else if (today?.CheckIn.HasValue == true)
-                presentToday++;
-            else
-                absentToday++;
         }
 
-        DayOffThisMonthCount = dayOffCount;
-        OtThisMonthCount = otCount;
+        DayOffThisMonthCount = overview.DayOffThisMonthCount;
+        OtThisMonthCount = overview.OtThisMonthCount;
+
+        var teamMinutes = overview.TeamMinutesThisMonth;
         TeamHoursThisMonthDisplay = $"{teamMinutes / 60}h {teamMinutes % 60}m";
 
-        if (expectedTodayCount > 0)
-        {
-            PresentRateTodayDisplay = $"{presentToday * 100.0 / expectedTodayCount:0}%";
-            LateRateTodayDisplay = $"{lateToday * 100.0 / expectedTodayCount:0}%";
-            AbsentRateTodayDisplay = $"{absentToday * 100.0 / expectedTodayCount:0}%";
-        }
-        else
-        {
-            PresentRateTodayDisplay = "0%";
-            LateRateTodayDisplay = "0%";
-            AbsentRateTodayDisplay = "0%";
-        }
+        PresentRateTodayDisplay = $"{overview.PresentRateToday:0}%";
+        LateRateTodayDisplay = $"{overview.LateRateToday:0}%";
+        AbsentRateTodayDisplay = $"{overview.AbsentRateToday:0}%";
     }
 
     private void SelectEmployee(object? param)

@@ -11,6 +11,7 @@ namespace HRManagement.Services
     {
         // Admin, Manager
         private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 };
+        private const int AdminRoleId = 1;
 
         private static readonly List<IdNamePair> Roles = new()
         {
@@ -45,11 +46,31 @@ namespace HRManagement.Services
             return currentRoleId.HasValue && AllowedRoleIds.Contains(currentRoleId.Value);
         }
 
+        public bool CurrentUserIsAdmin()
+        {
+            return _sessionManager.CurrentUser?.Employee?.RoleId == AdminRoleId;
+        }
+
+        private int? CurrentUserDepartmentId()
+        {
+            return _sessionManager.CurrentUser?.Employee?.DepartmentId;
+        }
+
         public List<IdNamePair> GetRoleOptions() => Roles;
 
         public List<IdNamePair> GetDepartments()
         {
-            return _departmentRepository.GetAll()
+            var departments = _departmentRepository.GetAll();
+
+            // Managers only ever act within their own department, so they
+            // don't get a department picker at all - just their one.
+            if (!CurrentUserIsAdmin())
+            {
+                var ownDepartmentId = CurrentUserDepartmentId();
+                departments = departments.Where(d => d.DepartmentId == ownDepartmentId).ToList();
+            }
+
+            return departments
                 .Select(d => new IdNamePair(d.DepartmentId, d.DepartmentName))
                 .ToList();
         }
@@ -57,8 +78,16 @@ namespace HRManagement.Services
         public List<EmployeeProfileItemModel> GetEmployees()
         {
             var departments = _departmentRepository.GetAll();
+            var employees = _employeeRepository.GetAll();
 
-            return _employeeRepository.GetAll()
+            // Managers only see employees in their own department.
+            if (!CurrentUserIsAdmin())
+            {
+                var ownDepartmentId = CurrentUserDepartmentId();
+                employees = employees.Where(e => e.DepartmentId == ownDepartmentId).ToList();
+            }
+
+            return employees
                 .Select(e => ToItem(e, departments))
                 .ToList();
         }
@@ -66,6 +95,7 @@ namespace HRManagement.Services
         public EmployeeProfileItemModel AddEmployee(EmployeeProfileInput input)
         {
             ValidateInput(input);
+            EnforceDepartmentScope(input);
 
             var employee = new Employee
             {
@@ -96,6 +126,7 @@ namespace HRManagement.Services
         public EmployeeProfileItemModel UpdateEmployee(EmployeeProfileInput input)
         {
             ValidateInput(input);
+            EnforceDepartmentScope(input);
 
             if (input.EmployeeId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(input.EmployeeId), "Employee ID must be greater than 0.");
@@ -142,6 +173,9 @@ namespace HRManagement.Services
 
             if (employee == null)
                 throw new InvalidOperationException($"Employee {employeeId} was not found.");
+
+            if (!CurrentUserIsAdmin() && employee.DepartmentId != CurrentUserDepartmentId())
+                throw new InvalidOperationException("You can only manage employees in your own department.");
 
             _employeeRepository.DeleteWithRelatedData(employeeId);
 
@@ -218,6 +252,35 @@ namespace HRManagement.Services
                 HireDateDisplay = employee.HireDate.ToString("MMM dd, yyyy"),
                 HasAccount = _accountRepository.GetByEmployeeId(employee.EmployeeId) != null
             };
+        }
+
+        /// <summary>
+        /// Managers may only add/edit employees within their own department.
+        /// For an Add, the department is forced to the manager's own
+        /// department regardless of what was submitted. For an Edit, moving
+        /// an employee to a different department (or editing someone
+        /// outside it) is rejected.
+        /// </summary>
+        private void EnforceDepartmentScope(EmployeeProfileInput input)
+        {
+            if (CurrentUserIsAdmin())
+                return;
+
+            var ownDepartmentId = CurrentUserDepartmentId();
+
+            if (input.EmployeeId == 0)
+            {
+                input.DepartmentId = ownDepartmentId ?? 0;
+                return;
+            }
+
+            var existing = _employeeRepository.GetById(input.EmployeeId);
+
+            if (existing != null && existing.DepartmentId != ownDepartmentId)
+                throw new InvalidOperationException("You can only manage employees in your own department.");
+
+            if (input.DepartmentId != ownDepartmentId)
+                throw new InvalidOperationException("You can only assign employees to your own department.");
         }
 
         private static void ValidateInput(EmployeeProfileInput input)

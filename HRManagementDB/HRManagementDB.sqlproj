@@ -74,7 +74,4 @@
     <Build Include="dbo\Tables\SystemLog.sql" />
     <Build Include="dbo\Tables\Announcement.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <PostDeploy Include="seed.sql" />
-  </ItemGroup>
 </Project>

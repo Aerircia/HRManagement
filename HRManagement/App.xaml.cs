@@ -60,8 +60,10 @@ public partial class App : Application
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IContractService, ContractService>();
         services.AddSingleton<IManageProfilesService, ManageProfilesService>();
-        services.AddTransient<IPaidTimeOffService,PaidTimeOffService>();
+        services.AddTransient<IPaidTimeOffService, PaidTimeOffService>();
         services.AddSingleton<IDashboardService, DashboardService>();
+        services.AddSingleton<IManageAttendancesService, ManageAttendancesService>();
+        services.AddSingleton<IManageAnnouncementsService, ManageAnnouncementsService>();
 
 
         // Repositories

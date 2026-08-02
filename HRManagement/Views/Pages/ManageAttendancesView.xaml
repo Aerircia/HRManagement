@@ -127,6 +127,7 @@
                               Background="Transparent"
                               RowBackground="Transparent"
                               BorderThickness="0"
+                              VerticalScrollBarVisibility="Hidden"
                               HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>

@@ -45,6 +45,7 @@ namespace HRManagement.ViewModels
             CancelDeleteCommand = new RelayCommand(_ => CancelDelete());
 
             HasAccess = _manageProfilesService.CurrentUserHasAccess();
+            IsAdmin = _manageProfilesService.CurrentUserIsAdmin();
 
             if (HasAccess)
             {
@@ -62,6 +63,10 @@ namespace HRManagement.ViewModels
 
         public bool HasAccess { get; }
         public bool HasNoAccess => !HasAccess;
+
+        // Admin sees everyone and gets Department/Role filters; Manager is
+        // scoped to their own department and doesn't get those filters.
+        public bool IsAdmin { get; }
 
         //List
 

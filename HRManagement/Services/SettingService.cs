@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using HRManagement.Models;
+using HRManagement.Repositories.Interfaces;
 using HRManagement.Resources;
 using HRManagement.Services.Interfaces;
 
@@ -17,9 +18,13 @@ public class SettingService : ISettingService
     public event EventHandler? ThemeChanged;
 
     private readonly string _settingsFilePath;
+    private readonly IAccountRepository _accountRepository;
 
-    public SettingService()
+    public SettingService(IAccountRepository accountRepository)
     {
+        _accountRepository = accountRepository
+            ?? throw new ArgumentNullException(nameof(accountRepository));
+
         var folder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             SettingResources.SettingsFolderName);
@@ -57,6 +62,11 @@ public class SettingService : ISettingService
             SetLightTheme();
         else
             SetDarkTheme();
+    }
+
+    public bool ChangePassword(int accountId, string currentPassword, string newPassword)
+    {
+        return _accountRepository.ChangePassword(accountId, currentPassword, newPassword);
     }
 
     public void Save()

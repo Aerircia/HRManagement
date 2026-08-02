@@ -18,12 +18,30 @@ public class AttendanceService : IAttendanceService
     private static readonly TimeSpan CheckInCutoff = ShiftStart.Add(TimeSpan.FromHours(2));
 
     private readonly IAttendanceRepository _attendanceRepository;
+    private readonly ILogService _logService;
+    private readonly SessionManager _sessionManager;
 
-    public AttendanceService(IAttendanceRepository attendanceRepository)
+    public AttendanceService(
+        IAttendanceRepository attendanceRepository,
+        ILogService logService,
+        SessionManager sessionManager)
     {
         _attendanceRepository = attendanceRepository;
+
+        _logService = logService
+            ?? throw new ArgumentNullException(nameof(logService));
+
+        _sessionManager = sessionManager
+            ?? throw new ArgumentNullException(nameof(sessionManager));
+
         _attendanceRepository.OnAttendanceChanged += (sender, e) => AttendanceChanged?.Invoke(sender, e);
     }
+
+    // Account_ID of whoever is currently logged in, or 0 when there's no
+    // active session (mirrors the fallback already used by LogService's
+    // other callers, e.g. AuthenticationService's failed-login log).
+    private int CurrentAccountId =>
+        _sessionManager.CurrentUser?.Account.AccountId ?? 0;
 
     public event EventHandler<AttendanceChangedEventArgs>? AttendanceChanged;
 
@@ -527,6 +545,8 @@ public class AttendanceService : IAttendanceService
             CheckIn = now,
             Status = status
         });
+
+        _logService.WriteLog(CurrentAccountId, $"Employee {employeeId} checked in ({status})");
     }
 
     public void CheckOut(int employeeId)
@@ -540,6 +560,8 @@ public class AttendanceService : IAttendanceService
             CheckOut = DateTime.Now,
             Status = string.IsNullOrEmpty(today?.Status) ? "Present" : today.Status
         });
+
+        _logService.WriteLog(CurrentAccountId, $"Employee {employeeId} checked out");
     }
 
     public void ScheduleOt(int employeeId, DateTime date, TimeSpan start, TimeSpan end)
@@ -551,6 +573,8 @@ public class AttendanceService : IAttendanceService
             CheckOut = date.Date + end,
             Status = "OT"
         });
+
+        _logService.WriteLog(CurrentAccountId, $"OT scheduled for employee {employeeId} on {date:yyyy-MM-dd} ({start:hh\\:mm}-{end:hh\\:mm})");
     }
     public void ScheduleDayOff(int employeeId, DateTime startDate, DateTime endDate)
     {
@@ -571,6 +595,8 @@ public class AttendanceService : IAttendanceService
                 Status = "Day Off"
             });
         }
+
+        _logService.WriteLog(CurrentAccountId, $"Day off scheduled for employee {employeeId} from {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
     }
 
     // Public "today's attendance record" lookup, used by ManageAttendancesViewModel

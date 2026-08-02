@@ -23,9 +23,17 @@ namespace HRManagement.Services
         private readonly ISalaryRepository
             _salaryRepository;
 
+        private readonly SessionManager
+            _sessionManager;
+
+        private readonly ILogService
+            _logService;
+
         public EmployeeEvaluationService(
             HRManagement.Repositories.Interfaces.IEmployeeEvaluationRepository evaluationRepository,
-            ISalaryRepository salaryRepository)
+            ISalaryRepository salaryRepository,
+            SessionManager sessionManager,
+            ILogService logService)
         {
             _evaluationRepository =
                 evaluationRepository
@@ -36,6 +44,16 @@ namespace HRManagement.Services
                 salaryRepository
                 ?? throw new ArgumentNullException(
                     nameof(salaryRepository));
+
+            _sessionManager =
+                sessionManager
+                ?? throw new ArgumentNullException(
+                    nameof(sessionManager));
+
+            _logService =
+                logService
+                ?? throw new ArgumentNullException(
+                    nameof(logService));
         }
 
         public IReadOnlyList<Department>
@@ -156,8 +174,16 @@ namespace HRManagement.Services
                         NormalizeOptionalText(comment)
                 };
 
-            return _evaluationRepository
+            var newId = _evaluationRepository
                 .AddEvaluation(evaluation);
+
+            _logService.WriteLog(
+                CurrentAccountId(),
+                $"Created {normalizedBonusType.ToLowerInvariant()} evaluation " +
+                $"(ID: {newId}) for employee {employeeId}: " +
+                $"{normalizedEvaluationType}, {amount:C0}");
+
+            return newId;
         }
 
         public void UpdateEvaluation(
@@ -223,6 +249,15 @@ namespace HRManagement.Services
                     bonusDate.Year);
             }
 
+            var changes =
+                DescribeChanges(
+                    existingEvaluation,
+                    normalizedBonusType,
+                    normalizedEvaluationType,
+                    amount,
+                    bonusDate,
+                    comment);
+
             existingEvaluation.BonusType =
                 normalizedBonusType;
 
@@ -240,6 +275,16 @@ namespace HRManagement.Services
 
             _evaluationRepository.UpdateEvaluation(
                 existingEvaluation);
+
+            var message = changes.Count > 0
+                ? $"Updated evaluation (ID: {evaluationId}) for employee " +
+                  $"{existingEvaluation.EmployeeId}: {string.Join(", ", changes)}"
+                : $"Updated evaluation (ID: {evaluationId}) for employee " +
+                  $"{existingEvaluation.EmployeeId}";
+
+            _logService.WriteLog(
+                CurrentAccountId(),
+                message);
         }
 
         public void DeleteEvaluation(
@@ -264,9 +309,45 @@ namespace HRManagement.Services
 
             _evaluationRepository.DeleteEvaluation(
                 evaluationId);
+
+            _logService.WriteLog(
+                CurrentAccountId(),
+                $"Deleted evaluation (ID: {evaluationId}) for employee " +
+                $"{existingEvaluation.EmployeeId}");
         }
 
 
+
+        private int CurrentAccountId() =>
+            _sessionManager.CurrentUser!.Account.AccountId;
+
+        private static List<string> DescribeChanges(
+            EmployeeEvaluation existingEvaluation,
+            string normalizedBonusType,
+            string normalizedEvaluationType,
+            decimal amount,
+            DateTime bonusDate,
+            string? comment)
+        {
+            var changes = new List<string>();
+
+            if (existingEvaluation.BonusType != normalizedBonusType)
+                changes.Add("Bonus Type");
+
+            if (existingEvaluation.EvaluationType != normalizedEvaluationType)
+                changes.Add("Evaluation Type");
+
+            if (existingEvaluation.Amount != amount)
+                changes.Add("Amount");
+
+            if (existingEvaluation.BonusDate.Date != bonusDate.Date)
+                changes.Add("Bonus Date");
+
+            if ((existingEvaluation.Comment ?? "") != (NormalizeOptionalText(comment) ?? ""))
+                changes.Add("Comment");
+
+            return changes;
+        }
 
         private void EnsureEmployeeExists(
             int employeeId)

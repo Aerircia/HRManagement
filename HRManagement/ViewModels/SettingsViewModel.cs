@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Input;
-using HRManagement.Repositories.Interfaces;
 using HRManagement.Resources;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
@@ -12,16 +11,13 @@ namespace HRManagement.ViewModels;
 public class SettingsViewModel : PageViewModel
 {
     private readonly ISettingService _settingService;
-    private readonly IAccountRepository _accountRepository;
     private readonly SessionManager _sessionService;
     public override string Title => "Settings";
     public SettingsViewModel(
     ISettingService settingService,
-    IAccountRepository accountRepository,
     SessionManager sessionService)
     {
         _settingService = settingService;
-        _accountRepository = accountRepository;
         _sessionService = sessionService;
 
         _isDarkTheme = _settingService.CurrentTheme == SettingResources.ThemeDark;
@@ -137,7 +133,7 @@ public class SettingsViewModel : PageViewModel
             return;
         }
 
-        var success = _accountRepository.ChangePassword(accountId, CurrentPassword, NewPassword);
+        var success = _settingService.ChangePassword(accountId, CurrentPassword, NewPassword);
 
         if (!success)
         {

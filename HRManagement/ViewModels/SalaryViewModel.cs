@@ -1,6 +1,4 @@
 ﻿using HRManagement.Models;
-using HRManagement.Repositories;
-using HRManagement.Repositories.Interfaces;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
@@ -11,11 +9,7 @@ namespace HRManagement.ViewModels;
 
 public class SalaryViewModel : PageViewModel
 {
-    private readonly ISalaryRepository _salaryRepository;
-    private readonly ISalaryCalculator _salaryCalculator;
-    private readonly IAttendanceService _attendanceService;
-    private readonly IPaidTimeOffService _paidTimeOffService;
-
+    private readonly IManageSalariesService _manageSalariesService;
     private readonly SessionManager _sessionManager;
     private SalaryDetailModel? _salary;
 
@@ -32,7 +26,7 @@ public class SalaryViewModel : PageViewModel
 
         private set
         {
-            if (!SetProperty(ref _salary,value))
+            if (!SetProperty(ref _salary, value))
             {
                 return;
             }
@@ -63,7 +57,7 @@ public class SalaryViewModel : PageViewModel
 
         set
         {
-            if (!SetProperty(ref _selectedMonth,value))
+            if (!SetProperty(ref _selectedMonth, value))
             {
                 return;
             }
@@ -78,7 +72,7 @@ public class SalaryViewModel : PageViewModel
 
         set
         {
-            if (!SetProperty(ref _selectedYear,value))
+            if (!SetProperty(ref _selectedYear, value))
             {
                 return;
             }
@@ -104,7 +98,7 @@ public class SalaryViewModel : PageViewModel
 
         private set
         {
-            if (!SetProperty(ref _isLoading,value))
+            if (!SetProperty(ref _isLoading, value))
             {
                 return;
             }
@@ -144,20 +138,14 @@ public class SalaryViewModel : PageViewModel
     }
 
     public SalaryViewModel(
-        ISalaryRepository salaryRepository,
-        ISalaryCalculator salaryCalculator,
-        IAttendanceService attendanceService,
-        IPaidTimeOffService paidTimeOffService,
+        IManageSalariesService manageSalariesService,
         SessionManager sessionManager)
     {
-        _salaryRepository = salaryRepository ?? throw new ArgumentNullException(nameof(salaryRepository));
-        _salaryCalculator = salaryCalculator ?? throw new ArgumentNullException(nameof(salaryCalculator));
-        _attendanceService = attendanceService ?? throw new ArgumentNullException(nameof(attendanceService));
-        _paidTimeOffService = paidTimeOffService ?? throw new ArgumentNullException(nameof(paidTimeOffService));
+        _manageSalariesService = manageSalariesService ?? throw new ArgumentNullException(nameof(manageSalariesService));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
         var currentDate = DateTime.Today;
-        Months = new ObservableCollection<int>( Enumerable.Range(1, 12));
+        Months = new ObservableCollection<int>(Enumerable.Range(1, 12));
         Years = CreateYearCollection(currentDate.Year);
 
         _selectedMonth = currentDate.Month;
@@ -194,47 +182,14 @@ public class SalaryViewModel : PageViewModel
             }
 
             var employeeId = currentUser.Employee.EmployeeId;
-            if (!_salaryRepository.PayrollExists(employeeId,SelectedMonth,SelectedYear))
-            {
-                StatusMessage = $"Payroll for {SelectedPeriod} has not been created.";
 
-                return;
-            }
+            var result = _manageSalariesService.GetMySalaryDetail(
+                employeeId,
+                SelectedMonth,
+                SelectedYear);
 
-            var employee = _salaryRepository.GetEmployee(employeeId);
-            if (employee == null)
-            {
-                StatusMessage = "Employee information could not be found.";
-
-                return;
-            }
-
-            var contract = _salaryRepository.GetContractForPeriod(employeeId,SelectedMonth,SelectedYear);
-            if (contract == null)
-            {
-                StatusMessage = $"No valid contract was found for {SelectedPeriod}.";
-
-                return;
-            }
-
-            var role = _salaryRepository.GetRole(contract.RoleId);
-            if (role == null)
-            {
-                StatusMessage = "The role associated with the contract could not be found.";
-
-                return;
-            }
-
-            var departmentName =_salaryRepository.GetDepartmentName(employee.DepartmentId);
-            var attendanceSummary = _attendanceService.GetMonthSummary(employeeId,employee.HireDate,new DateTime(SelectedYear,SelectedMonth,1));
-            var paidTimeOffSummary =_paidTimeOffService.GetMonthSummary(employeeId,SelectedMonth,SelectedYear);
-            var salaryAttendanceSummary = SalaryAttendanceSummary.Create(attendanceSummary,paidTimeOffSummary);
-
-            var evaluations = _salaryRepository.GetEvaluations(employeeId,SelectedMonth,SelectedYear);
-
-            Salary = _salaryCalculator.CalculateSalary(employee,contract,role,salaryAttendanceSummary,evaluations,departmentName,SelectedMonth,SelectedYear);
-
-            StatusMessage = $"Salary information for {SelectedPeriod} was loaded successfully.";
+            Salary = result.Salary;
+            StatusMessage = result.StatusMessage;
         }
         catch (ArgumentException exception)
         {
@@ -261,7 +216,7 @@ public class SalaryViewModel : PageViewModel
     {
         const int numberOfPreviousYears = 5;
         var firstYear = currentYear - numberOfPreviousYears;
-        var years = Enumerable.Range(firstYear, numberOfPreviousYears + 1).OrderByDescending(year =>year);
+        var years = Enumerable.Range(firstYear, numberOfPreviousYears + 1).OrderByDescending(year => year);
 
         return new ObservableCollection<int>(years);
     }
