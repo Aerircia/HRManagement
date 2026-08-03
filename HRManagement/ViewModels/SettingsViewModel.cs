@@ -12,13 +12,16 @@ public class SettingsViewModel : PageViewModel
 {
     private readonly ISettingService _settingService;
     private readonly SessionManager _sessionService;
+    private readonly ILogService _logService;
     public override string Title => "Settings";
     public SettingsViewModel(
     ISettingService settingService,
-    SessionManager sessionService)
+    SessionManager sessionService,
+    ILogService logService)
     {
         _settingService = settingService;
         _sessionService = sessionService;
+        _logService = logService;
 
         _isDarkTheme = _settingService.CurrentTheme == SettingResources.ThemeDark;
 
@@ -147,6 +150,8 @@ public class SettingsViewModel : PageViewModel
         CurrentPassword = string.Empty;
         NewPassword = string.Empty;
         ConfirmPassword = string.Empty;
+
+        _logService.WriteLog(accountId,$"User {_sessionService.CurrentUser.Account.Username} changed their password successfully.");
     }
 
     #endregion
