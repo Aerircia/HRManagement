@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[Employee_KPI_Assignment] (
+    [Assignment_ID]     INT             IDENTITY (1, 1) NOT NULL,
+    [EmployeeID]        INT             NOT NULL,
+    [KPI_Set_Detail_ID] INT             NOT NULL,
+    [Assigned_Target]   DECIMAL (18, 2) NOT NULL,
+    [Assigned_Weight]   DECIMAL (5, 2)  NOT NULL,
+    [Current_Value]     DECIMAL (18, 2) CONSTRAINT [DF_Assignment_CurrentValue] DEFAULT ((0)) NOT NULL,
+    [Pending_Value]     DECIMAL (18, 2) NULL,
+    [Status]            NVARCHAR (30)   CONSTRAINT [DF_Assignment_Status] DEFAULT ('Not Started') NOT NULL,
+    [Start_Date]        DATE            NOT NULL,
+    [End_Date]          DATE            NOT NULL,
+    [Created_At]        DATETIME2 (7)   CONSTRAINT [DF_Assignment_CreatedAt] DEFAULT (sysdatetime()) NOT NULL,
+    [Is_Locked]         BIT             CONSTRAINT [DF_Assignment_IsLocked] DEFAULT ((0)) NOT NULL,
+    PRIMARY KEY CLUSTERED ([Assignment_ID] ASC),
+    CONSTRAINT [CK_Assignment_CurrentValue] CHECK ([Current_Value]>=(0)),
+    CONSTRAINT [CK_Assignment_Date] CHECK ([End_Date]>=[Start_Date]),
+    CONSTRAINT [CK_Assignment_PendingValue] CHECK ([Pending_Value] IS NULL OR [Pending_Value]>=(0)),
+    CONSTRAINT [CK_Assignment_Status] CHECK ([Status]='Cancelled' OR [Status]='Rejected' OR [Status]='Completed' OR [Status]='Pending Approval' OR [Status]='In Progress' OR [Status]='Not Started'),
+    CONSTRAINT [CK_Assignment_Target] CHECK ([Assigned_Target]>=(0)),
+    CONSTRAINT [CK_Assignment_Weight] CHECK ([Assigned_Weight]>(0) AND [Assigned_Weight]<=(100)),
+    CONSTRAINT [FK_Assignment_Employee] FOREIGN KEY ([EmployeeID]) REFERENCES [dbo].[Employee] ([EmployeeID]),
+    CONSTRAINT [FK_Assignment_KPISetDetail] FOREIGN KEY ([KPI_Set_Detail_ID]) REFERENCES [dbo].[KPI_Set_Detail] ([KPI_Set_Detail_ID]),
+    CONSTRAINT [UQ_Assignment_EmployeeKPI] UNIQUE NONCLUSTERED ([EmployeeID] ASC, [KPI_Set_Detail_ID] ASC, [Start_Date] ASC, [End_Date] ASC)
+);
+

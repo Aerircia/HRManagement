@@ -6,6 +6,7 @@ using HRManagement.Models;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Resources;
 using HRManagement.Services.Interfaces;
+using HRManagement.Utilities;
 
 namespace HRManagement.Services;
 
@@ -66,6 +67,9 @@ public class SettingService : ISettingService
 
     public bool ChangePassword(int accountId, string currentPassword, string newPassword)
     {
+        if (!ValidationRules.IsValidPassword(newPassword))
+            throw new ArgumentException(ValidationRules.PasswordErrorMessage, nameof(newPassword));
+
         return _accountRepository.ChangePassword(accountId, currentPassword, newPassword);
     }
 

@@ -14,11 +14,11 @@
 
         public int DepartmentId { get; set; }
 
-        // Role information
+        // Position information
 
-        public int RoleId { get; set; }
+        public int PositionId { get; set; }
 
-        public string RoleName { get; set; }
+        public string PositionName { get; set; }
             = string.Empty;
 
         public decimal PayRate { get; set; }
@@ -116,7 +116,7 @@
 
         public bool HasValidContract { get; set; }
 
-        public bool HasValidRole { get; set; }
+        public bool HasValidPosition { get; set; }
 
         public string ValidationMessage { get; set; }
             = string.Empty;
@@ -134,7 +134,7 @@
         public bool CanCreatePayroll =>
             !IsPayrollCreated
             && HasValidContract
-            && HasValidRole;
+            && HasValidPosition;
 
         public bool HasValidationError =>
             !string.IsNullOrWhiteSpace(

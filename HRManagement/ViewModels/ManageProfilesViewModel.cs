@@ -290,6 +290,34 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _formAccountPassword, value);
         }
 
+        // Admin/manager-initiated password reset (Edit form only, for an
+        // employee who already has a login account). Independent of the
+        // account-provisioning fields above, which only apply when the
+        // employee doesn't have an account yet.
+
+        public bool CanResetPassword => !_isNewEmployee && FormHasExistingAccount;
+
+        private bool _formResetPassword;
+        public bool FormResetPassword
+        {
+            get => _formResetPassword;
+            set => SetProperty(ref _formResetPassword, value);
+        }
+
+        private string _formNewPassword = string.Empty;
+        public string FormNewPassword
+        {
+            get => _formNewPassword;
+            set => SetProperty(ref _formNewPassword, value);
+        }
+
+        private string _formConfirmNewPassword = string.Empty;
+        public string FormConfirmNewPassword
+        {
+            get => _formConfirmNewPassword;
+            set => SetProperty(ref _formConfirmNewPassword, value);
+        }
+
         //Delete confirmation overlay 
 
         private bool _isDeleteConfirmOpen;
@@ -418,6 +446,11 @@ namespace HRManagement.ViewModels
             FormAccountPassword = string.Empty;
             OnPropertyChanged(nameof(CanCreateAccount));
 
+            FormResetPassword = false;
+            FormNewPassword = string.Empty;
+            FormConfirmNewPassword = string.Empty;
+            OnPropertyChanged(nameof(CanResetPassword));
+
             IsFormOpen = true;
         }
 
@@ -447,6 +480,11 @@ namespace HRManagement.ViewModels
             FormAccountPassword = string.Empty;
             OnPropertyChanged(nameof(CanCreateAccount));
 
+            FormResetPassword = false;
+            FormNewPassword = string.Empty;
+            FormConfirmNewPassword = string.Empty;
+            OnPropertyChanged(nameof(CanResetPassword));
+
             IsFormOpen = true;
         }
 
@@ -455,8 +493,91 @@ namespace HRManagement.ViewModels
             IsFormOpen = false;
         }
 
+        /// <summary>
+        /// Client-side validation for instant feedback. The service layer
+        /// re-validates everything regardless - this is a convenience layer
+        /// only, never the real guard.
+        /// </summary>
+        private bool TryValidateForm(out string? errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(FormFullName) || string.IsNullOrWhiteSpace(FormEmail))
+            {
+                errorMessage = "Full name and email are required.";
+                return false;
+            }
+
+            if (!ValidationRules.IsValidEmail(FormEmail))
+            {
+                errorMessage = ValidationRules.EmailErrorMessage;
+                return false;
+            }
+
+            if (!ValidationRules.IsValidPhone(FormPhone))
+            {
+                errorMessage = ValidationRules.PhoneErrorMessage;
+                return false;
+            }
+
+            if (!ValidationRules.IsValidHireDate(FormHireDate))
+            {
+                errorMessage = ValidationRules.HireDateErrorMessage;
+                return false;
+            }
+
+            if (!ValidationRules.IsValidBirthDate(FormDateOfBirth))
+            {
+                errorMessage = ValidationRules.BirthDateErrorMessage;
+                return false;
+            }
+
+            if (FormSelectedRole == null || FormSelectedDepartment == null)
+            {
+                errorMessage = "Role and department are required.";
+                return false;
+            }
+
+            if (CanCreateAccount && FormCreateAccount)
+            {
+                if (string.IsNullOrWhiteSpace(FormAccountUsername))
+                {
+                    errorMessage = "Username is required to create an account.";
+                    return false;
+                }
+
+                if (!ValidationRules.IsValidPassword(FormAccountPassword))
+                {
+                    errorMessage = ValidationRules.PasswordErrorMessage;
+                    return false;
+                }
+            }
+
+            if (CanResetPassword && FormResetPassword)
+            {
+                if (!ValidationRules.IsValidPassword(FormNewPassword))
+                {
+                    errorMessage = ValidationRules.PasswordErrorMessage;
+                    return false;
+                }
+
+                if (FormNewPassword != FormConfirmNewPassword)
+                {
+                    errorMessage = "New password and confirmation do not match.";
+                    return false;
+                }
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
         private void SaveForm()
         {
+            if (!TryValidateForm(out var validationError))
+            {
+                FormErrorMessage = validationError;
+                return;
+            }
+
             var input = new EmployeeProfileInput
             {
                 EmployeeId = _formEmployeeId,
@@ -470,7 +591,9 @@ namespace HRManagement.ViewModels
                 DepartmentId = FormSelectedDepartment?.Id ?? 0,
                 CreateAccount = CanCreateAccount && FormCreateAccount,
                 AccountUsername = FormAccountUsername,
-                AccountPassword = FormAccountPassword
+                AccountPassword = FormAccountPassword,
+                ResetPassword = CanResetPassword && FormResetPassword,
+                NewPassword = FormNewPassword
             };
 
             try

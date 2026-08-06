@@ -1,0 +1,239 @@
+﻿<UserControl x:Class="HRManagement.Views.Pages.PersonalKpiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:HRManagement.Views.Pages"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+             mc:Ignorable="d"
+             d:DesignWidth="1200" d:DesignHeight="800"
+             Background="Transparent">
+
+    <!--
+        Personal KPI (Employee self-view).
+
+        Same visual language as KpiAssignmentView/ManageAttendancesView
+        (stat cards + TableCardStyle + shared DataGrid styles), but single
+        panel since there's no employee list to browse - only the logged
+        -in employee's own assigned KPIs for the selected month.
+
+        Field names follow the AssignedKpiRowViewModel shape used across
+        both KPI views (KPI_Set_Detail / Employee_KPI_Assignment-derived):
+        AssignedTarget (was "Planned"), CurrentValue (was "Actual"),
+        AssignedWeight (was "WeightPercent"), MeasurementUnit (was "Unit").
+
+        Only "CurrentValue" (Actual / progress) is editable here -
+        AssignedTarget, AssignedWeight are shown read-only, since
+        target-setting is a Manager/Admin action on the KPI Assignment
+        page. Editing here uses the exact same Edit/Save/Cancel per-row
+        pattern as the assignment grid, just backed by different
+        commands (progress-only) and one extra Cancel action to discard
+        an in-progress edit.
+    -->
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: title + month switcher -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="My KPI" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13" Margin="0,4,0,0">
+                    <Run Text="{Binding EmployeeDisplayName, Mode=OneWay}"/>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Month:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                <ComboBox Style="{StaticResource ModernComboBox}"
+                          ItemsSource="{Binding AvailableMonths}"
+                          SelectedItem="{Binding SelectedMonth}"
+                          Width="140"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Stat row -->
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                        <fa:IconBlock Icon="ListCheck" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Total KPIs" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                        <fa:IconBlock Icon="CircleCheck" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Completed" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding CompletedKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                        <fa:IconBlock Icon="Hourglass" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="In Progress" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding InProgressKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCardStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                        <fa:IconBlock Icon="ChartLine" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Overall KPI MTD" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                        <TextBlock Text="{Binding OverallKpiMtdPercent, StringFormat={}{0}%}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- KPI grid -->
+        <Border Grid.Row="2" Style="{StaticResource TableCardStyle}" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Assigned KPIs" FontSize="16" FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,14"/>
+
+                <!-- Empty state -->
+                <TextBlock Grid.Row="1"
+                           Text="No KPIs assigned for this month yet."
+                           Style="{StaticResource TableEmptyStateStyle}"
+                           Visibility="{Binding TotalKpiCount, Converter={StaticResource ZeroToVisibleConverter}}"/>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding AssignedKpis}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="None" HeadersVisibility="Column"
+                          Background="Transparent"
+                          RowBackground="Transparent"
+                          RowHeight="58"
+                          BorderThickness="0"
+                          Visibility="{Binding TotalKpiCount, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+                        <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="KPI" Binding="{Binding KpiName}" Width="1.3*"
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
+
+                        <DataGridTextColumn Header="Target" Binding="{Binding AssignedTarget, StringFormat=N0}" Width="0.9*"
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
+
+                        <!-- Only editable column: CurrentValue (Actual / progress) -->
+                        <DataGridTemplateColumn Header="Actual" Width="0.9*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding CurrentValue, StringFormat=N0}"
+                                                   Style="{StaticResource TableCellTextStyle}"
+                                                   Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                        <TextBox Text="{Binding CurrentValue, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource FormTextBoxStyle}"
+                                                 Height="30" Margin="16,0,0,0"
+                                                 Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Weight" Binding="{Binding AssignedWeight, StringFormat={}{0}%}" Width="0.6*"
+                                             ElementStyle="{StaticResource TableCellTextStyle}"/>
+
+                        <!-- Progress bar, same visual as KpiAssignmentView -->
+                        <DataGridTemplateColumn Header="KPI MTD" Width="1.2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="16,0,10,0" VerticalAlignment="Center">
+                                        <Grid Height="8" Margin="0,0,0,4">
+                                            <Border CornerRadius="4" Background="{DynamicResource InputBackgroundBrush}"/>
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding ProgressPercent, Converter={StaticResource PercentageToStarConverter}}"/>
+                                                    <ColumnDefinition Width="{Binding ProgressPercent, Converter={StaticResource PercentageToStarConverter}, ConverterParameter=Remainder}"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" CornerRadius="4" Background="{DynamicResource PrimaryBrush}"/>
+                                            </Grid>
+                                        </Grid>
+                                        <TextBlock Text="{Binding ProgressPercent, StringFormat={}{0:0.#}%}"
+                                                   FontSize="11.5" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Update / Save / Cancel -->
+                        <DataGridTemplateColumn Header="" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                        <Button Content="Update"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Width="100"
+                                                Height="30" Padding="12,0" FontSize="12"
+                                                Command="{Binding DataContext.EditProgressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                                        <Button Style="{StaticResource RowIconButtonStyle}"
+                                                Command="{Binding DataContext.SaveProgressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}">
+                                            <fa:IconBlock Icon="Check" Width="50" Height="14" Foreground="{DynamicResource SuccessBrush}"/>
+                                        </Button>
+
+                                        <Button Style="{StaticResource RowIconButtonStyle}"
+                                                Command="{Binding DataContext.CancelProgressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}">
+                                            <fa:IconBlock Icon="Xmark" Width="50" Height="14" Foreground="{DynamicResource DangerBrush}"/>
+                                        </Button>
+
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>

@@ -288,6 +288,37 @@
 
                     </Button>
 
+                    <!-- Personal KPI -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:PersonalKpiViewModel}"
+                            ToolTip="Personal's KPI">
+
+                        <Button.Visibility>
+                            <MultiBinding Converter="{StaticResource NavSearchVisibilityConverter}">
+                                <Binding Path="SearchText"/>
+                                <Binding Source="Personal KPI"/>
+                            </MultiBinding>
+                        </Button.Visibility>
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="ChartArea"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Personal KPI"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Button>
+
                     <!-- Requests -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
@@ -392,31 +423,6 @@
 
                     </Button>
 
-                    <!-- Requests Manager -->
-                    <Button Style="{StaticResource NavigationButtonStyle}"
-                            Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
-                            Command="{Binding NavigateCommand}"
-                            CommandParameter="{x:Type vm:ManageRequestsViewModel}"
-                            ToolTip="Manage Requests">
-
-                        <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center">
-
-                            <fa:IconBlock Icon="ClipboardCheck"
-                                          Width="18"
-                                          Height="18"
-                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-
-                            <TextBlock Margin="16,0,0,0"
-                                       VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                       Text="Manage Requests"
-                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
-
-                        </StackPanel>
-
-                    </Button>
-
                     <!-- Attendance Manager -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
@@ -436,6 +442,58 @@
                                        VerticalAlignment="Center"
                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        Text="Manage Attendances"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+
+
+                    <!-- Requests Manager -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:KpiAssignmentViewModel}"
+                            ToolTip="KPI Assignment">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="ChartSimple"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="KPI Assignment"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Button>
+
+                    <!-- Requests Manager -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsManager,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:ManageRequestsViewModel}"
+                            ToolTip="Manage Requests">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="ClipboardCheck"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Requests"
                                        Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                         </StackPanel>

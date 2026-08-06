@@ -52,7 +52,7 @@
 
     <!-- ========= Background ========= -->
 
-    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F5F7FB"/>
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#E2E8F0"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F3F5FA"/>
 

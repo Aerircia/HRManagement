@@ -8,6 +8,7 @@ using HRManagement.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Windows;
+using System.Windows.Forms.Design;
 
 namespace HRManagement;
 
@@ -64,6 +65,7 @@ public partial class App : Application
         services.AddSingleton<IDashboardService, DashboardService>();
         services.AddSingleton<IManageAttendancesService, ManageAttendancesService>();
         services.AddSingleton<IManageAnnouncementsService, ManageAnnouncementsService>();
+        services.AddSingleton<IKpiService, KpiService>();
 
 
         // Repositories
@@ -81,6 +83,10 @@ public partial class App : Application
         services.AddSingleton<IAnnouncementRepository, AnnouncementRepository>();
         services.AddSingleton<ISystemLogRepository, SystemLogRepository>();
         services.AddSingleton<IDashboardRepository, DashboardRepository>();
+        services.AddSingleton<IPositionRepository, PositionRepository>();
+        services.AddSingleton<IKpiRepository, KpiRepository>();
+        services.AddSingleton<IKpiSetRepository, KpiSetRepository>();
+        services.AddSingleton<IEmployeeKpiAssignmentRepository, EmployeeKpiAssignmentRepository>();
 
 
         // ViewModels
@@ -105,6 +111,8 @@ public partial class App : Application
         services.AddTransient<RequestsViewModel>();
         services.AddTransient<SalaryViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<KpiAssignmentViewModel>();
+        services.AddTransient<PersonalKpiViewModel>();
 
         // Windows
         services.AddTransient<MainWindow>();

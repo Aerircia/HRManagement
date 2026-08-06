@@ -261,7 +261,9 @@
 
                 <TextBlock Text="Company Announcement" Style="{StaticResource SectionHeaderStyle}"/>
 
-                <controls:AnnouncementCard Announcements="{Binding Announcements}"/>
+                <controls:AnnouncementCard Announcements="{Binding Announcements}"
+                                            HighlightNewest="True"
+                                            ShowTypeIcon="True"/>
 
             </StackPanel>
         </Grid>

@@ -118,7 +118,7 @@ public class ManageSalariesViewModel : PageViewModel
     public bool CanEditSelectedSalary =>
         SelectedSalary != null
         && SelectedSalary.HasValidContract
-        && SelectedSalary.HasValidRole
+        && SelectedSalary.HasValidPosition
         && !IsLoading;
 
     // =========================================================
@@ -635,7 +635,7 @@ public class ManageSalariesViewModel : PageViewModel
                             item.DepartmentName,
                             keyword)
                         || ContainsIgnoreCase(
-                            item.RoleName,
+                            item.PositionName,
                             keyword)
                         || ContainsIgnoreCase(
                             item.PayrollStatus,
@@ -725,7 +725,7 @@ public class ManageSalariesViewModel : PageViewModel
                 .UpdateSalaryComponents(
                     SelectedSalary.ContractId,
                     EditingBaseSalary,
-                    SelectedSalary.RoleId,
+                    SelectedSalary.PositionId,
                     EditingPayRate);
 
             ReloadAndSelectEmployee(

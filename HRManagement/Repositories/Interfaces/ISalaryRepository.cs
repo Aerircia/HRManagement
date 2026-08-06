@@ -14,7 +14,7 @@ namespace HRManagement.Repositories.Interfaces
             int month,
             int year);
 
-        Role? GetRole(int roleId);
+        Position? GetPosition(int positionId);
 
         string GetDepartmentName(int departmentId);
 

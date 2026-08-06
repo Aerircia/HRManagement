@@ -30,8 +30,7 @@ public class RoleRepository : RepositoryBase, IRoleRepository
         return new Role
         {
             RoleId = (int)reader["Role_ID"],
-            RoleName = reader["RoleName"].ToString()!,
-            PayRate = (decimal)reader["PayRate"]
+            RoleName = reader["RoleName"].ToString()!
         };
     }
 }

@@ -32,7 +32,7 @@ namespace HRManagement.ViewModels
 
             Contracts = [];
             Employees = [];
-            RoleOptions = _contractService.GetRoleOptions();
+            PositionOptions = _contractService.GetPositionOptions();
             ContractTypeOptionsList = ContractTypeOptions;
             StatusOptionsList = StatusOptions;
             SortOptions = ["Employee (A-Z)", "Employee (Z-A)", "Start Date (Newest)", "Start Date (Oldest)"];
@@ -70,7 +70,7 @@ namespace HRManagement.ViewModels
         public ObservableCollection<ContractItemModel> Contracts { get; }
         public ICollectionView ContractsView { get; }
         public ObservableCollection<IdNamePair> Employees { get; }
-        public List<IdNamePair> RoleOptions { get; }
+        public List<IdNamePair> PositionOptions { get; }
         public List<string> ContractTypeOptionsList { get; }
         public List<string> StatusOptionsList { get; }
         public List<string> SortOptions { get; }
@@ -158,11 +158,11 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _formSelectedEmployee, value);
         }
 
-        private IdNamePair? _formSelectedRole;
-        public IdNamePair? FormSelectedRole
+        private IdNamePair? _formSelectedPosition;
+        public IdNamePair? FormSelectedPosition
         {
-            get => _formSelectedRole;
-            set => SetProperty(ref _formSelectedRole, value);
+            get => _formSelectedPosition;
+            set => SetProperty(ref _formSelectedPosition, value);
         }
 
         private string _formContractType = ContractTypeOptions[0];
@@ -303,7 +303,7 @@ namespace HRManagement.ViewModels
             _formContractId = 0;
             FormTitle = "Add Contract";
             FormSelectedEmployee = Employees.FirstOrDefault();
-            FormSelectedRole = RoleOptions.FirstOrDefault(r => r.Id == 3); // default: Employee
+            FormSelectedPosition = PositionOptions.FirstOrDefault();
             FormContractType = ContractTypeOptions[0];
             FormStartDate = DateTime.Today;
             FormEndDate = null;
@@ -323,7 +323,7 @@ namespace HRManagement.ViewModels
             _formContractId = contract.ContractId;
             FormTitle = "Edit Contract";
             FormSelectedEmployee = Employees.FirstOrDefault(e => e.Id == contract.EmployeeId);
-            FormSelectedRole = RoleOptions.FirstOrDefault(r => r.Id == contract.RoleId);
+            FormSelectedPosition = PositionOptions.FirstOrDefault(p => p.Id == contract.PositionId);
             FormContractType = contract.ContractType;
             FormStartDate = contract.StartDate;
             FormEndDate = contract.EndDate;
@@ -340,9 +340,9 @@ namespace HRManagement.ViewModels
 
         private void SaveForm()
         {
-            if (FormSelectedEmployee == null || FormSelectedRole == null)
+            if (FormSelectedEmployee == null || FormSelectedPosition == null)
             {
-                FormErrorMessage = "Employee and role are required.";
+                FormErrorMessage = "Employee and position are required.";
                 return;
             }
 
@@ -374,7 +374,7 @@ namespace HRManagement.ViewModels
             {
                 ContractId = _formContractId,
                 EmployeeId = FormSelectedEmployee.Id,
-                RoleId = FormSelectedRole.Id,
+                PositionId = FormSelectedPosition.Id,
                 ContractType = FormContractType,
                 StartDate = FormStartDate.Value,
                 EndDate = FormEndDate,

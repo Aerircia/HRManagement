@@ -13,13 +13,6 @@ namespace HRManagement.Services
         private static readonly HashSet<int> AllowedRoleIds = new() { 1, 2 };
         private const int AdminRoleId = 1;
 
-        private static readonly List<IdNamePair> Roles = new()
-        {
-            new IdNamePair(1, "Admin"),
-            new IdNamePair(2, "Manager"),
-            new IdNamePair(3, "Employee")
-        };
-
         // TODO: replace with your real employer/company-profile and
         // employee-address sources if ones exist (e.g. an
         // ICompanyProfileRepository, or an Address field on Employee) —
@@ -32,6 +25,7 @@ namespace HRManagement.Services
         private readonly IContractRepository _contractRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IDepartmentRepository _departmentRepository;
+        private readonly IPositionRepository _positionRepository;
         private readonly SessionManager _sessionManager;
         private readonly ILogService _logService;
 
@@ -39,12 +33,14 @@ namespace HRManagement.Services
             IContractRepository contractRepository,
             IEmployeeRepository employeeRepository,
             IDepartmentRepository departmentRepository,
+            IPositionRepository positionRepository,
             SessionManager sessionManager,
             ILogService logService)
         {
             _contractRepository = contractRepository;
             _employeeRepository = employeeRepository;
             _departmentRepository = departmentRepository;
+            _positionRepository = positionRepository;
             _sessionManager = sessionManager;
             _logService = logService;
         }
@@ -65,7 +61,10 @@ namespace HRManagement.Services
             return _sessionManager.CurrentUser?.Employee?.DepartmentId;
         }
 
-        public List<IdNamePair> GetRoleOptions() => Roles;
+        public List<IdNamePair> GetPositionOptions() =>
+            _positionRepository.GetAll()
+                .Select(p => new IdNamePair(p.PositionId, p.PositionName))
+                .ToList();
 
         public List<IdNamePair> GetEmployees()
         {
@@ -88,6 +87,7 @@ namespace HRManagement.Services
         {
             var employees = _employeeRepository.GetAll();
             var contracts = _contractRepository.GetAll();
+            var positions = _positionRepository.GetAll();
 
             // Managers only see contracts belonging to employees in their
             // own department.
@@ -103,7 +103,7 @@ namespace HRManagement.Services
             }
 
             return contracts
-                .Select(c => ToItem(c, employees))
+                .Select(c => ToItem(c, employees, positions))
                 .ToList();
         }
 
@@ -115,7 +115,7 @@ namespace HRManagement.Services
             var contract = new Contract
             {
                 EmployeeId = input.EmployeeId,
-                RoleId = input.RoleId,
+                PositionId = input.PositionId,
                 ContractType = input.ContractType.Trim(),
                 StartDate = input.StartDate,
                 EndDate = input.EndDate,
@@ -127,11 +127,12 @@ namespace HRManagement.Services
             contract.ContractId = newId;
 
             var employees = _employeeRepository.GetAll();
+            var positions = _positionRepository.GetAll();
             var employeeName = employees.FirstOrDefault(e => e.EmployeeId == contract.EmployeeId)?.FullName ?? "Unknown";
 
             _logService.WriteLog(CurrentAccountId(), $"Added contract for {employeeName}");
 
-            return ToItem(contract, employees);
+            return ToItem(contract, employees, positions);
         }
 
         public ContractItemModel UpdateContract(ContractInput input)
@@ -148,7 +149,7 @@ namespace HRManagement.Services
             {
                 ContractId = input.ContractId,
                 EmployeeId = input.EmployeeId,
-                RoleId = input.RoleId,
+                PositionId = input.PositionId,
                 ContractType = input.ContractType.Trim(),
                 StartDate = input.StartDate,
                 EndDate = input.EndDate,
@@ -159,6 +160,7 @@ namespace HRManagement.Services
             _contractRepository.Update(contract);
 
             var employees = _employeeRepository.GetAll();
+            var positions = _positionRepository.GetAll();
             var employeeName = employees.FirstOrDefault(e => e.EmployeeId == contract.EmployeeId)?.FullName ?? "Unknown";
 
             if (oldContract != null)
@@ -166,7 +168,7 @@ namespace HRManagement.Services
             else
                 _logService.WriteLog(CurrentAccountId(), $"Updated contract of {employeeName}");
 
-            return ToItem(contract, employees);
+            return ToItem(contract, employees, positions);
         }
 
         public ContractDetailModel? GetContract(int employeeId)
@@ -180,6 +182,7 @@ namespace HRManagement.Services
                 ?? $"Department #{employee.DepartmentId}";
 
             var contract = _contractRepository.GetCurrentByEmployeeId(employeeId);
+            var positions = _positionRepository.GetAll();
 
             var detail = new ContractDetailModel
             {
@@ -187,8 +190,8 @@ namespace HRManagement.Services
                 DepartmentName = departmentName,
                 HasContract = contract != null,
                 Contract = contract,
-                RoleName = contract != null
-                    ? Roles.FirstOrDefault(r => r.Id == contract.RoleId)?.Name ?? "—"
+                PositionName = contract != null
+                    ? positions.FirstOrDefault(p => p.PositionId == contract.PositionId)?.PositionName ?? "—"
                     : string.Empty,
                 EmployerName = EmployerName,
                 EmployerAddress = EmployerAddress,
@@ -227,7 +230,7 @@ namespace HRManagement.Services
             var changes = new List<string>();
 
             if (oldContract.EmployeeId != contract.EmployeeId) changes.Add("Employee");
-            if (oldContract.RoleId != contract.RoleId) changes.Add("Role");
+            if (oldContract.PositionId != contract.PositionId) changes.Add("Position");
             if (oldContract.ContractType != contract.ContractType) changes.Add("Contract Type");
             if (oldContract.StartDate != contract.StartDate) changes.Add("Start Date");
             if (oldContract.EndDate != contract.EndDate) changes.Add("End Date");
@@ -244,17 +247,17 @@ namespace HRManagement.Services
         private int CurrentAccountId() =>
             _sessionManager.CurrentUser!.Employee.EmployeeId;
 
-        private static ContractItemModel ToItem(Contract contract, List<Employee> employees)
+        private static ContractItemModel ToItem(Contract contract, List<Employee> employees, List<Position> positions)
         {
             var employeeName = employees.FirstOrDefault(e => e.EmployeeId == contract.EmployeeId)?.FullName
                 ?? $"Employee #{contract.EmployeeId}";
-            var roleName = Roles.FirstOrDefault(r => r.Id == contract.RoleId)?.Name ?? "—";
+            var positionName = positions.FirstOrDefault(p => p.PositionId == contract.PositionId)?.PositionName ?? "—";
 
             return new ContractItemModel
             {
                 Contract = contract,
                 EmployeeName = employeeName,
-                RoleName = roleName,
+                PositionName = positionName,
                 ContractType = contract.ContractType,
                 StartDateDisplay = contract.StartDate.ToString("MMM dd, yyyy"),
                 EndDateDisplay = contract.EndDate.HasValue ? contract.EndDate.Value.ToString("MMM dd, yyyy") : "No end date",
@@ -282,8 +285,8 @@ namespace HRManagement.Services
 
         private static void ValidateInput(ContractInput input)
         {
-            if (input.EmployeeId <= 0 || input.RoleId <= 0)
-                throw new ArgumentException("Employee and role are required.");
+            if (input.EmployeeId <= 0 || input.PositionId <= 0)
+                throw new ArgumentException("Employee and position are required.");
 
             if (string.IsNullOrWhiteSpace(input.ContractType))
                 throw new ArgumentException("Contract type is required.");

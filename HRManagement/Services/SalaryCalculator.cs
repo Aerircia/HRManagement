@@ -22,7 +22,7 @@ public class SalaryCalculator
     public SalaryDetailModel CalculateSalary(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         IReadOnlyList<Attendance> attendances,
         IReadOnlyList<EmployeeEvaluation> evaluations,
         string departmentName,
@@ -32,7 +32,7 @@ public class SalaryCalculator
         ValidateCommonInputs(
             employee,
             contract,
-            role,
+            position,
             evaluations,
             departmentName,
             month,
@@ -71,7 +71,7 @@ public class SalaryCalculator
 
         var roleSalary =
             contract.BaseSalary
-            * role.PayRate;
+            * position.PayRate;
 
         var dailySalary =
             calendarWorkingDays > 0
@@ -91,7 +91,7 @@ public class SalaryCalculator
         return CreateSalaryDetail(
             employee,
             contract,
-            role,
+            position,
             departmentName,
             workingDays,
             absentDays,
@@ -122,7 +122,7 @@ public class SalaryCalculator
     public SalaryDetailModel CalculateSalary(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         SalaryAttendanceSummary attendanceSummary,
         IReadOnlyList<EmployeeEvaluation> evaluations,
         string departmentName,
@@ -132,7 +132,7 @@ public class SalaryCalculator
         ValidateCommonInputs(
             employee,
             contract,
-            role,
+            position,
             evaluations,
             departmentName,
             month,
@@ -155,7 +155,7 @@ public class SalaryCalculator
 
         var fullMonthRoleSalary =
             contract.BaseSalary
-            * role.PayRate;
+            * position.PayRate;
 
         /*
          * Daily salary uses the actual weekday count
@@ -263,14 +263,14 @@ public class SalaryCalculator
             DepartmentName =
                 departmentName,
 
-            RoleName =
-                role.RoleName,
+            PositionName =
+                position.PositionName,
 
             BaseSalary =
                 contract.BaseSalary,
 
             PayRate =
-                role.PayRate,
+                position.PayRate,
 
             CalendarWorkingDays =
                 attendanceSummary.CalendarWorkingDays,
@@ -388,7 +388,7 @@ public class SalaryCalculator
     private static SalaryDetailModel CreateSalaryDetail(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         string departmentName,
         int workingDays,
         int absentDays,
@@ -409,14 +409,14 @@ public class SalaryCalculator
             DepartmentName =
                 departmentName,
 
-            RoleName =
-                role.RoleName,
+            PositionName =
+                position.PositionName,
 
             BaseSalary =
                 contract.BaseSalary,
 
             PayRate =
-                role.PayRate,
+                position.PayRate,
 
             WorkingDays =
                 workingDays,
@@ -522,7 +522,7 @@ public class SalaryCalculator
     private static void ValidateCommonInputs(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         IReadOnlyList<EmployeeEvaluation> evaluations,
         string departmentName,
         int month,
@@ -540,10 +540,10 @@ public class SalaryCalculator
                 nameof(contract));
         }
 
-        if (role == null)
+        if (position == null)
         {
             throw new ArgumentNullException(
-                nameof(role));
+                nameof(position));
         }
 
         if (evaluations == null)
@@ -579,10 +579,10 @@ public class SalaryCalculator
                 "Base salary cannot be negative.");
         }
 
-        if (role.PayRate < 0)
+        if (position.PayRate < 0)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(role.PayRate),
+                nameof(position.PayRate),
                 "Pay rate cannot be negative.");
         }
     }

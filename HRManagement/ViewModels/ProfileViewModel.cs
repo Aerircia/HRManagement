@@ -492,6 +492,30 @@ namespace HRManagement.ViewModels
             if (signedInEmployeeId == null)
                 return;
 
+            if (string.IsNullOrWhiteSpace(FormFullName) || string.IsNullOrWhiteSpace(FormEmail))
+            {
+                FormErrorMessage = "Full name and email are required.";
+                return;
+            }
+
+            if (!ValidationRules.IsValidEmail(FormEmail))
+            {
+                FormErrorMessage = ValidationRules.EmailErrorMessage;
+                return;
+            }
+
+            if (!ValidationRules.IsValidPhone(FormPhone))
+            {
+                FormErrorMessage = ValidationRules.PhoneErrorMessage;
+                return;
+            }
+
+            if (!ValidationRules.IsValidBirthDate(FormDateOfBirth))
+            {
+                FormErrorMessage = ValidationRules.BirthDateErrorMessage;
+                return;
+            }
+
             var input = new ProfileUpdateInput
             {
                 FullName = FormFullName,

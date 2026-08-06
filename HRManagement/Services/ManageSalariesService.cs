@@ -12,7 +12,7 @@ using EmployeeModel = HRManagement.Models.Employee;
 using EvaluationModel = HRManagement.Models.EmployeeEvaluation;
 using ManageSalaryModel = HRManagement.Models.ManageSalariesItemModel;
 using PayrollModel = HRManagement.Models.Payroll;
-using RoleModel = HRManagement.Models.Role;
+using PositionModel = HRManagement.Models.Position;
 using SalaryDetailModel = HRManagement.Models.SalaryDetailModel;
 using SalaryAttendanceSummaryModel = HRManagement.Models.SalaryAttendanceSummary;
 
@@ -177,13 +177,13 @@ namespace HRManagement.Services
                     $"No valid contract was found for {month:00}/{year}.");
             }
 
-            RoleModel? role =
-                _salaryRepository.GetRole(contract.RoleId);
+            PositionModel? position =
+                _salaryRepository.GetPosition(contract.PositionId);
 
-            if (role == null)
+            if (position == null)
             {
                 return SalaryDetailResult.NotFound(
-                    "The role associated with the contract could not be found.");
+                    "The position associated with the contract could not be found.");
             }
 
             try
@@ -191,7 +191,7 @@ namespace HRManagement.Services
                 var salary = CalculateSalary(
                     employee,
                     contract,
-                    role,
+                    position,
                     month,
                     year);
 
@@ -235,10 +235,10 @@ namespace HRManagement.Services
         }
 
         public void UpdatePayRate(
-            int roleId,
+            int positionId,
             decimal payRate)
         {
-            ValidateRoleId(roleId);
+            ValidatePositionId(positionId);
 
             ValidatePositiveAmount(
                 payRate,
@@ -246,23 +246,23 @@ namespace HRManagement.Services
                 "Pay rate");
 
             _manageSalariesRepository
-                .UpdateRolePayRate(
-                    roleId,
+                .UpdatePositionPayRate(
+                    positionId,
                     payRate);
 
             _logService.WriteLog(
                 CurrentAccountId,
-                $"Pay rate updated for role {roleId} to {payRate:N2}");
+                $"Pay rate updated for position {positionId} to {payRate:N2}");
         }
 
         public void UpdateSalaryComponents(
             int contractId,
             decimal baseSalary,
-            int roleId,
+            int positionId,
             decimal payRate)
         {
             ValidateContractId(contractId);
-            ValidateRoleId(roleId);
+            ValidatePositionId(positionId);
 
             ValidateNonNegativeAmount(
                 baseSalary,
@@ -280,14 +280,14 @@ namespace HRManagement.Services
                     baseSalary);
 
             _manageSalariesRepository
-                .UpdateRolePayRate(
-                    roleId,
+                .UpdatePositionPayRate(
+                    positionId,
                     payRate);
 
             _logService.WriteLog(
                 CurrentAccountId,
                 $"Salary components updated for contract {contractId} " +
-                $"(base salary {baseSalary:N2}, role {roleId} pay rate {payRate:N2})");
+                $"(base salary {baseSalary:N2}, position {positionId} pay rate {payRate:N2})");
         }
 
         // =========================================================
@@ -474,14 +474,14 @@ namespace HRManagement.Services
                     $"{month:00}/{year}.");
             }
 
-            RoleModel? role =
-                _salaryRepository.GetRole(
-                    contract.RoleId);
+            PositionModel? position =
+                _salaryRepository.GetPosition(
+                    contract.PositionId);
 
-            if (role == null)
+            if (position == null)
             {
                 throw new InvalidOperationException(
-                    $"Role with ID {contract.RoleId} " +
+                    $"Position with ID {contract.PositionId} " +
                     "could not be found.");
             }
 
@@ -489,7 +489,7 @@ namespace HRManagement.Services
             CalculateSalary(
                 employee,
                 contract,
-                role,
+                position,
                 month,
                 year);
 
@@ -547,17 +547,17 @@ namespace HRManagement.Services
                 if (contract == null)
                     continue;
 
-                RoleModel? role =
-                    _salaryRepository.GetRole(
-                        contract.RoleId);
+                PositionModel? position =
+                    _salaryRepository.GetPosition(
+                        contract.PositionId);
 
-                if (role == null)
+                if (position == null)
                     continue;
 
                 CalculateSalary(
                     employee,
                     contract,
-                    role,
+                    position,
                     month,
                     year);
 
@@ -656,17 +656,17 @@ namespace HRManagement.Services
                     month,
                     year,
                     hasValidContract: false,
-                    hasValidRole: false,
+                    hasValidPosition: false,
                     validationMessage:
                         $"No valid contract was found for " +
                         $"{month:00}/{year}.");
             }
 
-            RoleModel? role =
-                _salaryRepository.GetRole(
-                    contract.RoleId);
+            PositionModel? position =
+                _salaryRepository.GetPosition(
+                    contract.PositionId);
 
-            if (role == null)
+            if (position == null)
             {
                 return CreateInvalidSalaryItem(
                     employee,
@@ -675,9 +675,9 @@ namespace HRManagement.Services
                     month,
                     year,
                     hasValidContract: true,
-                    hasValidRole: false,
+                    hasValidPosition: false,
                     validationMessage:
-                        $"Role with ID {contract.RoleId} " +
+                        $"Position with ID {contract.PositionId} " +
                         "could not be found.",
                     contract: contract);
             }
@@ -688,7 +688,7 @@ namespace HRManagement.Services
                     CalculateSalary(
                         employee,
                         contract,
-                        role,
+                        position,
                         month,
                         year);
 
@@ -706,11 +706,11 @@ namespace HRManagement.Services
                     DepartmentName =
                         salaryDetail.DepartmentName,
 
-                    RoleId =
-                        role.RoleId,
+                    PositionId =
+                        position.PositionId,
 
-                    RoleName =
-                        salaryDetail.RoleName,
+                    PositionName =
+                        salaryDetail.PositionName,
 
                     PayRate =
                         salaryDetail.PayRate,
@@ -807,7 +807,7 @@ namespace HRManagement.Services
 
                     HasValidContract = true,
 
-                    HasValidRole = true,
+                    HasValidPosition = true,
 
                     ValidationMessage =
                         string.Empty
@@ -822,11 +822,11 @@ namespace HRManagement.Services
                     month,
                     year,
                     hasValidContract: true,
-                    hasValidRole: true,
+                    hasValidPosition: true,
                     validationMessage:
                         exception.Message,
                     contract: contract,
-                    role: role);
+                    position: position);
             }
             catch (InvalidOperationException exception)
             {
@@ -837,18 +837,18 @@ namespace HRManagement.Services
                     month,
                     year,
                     hasValidContract: true,
-                    hasValidRole: true,
+                    hasValidPosition: true,
                     validationMessage:
                         exception.Message,
                     contract: contract,
-                    role: role);
+                    position: position);
             }
         }
 
         private SalaryDetailModel CalculateSalary(
             EmployeeModel employee,
             ContractModel contract,
-            RoleModel role,
+            PositionModel position,
             int month,
             int year)
         {
@@ -890,7 +890,7 @@ namespace HRManagement.Services
                 .CalculateSalary(
                     employee,
                     contract,
-                    role,
+                    position,
                     salaryAttendanceSummary,
                     evaluations,
                     departmentName,
@@ -906,10 +906,10 @@ namespace HRManagement.Services
                 int month,
                 int year,
                 bool hasValidContract,
-                bool hasValidRole,
+                bool hasValidPosition,
                 string validationMessage,
                 ContractModel? contract = null,
-                RoleModel? role = null)
+                PositionModel? position = null)
         {
             return new ManageSalaryModel
             {
@@ -925,17 +925,17 @@ namespace HRManagement.Services
                 DepartmentName =
                     departmentName,
 
-                RoleId =
-                    role?.RoleId
-                    ?? contract?.RoleId
-                    ?? employee.RoleId,
+                PositionId =
+                    position?.PositionId
+                    ?? contract?.PositionId
+                    ?? 0,
 
-                RoleName =
-                    role?.RoleName
+                PositionName =
+                    position?.PositionName
                     ?? string.Empty,
 
                 PayRate =
-                    role?.PayRate
+                    position?.PayRate
                     ?? 0,
 
                 ContractId =
@@ -1007,8 +1007,8 @@ namespace HRManagement.Services
                 HasValidContract =
                     hasValidContract,
 
-                HasValidRole =
-                    hasValidRole,
+                HasValidPosition =
+                    hasValidPosition,
 
                 ValidationMessage =
                     validationMessage
@@ -1118,14 +1118,14 @@ namespace HRManagement.Services
             }
         }
 
-        private static void ValidateRoleId(
-            int roleId)
+        private static void ValidatePositionId(
+            int positionId)
         {
-            if (roleId <= 0)
+            if (positionId <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(roleId),
-                    "Role ID must be greater than 0.");
+                    nameof(positionId),
+                    "Position ID must be greater than 0.");
             }
         }
 

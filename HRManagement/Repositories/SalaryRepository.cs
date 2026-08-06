@@ -64,7 +64,7 @@ namespace HRManagement.Repositories
             SELECT TOP (1)
                 Contract_ID,
                 Employee_ID,
-                Role_ID,
+                Position_ID,
                 ContractType,
                 StartDate,
                 EndDate,
@@ -104,13 +104,13 @@ namespace HRManagement.Repositories
             return MapContract(reader);
         }
 
-        public Role? GetRole(int roleId)
+        public Position? GetPosition(int positionId)
         {
-            if (roleId <= 0)
+            if (positionId <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(roleId),
-                    "Role ID phải lớn hơn 0.");
+                    nameof(positionId),
+                    "Position ID phải lớn hơn 0.");
             }
 
             using var connection = Db.CreateConnection();
@@ -118,25 +118,25 @@ namespace HRManagement.Repositories
 
             const string sql = """
             SELECT
-                Role_ID,
-                RoleName,
+                Position_ID,
+                PositionName,
                 PayRate
-            FROM Role
-            WHERE Role_ID = @RoleId;
+            FROM Position
+            WHERE Position_ID = @PositionId;
             """;
 
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.Add(
-                "@RoleId",
-                SqlDbType.Int).Value = roleId;
+                "@PositionId",
+                SqlDbType.Int).Value = positionId;
 
             using var reader = command.ExecuteReader();
 
             if (!reader.Read())
                 return null;
 
-            return MapRole(reader);
+            return MapPosition(reader);
         }
 
         public string GetDepartmentName(int departmentId)
@@ -282,7 +282,7 @@ namespace HRManagement.Repositories
             return evaluations;
         }
 
-        public int? GetPayrollId(int employeeId,int month,int year)
+        public int? GetPayrollId(int employeeId, int month, int year)
         {
             ValidateEmployeeId(employeeId);
             ValidateSalaryPeriod(month, year);
@@ -321,7 +321,7 @@ namespace HRManagement.Repositories
             return Convert.ToInt32(result);
         }
 
-        public bool PayrollExists(int employeeId,int month,int year)
+        public bool PayrollExists(int employeeId, int month, int year)
         {
             ValidateEmployeeId(employeeId);
             ValidateSalaryPeriod(month, year);
@@ -413,8 +413,8 @@ namespace HRManagement.Repositories
                 EmployeeId = reader.GetInt32(
                     reader.GetOrdinal("Employee_ID")),
 
-                RoleId = reader.GetInt32(
-                    reader.GetOrdinal("Role_ID")),
+                PositionId = reader.GetInt32(
+                    reader.GetOrdinal("Position_ID")),
 
                 ContractType = reader.GetString(
                     reader.GetOrdinal("ContractType")),
@@ -434,15 +434,15 @@ namespace HRManagement.Repositories
             };
         }
 
-        private static Role MapRole(SqlDataReader reader)
+        private static Position MapPosition(SqlDataReader reader)
         {
-            return new Role
+            return new Position
             {
-                RoleId = reader.GetInt32(
-                    reader.GetOrdinal("Role_ID")),
+                PositionId = reader.GetInt32(
+                    reader.GetOrdinal("Position_ID")),
 
-                RoleName = reader.GetString(
-                    reader.GetOrdinal("RoleName")),
+                PositionName = reader.GetString(
+                    reader.GetOrdinal("PositionName")),
 
                 PayRate = reader.GetDecimal(
                     reader.GetOrdinal("PayRate"))

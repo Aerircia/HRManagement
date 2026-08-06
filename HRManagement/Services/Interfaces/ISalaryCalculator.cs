@@ -15,7 +15,7 @@ public interface ISalaryCalculator
     SalaryDetailModel CalculateSalary(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         IReadOnlyList<Attendance> attendances,
         IReadOnlyList<EmployeeEvaluation> evaluations,
         string departmentName,
@@ -34,7 +34,7 @@ public interface ISalaryCalculator
     SalaryDetailModel CalculateSalary(
         Employee employee,
         Contract contract,
-        Role role,
+        Position position,
         SalaryAttendanceSummary attendanceSummary,
         IReadOnlyList<EmployeeEvaluation> evaluations,
         string departmentName,

@@ -1,0 +1,177 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        ============================================================
+        KPI Assignment / Personal KPI - styles not covered by existing
+        shared dictionaries.
+        ============================================================
+        Row action buttons (edit/delete) reuse RowIconButtonStyle from
+        TableStyles.xaml verbatim - same style ManageProfilesView.xaml
+        uses - so no duplicate is defined here. This file only adds the
+        few things genuinely new to the KPI views:
+          - Full-width vertical "KPI pack" card (Assign wizard Step 1),
+            replacing the old 2-column card grid.
+          - KPI line-item row shown listed under a pack card (Step 1)
+            and as a plain readout in Step 3's header (non-editable).
+          - Checkbox-selectable KPI row for Step 3's per-employee cards.
+
+        Merged once at the app level (App.xaml), alongside the other
+        shared dictionaries.
+    -->
+
+    <!-- ========= Step 1: full-width KPI pack card ========= -->
+    <!-- Selected state (border/fill) mirrors CategoryCardStyle's /
+         MonthlyKpiListOption's existing selected-tint pattern
+         (PrimaryTintBrush fill + PrimaryBrush border), just stacked
+         vertically at full width instead of in a 2-column grid, and
+         with the KPI breakdown listed inline rather than a KPI count. -->
+    <Style x:Key="KpiPackCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="Padding" Value="18,16"/>
+        <Setter Property="Margin" Value="0,0,0,14"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Header row inside a KpiPackCardStyle: name + KPI count pill. -->
+    <Style x:Key="KpiPackNameTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="KpiPackMetaTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Margin" Value="0,2,0,0"/>
+    </Style>
+
+    <!-- Divider between a pack card's header and its listed KPI rows. -->
+    <Style x:Key="KpiPackDividerStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Margin" Value="0,12,0,10"/>
+    </Style>
+
+    <!-- One read-only KPI line listed under a pack card (Step 1):
+         name | target | weight, laid out as a lightweight row (not a
+         full DataGrid, since it's nested inside an ItemsControl of
+         cards). -->
+    <Style x:Key="KpiPackDetailRowStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <Style x:Key="KpiPackDetailNameTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="KpiPackDetailValueTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+    </Style>
+
+    <!-- Small weight pill shown at the end of a pack detail row. -->
+    <Style x:Key="KpiWeightPillStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBadgeBrush}"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="8,3"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+    </Style>
+
+    <Style x:Key="KpiWeightPillTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+    </Style>
+
+    <!-- ========= Step 3: checkbox-selectable KPI row ========= -->
+    <!-- One row per KPI in the chosen pack, inside a per-employee card.
+         Unchecking removes that KPI from the employee's assignment -
+         replaces the old separate "+ Add KPI" / remove-button pattern. -->
+    <Style x:Key="KpiCheckableRowStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="Opacity" Value="1"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                <Setter Property="Opacity" Value="0.55"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="KpiCheckableNameTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="KpiCheckableUnitTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+    </Style>
+
+    <!-- Compact inline value box for Target/Weight editing within a
+         checkable row - smaller variant of FormTextBoxStyle so two can
+         sit side by side inside a narrow card row. -->
+    <Style x:Key="KpiInlineValueBoxStyle" TargetType="TextBox">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Expand/collapse chevron toggle used on an EmployeeAssignmentCard
+         header (Step 3) and, per the reference screenshot, the final
+         per-employee breakdown rows on the main KPI Assignment page. -->
+    <Style x:Key="KpiExpandToggleButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" CornerRadius="14" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource InputBackgroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

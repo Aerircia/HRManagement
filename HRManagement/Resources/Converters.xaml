@@ -17,5 +17,7 @@
     <utilities:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibility"/>
     <utilities:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter"/>
     <utilities:InitialsConverter x:Key="InitialsConverter"/>
+    <utilities:AnnouncementTypeConverter x:Key="AnnouncementTypeConverter"/>
+    <utilities:StepGreaterThanConverter x:Key="StepGreaterThanConverter"/>
 
 </ResourceDictionary>

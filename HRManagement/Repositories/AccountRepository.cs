@@ -182,6 +182,30 @@ public class AccountRepository : RepositoryBase, IAccountRepository
         return rowsAffected > 0;
     }
 
+    public bool SetPassword(int accountId, string newPassword)
+    {
+        using var connection = Db.CreateConnection();
+
+        connection.Open();
+
+        var newHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+        const string updateSql = """
+            UPDATE Account
+            SET Password = @Password
+            WHERE Account_ID = @AccountId
+            """;
+
+        using var updateCommand = new SqlCommand(updateSql, connection);
+
+        updateCommand.Parameters.AddWithValue("@Password", newHash);
+        updateCommand.Parameters.AddWithValue("@AccountId", accountId);
+
+        var rowsAffected = updateCommand.ExecuteNonQuery();
+
+        return rowsAffected > 0;
+    }
+
     private static Account Map(SqlDataReader reader)
     {
         return new Account

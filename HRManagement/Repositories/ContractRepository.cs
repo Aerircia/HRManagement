@@ -94,9 +94,9 @@ public class ContractRepository : RepositoryBase, IContractRepository
         connection.Open();
 
         const string sql = """
-            INSERT INTO Contract (Employee_ID, Role_ID, ContractType, StartDate, EndDate, Status, BaseSalary)
+            INSERT INTO Contract (Employee_ID, Position_ID, ContractType, StartDate, EndDate, Status, BaseSalary)
             OUTPUT INSERTED.Contract_ID
-            VALUES (@EmployeeId, @RoleId, @ContractType, @StartDate, @EndDate, @Status, @BaseSalary)
+            VALUES (@EmployeeId, @PositionId, @ContractType, @StartDate, @EndDate, @Status, @BaseSalary)
             """;
 
         using var command = new SqlCommand(sql, connection);
@@ -114,7 +114,7 @@ public class ContractRepository : RepositoryBase, IContractRepository
         const string sql = """
             UPDATE Contract
             SET Employee_ID = @EmployeeId,
-                Role_ID = @RoleId,
+                Position_ID = @PositionId,
                 ContractType = @ContractType,
                 StartDate = @StartDate,
                 EndDate = @EndDate,
@@ -150,7 +150,7 @@ public class ContractRepository : RepositoryBase, IContractRepository
     private static void AddContractParameters(SqlCommand command, Contract contract)
     {
         command.Parameters.AddWithValue("@EmployeeId", contract.EmployeeId);
-        command.Parameters.AddWithValue("@RoleId", contract.RoleId);
+        command.Parameters.AddWithValue("@PositionId", contract.PositionId);
         command.Parameters.AddWithValue("@ContractType", contract.ContractType);
         command.Parameters.AddWithValue("@StartDate", contract.StartDate);
         command.Parameters.AddWithValue("@EndDate", (object?)contract.EndDate ?? System.DBNull.Value);
@@ -164,7 +164,7 @@ public class ContractRepository : RepositoryBase, IContractRepository
         {
             ContractId = (int)reader["Contract_ID"],
             EmployeeId = (int)reader["Employee_ID"],
-            RoleId = (int)reader["Role_ID"],
+            PositionId = (int)reader["Position_ID"],
             ContractType = reader["ContractType"].ToString()!,
             StartDate = (System.DateTime)reader["StartDate"],
             EndDate = reader["EndDate"] as System.DateTime?,

@@ -164,4 +164,67 @@
         </Setter>
     </Style>
 
+    <!-- ========= Dashboard AnnouncementCard - opt-in additions ========= -->
+    <!-- New keys only, used exclusively by AnnouncementCard.xaml's optional
+         ShowTypeIcon / HighlightNewest DependencyProperties (default False).
+         Nothing here is referenced by ManageAnnouncementsView, so its look
+         is unaffected. -->
+
+    <!-- Round icon badge replacing the date column when ShowTypeIcon="True".
+         Sized to match AnnouncementRowDateBadgeStyle's 64px column so the
+         row grid doesn't need restructuring. -->
+    <Style x:Key="AnnouncementRowIconBadgeStyle" TargetType="Border">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <!-- Highlighted-row property values, applied inline via
+         AnnouncementRowContainerStyle's MultiDataTrigger below (NOT as a
+         separate Style - WPF disallows a Style.Trigger setting its own
+         Style property, "Style object is not allowed to affect the Style
+         property of the object to which it applies"). Kept as a comment
+         here for reference; the actual values live in the trigger. -->
+
+    <!-- Thin colored accent bar shown at the left edge of the highlighted row. -->
+    <Style x:Key="AnnouncementNewestAccentBarStyle" TargetType="Border">
+        <Setter Property="Width" Value="3"/>
+        <Setter Property="CornerRadius" Value="2"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Margin" Value="0,2"/>
+    </Style>
+
+    <!-- "New" pill shown next to the title on the highlighted row. -->
+    <Style x:Key="AnnouncementNewPillStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="7,2"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="8,0,0,0"/>
+    </Style>
+
+    <Style x:Key="AnnouncementNewPillTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource WhiteBrush}"/>
+    </Style>
+
+    <!-- Card-level container used by DashboardView so the widget reads as
+         more prominent than neighboring analytics cards - stronger shadow
+         and a subtle brand-tinted top border instead of the flat 1px
+         BorderBrush used elsewhere on the dashboard. -->
+    <Style x:Key="AnnouncementCardHighlightBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1,3,1,1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource CardShadowColor}" BlurRadius="26" ShadowDepth="6" Opacity="0.12" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

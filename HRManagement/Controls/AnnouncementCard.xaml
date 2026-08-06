@@ -3,13 +3,71 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="620">
 
-    <Border Background="{DynamicResource CardBackgroundBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1"
-            CornerRadius="16">
+    <UserControl.Resources>
+
+        <!-- Row container border. Defaults to the plain divider look used by
+             both consumers of this control (AnnouncementRowDividerStyle).
+             When the ancestor UserControl's HighlightNewest="True" AND this
+             is the first item (AlternationIndex 0, via
+             ItemsControl.AlternationCount below), the trigger below applies
+             the tinted/highlighted look directly (as individual Setters,
+             not a swapped Style - WPF disallows a Style.Trigger setting its
+             own Style property) AND stamps Tag="True". Child elements
+             (accent bar, "New" pill) read that Tag via RelativeSource
+             FindAncestor instead of re-deriving alternation index themselves,
+             so the "is this the newest row" logic lives in exactly one place.
+             Opt-in: the other page never sets HighlightNewest, so it keeps
+             today's look untouched. -->
+        <Style x:Key="AnnouncementRowContainerStyle" TargetType="Border" BasedOn="{StaticResource AnnouncementRowDividerStyle}">
+            <Setter Property="Tag" Value="False"/>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=HighlightNewest}" Value="True"/>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex)}" Value="0"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Tag" Value="True"/>
+                    <Setter Property="Background" Value="{DynamicResource PrimaryTintBrush}"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="CornerRadius" Value="12"/>
+                    <Setter Property="Padding" Value="14,16"/>
+                    <Setter Property="Margin" Value="-14,4,-14,10"/>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Accent bar + "New" pill both start Collapsed and switch to Visible
+             when their nearest AnnouncementRowContainerStyle-Border ancestor's
+             Tag flips to "True" above. -->
+        <Style x:Key="AnnouncementNewestAccentBarVisibilityStyle" TargetType="Border" BasedOn="{StaticResource AnnouncementNewestAccentBarStyle}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Border, AncestorLevel=1}, Path=Tag}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Same nearest-Border-ancestor lookup as the accent bar above: the
+             pill sits inside Grid > StackPanel > StackPanel, none of which
+             are Borders, so AncestorLevel=1 still resolves to the row
+             container (not the card's outer Border further up). -->
+        <Style x:Key="AnnouncementNewPillVisibilityStyle" TargetType="Border" BasedOn="{StaticResource AnnouncementNewPillStyle}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Border, AncestorLevel=1}, Path=Tag}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource AnnouncementCardHighlightBorderStyle}">
 
         <Grid>
             <Grid.RowDefinitions>
@@ -19,26 +77,56 @@
 
             <ScrollViewer VerticalScrollBarVisibility="Hidden"
                           Visibility="{Binding DisplayAnnouncements.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}">
-                <ItemsControl ItemsSource="{Binding DisplayAnnouncements, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <ItemsControl ItemsSource="{Binding DisplayAnnouncements, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              AlternationCount="2">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource AnnouncementRowDividerStyle}">
+                            <!-- Both the accent bar and the "New" pill below use
+                                 FindAncestor AncestorType=Border AncestorLevel=1,
+                                 which resolves to THIS Border (nothing else in
+                                 between is a Border), whose Tag carries the
+                                 highlight flag set by AnnouncementRowContainerStyle. -->
+                            <Border Style="{StaticResource AnnouncementRowContainerStyle}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="16"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Date column -->
-                                    <StackPanel Grid.Column="0" Style="{StaticResource AnnouncementRowDateBadgeStyle}">
-                                        <TextBlock Text="{Binding PostedDateDisplay}" Style="{StaticResource AnnouncementRowDayStyle}"/>
-                                    </StackPanel>
+                                    <!-- Newest-item accent bar -->
+                                    <Border Grid.Column="0" Style="{StaticResource AnnouncementNewestAccentBarVisibilityStyle}"/>
+
+                                    <!-- Date / type-icon column. Shows the date badge by default;
+                                         swaps to a keyword-matched icon badge when the ancestor
+                                         UserControl's ShowTypeIcon="True". -->
+                                    <Grid Grid.Column="1">
+                                        <StackPanel Style="{StaticResource AnnouncementRowDateBadgeStyle}"
+                                                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ShowTypeIcon, Converter={StaticResource InverseBoolToVisibility}}">
+                                            <TextBlock Text="{Binding PostedDateDisplay}" Style="{StaticResource AnnouncementRowDayStyle}"/>
+                                        </StackPanel>
+
+                                        <Border Style="{StaticResource AnnouncementRowIconBadgeStyle}"
+                                                Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=ShowTypeIcon, Converter={StaticResource BoolToVisibility}}">
+                                            <fa:IconBlock Icon="{Binding Converter={StaticResource AnnouncementTypeConverter}}"
+                                                          Width="16" Height="16" FontSize="16"
+                                                          Foreground="{DynamicResource PrimaryBrush}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
 
                                     <!-- Title + preview -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
 
-                                        <TextBlock Text="{Binding Title}" Style="{StaticResource AnnouncementRowTitleStyle}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource AnnouncementRowTitleStyle}"/>
+
+                                            <Border Style="{StaticResource AnnouncementNewPillVisibilityStyle}">
+                                                <TextBlock Text="NEW" Style="{StaticResource AnnouncementNewPillTextStyle}"/>
+                                            </Border>
+                                        </StackPanel>
 
                                         <TextBlock Text="{Binding Content}" Style="{StaticResource AnnouncementRowPreviewStyle}"/>
 

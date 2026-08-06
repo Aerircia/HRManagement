@@ -19,10 +19,10 @@ namespace HRManagement.Repositories.Interfaces
             int contractId,
             decimal baseSalary);
 
-        // Role
+        // Position
 
-        void UpdateRolePayRate(
-            int roleId,
+        void UpdatePositionPayRate(
+            int positionId,
             decimal payRate);
 
         // Attendance

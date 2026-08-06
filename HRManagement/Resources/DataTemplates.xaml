@@ -65,4 +65,12 @@
         <views:SettingsView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:KpiAssignmentViewModel}">
+        <views:KpiAssignmentView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:PersonalKpiViewModel}">
+        <views:PersonalKpiView/>
+    </DataTemplate>
+
 </ResourceDictionary>

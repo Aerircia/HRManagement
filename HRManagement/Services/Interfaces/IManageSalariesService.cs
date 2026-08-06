@@ -40,7 +40,7 @@ namespace HRManagement.Services.Interfaces
         /// employee should only see a finalized payslip here, unlike the
         /// live estimate on the Profile page) and returns a friendly
         /// StatusMessage explaining why Salary is null when it can't be
-        /// computed (no payroll yet, no contract/role on file, etc.).
+        /// computed (no payroll yet, no contract/position on file, etc.).
         /// </summary>
         SalaryDetailResult GetMySalaryDetail(
             int employeeId,
@@ -52,13 +52,13 @@ namespace HRManagement.Services.Interfaces
             decimal baseSalary);
 
         void UpdatePayRate(
-            int roleId,
+            int positionId,
             decimal payRate);
 
         void UpdateSalaryComponents(
             int contractId,
             decimal baseSalary,
-            int roleId,
+            int positionId,
             decimal payRate);
 
         int AddAttendance(

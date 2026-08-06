@@ -12,7 +12,7 @@ namespace HRManagement.Models
 
         public Contract? Contract { get; set; }
 
-        public string RoleName { get; set; } = string.Empty;
+        public string PositionName { get; set; } = string.Empty;
 
         public string EmployerName { get; set; } = string.Empty;
 

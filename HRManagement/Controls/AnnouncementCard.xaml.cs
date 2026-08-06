@@ -48,6 +48,44 @@ public partial class AnnouncementCard : UserControl
         private set => SetValue(DisplayAnnouncementsProperty, value);
     }
 
+    public static readonly DependencyProperty ShowTypeIconProperty =
+        DependencyProperty.Register(
+            nameof(ShowTypeIcon),
+            typeof(bool),
+            typeof(AnnouncementCard),
+            new PropertyMetadata(false));
+
+    /// <summary>
+    /// When true, the left date column is replaced with a per-announcement
+    /// type icon (maintenance/payment/lease/etc., keyword-matched off
+    /// Title+Content). Defaults to false so other consumers of this control
+    /// keep today's date-column look unless they opt in.
+    /// </summary>
+    public bool ShowTypeIcon
+    {
+        get => (bool)GetValue(ShowTypeIconProperty);
+        set => SetValue(ShowTypeIconProperty, value);
+    }
+
+    public static readonly DependencyProperty HighlightNewestProperty =
+        DependencyProperty.Register(
+            nameof(HighlightNewest),
+            typeof(bool),
+            typeof(AnnouncementCard),
+            new PropertyMetadata(false));
+
+    /// <summary>
+    /// When true, the first item in DisplayAnnouncements (the most recent,
+    /// since the repository orders by PostedDate DESC) is rendered with a
+    /// tinted background, accent bar, and "New" pill. Defaults to false so
+    /// other consumers of this control are unaffected unless they opt in.
+    /// </summary>
+    public bool HighlightNewest
+    {
+        get => (bool)GetValue(HighlightNewestProperty);
+        set => SetValue(HighlightNewestProperty, value);
+    }
+
     public AnnouncementCard()
     {
         InitializeComponent();

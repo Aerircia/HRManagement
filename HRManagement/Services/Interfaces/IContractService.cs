@@ -13,7 +13,7 @@ namespace HRManagement.Services.Interfaces
         /// </summary>
         bool CurrentUserIsAdmin();
 
-        List<IdNamePair> GetRoleOptions();
+        List<IdNamePair> GetPositionOptions();
         List<IdNamePair> GetEmployees();
         List<ContractItemModel> GetContracts();
 

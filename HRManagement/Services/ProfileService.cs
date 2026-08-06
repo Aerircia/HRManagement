@@ -2,6 +2,7 @@
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
 using HRManagement.ViewModels;
+using HRManagement.Utilities;
 
 namespace HRManagement.Services;
 
@@ -17,6 +18,7 @@ public class ProfileService : IProfileService
     private readonly IPayrollRepository _payrollRepository;
     private readonly IRequestFormRepository _requestFormRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly IPositionRepository _positionRepository;
     private readonly ISalaryRepository _salaryRepository;
     private readonly ISalaryCalculator _salaryCalculator;
     private readonly IPaidTimeOffService _paidTimeOffService;
@@ -31,6 +33,7 @@ public class ProfileService : IProfileService
         IPayrollRepository payrollRepository,
         IRequestFormRepository requestFormRepository,
         IRoleRepository roleRepository,
+        IPositionRepository positionRepository,
         ISalaryRepository salaryRepository,
         ISalaryCalculator salaryCalculator,
         IPaidTimeOffService paidTimeOffService,
@@ -44,6 +47,7 @@ public class ProfileService : IProfileService
         _payrollRepository = payrollRepository;
         _requestFormRepository = requestFormRepository;
         _roleRepository = roleRepository;
+        _positionRepository = positionRepository;
         _salaryRepository = salaryRepository;
         _salaryCalculator = salaryCalculator;
         _paidTimeOffService = paidTimeOffService;
@@ -285,10 +289,10 @@ public class ProfileService : IProfileService
             return;
         }
 
-        var role = _roleRepository.GetById(currentContract.RoleId);
+        var position = _positionRepository.GetById(currentContract.PositionId);
 
         data.CurrentBaseSalaryDisplay = currentContract.BaseSalary.ToString("C0");
-        data.CurrentPayRateDisplay = role != null ? role.PayRate.ToString("N2") : "—";
+        data.CurrentPayRateDisplay = position != null ? position.PayRate.ToString("N2") : "—";
 
         // Net salary for the current month, computed the same way
         // SalaryView/ManageSalariesView do (ISalaryCalculator fed by
@@ -308,7 +312,7 @@ public class ProfileService : IProfileService
         // legitimately differ.
         var now = DateTime.Now;
 
-        if (role != null)
+        if (position != null)
         {
             var departmentName = _salaryRepository.GetDepartmentName(employee.DepartmentId);
             var attendances = _salaryRepository.GetAttendances(employee.EmployeeId, now.Month, now.Year);
@@ -317,7 +321,7 @@ public class ProfileService : IProfileService
             var detail = _salaryCalculator.CalculateSalary(
                 employee,
                 currentContract,
-                role,
+                position,
                 attendances,
                 evaluations,
                 departmentName,
@@ -394,6 +398,33 @@ public class ProfileService : IProfileService
             {
                 Success = false,
                 ErrorMessage = "Full name and email are required."
+            };
+        }
+
+        if (!ValidationRules.IsValidEmail(input.Email))
+        {
+            return new ProfileUpdateResult
+            {
+                Success = false,
+                ErrorMessage = ValidationRules.EmailErrorMessage
+            };
+        }
+
+        if (!ValidationRules.IsValidPhone(input.Phone))
+        {
+            return new ProfileUpdateResult
+            {
+                Success = false,
+                ErrorMessage = ValidationRules.PhoneErrorMessage
+            };
+        }
+
+        if (!ValidationRules.IsValidBirthDate(input.DateOfBirth ?? employee.DateOfBirth))
+        {
+            return new ProfileUpdateResult
+            {
+                Success = false,
+                ErrorMessage = ValidationRules.BirthDateErrorMessage
             };
         }
 

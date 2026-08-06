@@ -18,6 +18,7 @@ namespace HRManagement.Repositories.Interfaces
         Account? Login(string username, string password);
         bool ChangePassword(int accountId, string currentPassword, string newPassword);
 
+        bool SetPassword(int accountId, string newPassword);
         /// <summary>
         /// Creates a login account for an employee, hashing the plaintext password.
         /// Returns the new Account_ID.

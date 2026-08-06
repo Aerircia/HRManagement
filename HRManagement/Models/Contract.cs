@@ -6,7 +6,7 @@ public class Contract
 
     public int EmployeeId { get; set; }
 
-    public int RoleId { get; set; }
+    public int PositionId { get; set; }
 
     public string ContractType { get; set; } = string.Empty;
 

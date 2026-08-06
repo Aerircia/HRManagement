@@ -123,14 +123,14 @@ namespace HRManagement.Repositories
         }
 
         // =========================================================
-        // Role
+        // Position
         // =========================================================
 
-        public void UpdateRolePayRate(
-            int roleId,
+        public void UpdatePositionPayRate(
+            int positionId,
             decimal payRate)
         {
-            ValidateRoleId(roleId);
+            ValidatePositionId(positionId);
             ValidateNonNegativeAmount(
                 payRate,
                 nameof(payRate),
@@ -140,9 +140,9 @@ namespace HRManagement.Repositories
             connection.Open();
 
             const string sql = """
-        UPDATE Role
+        UPDATE Position
         SET PayRate = @PayRate
-        WHERE Role_ID = @RoleId;
+        WHERE Position_ID = @PositionId;
         """;
 
             using var command =
@@ -159,15 +159,15 @@ namespace HRManagement.Repositories
                 "@PayRate"].Scale = 2;
 
             command.Parameters.Add(
-                "@RoleId",
-                SqlDbType.Int).Value = roleId;
+                "@PositionId",
+                SqlDbType.Int).Value = positionId;
 
             var affectedRows =
                 command.ExecuteNonQuery();
 
             EnsureRecordUpdated(
                 affectedRows,
-                $"Role with ID {roleId} could not be found.");
+                $"Position with ID {positionId} could not be found.");
         }
 
         // =========================================================
@@ -957,14 +957,14 @@ namespace HRManagement.Repositories
             }
         }
 
-        private static void ValidateRoleId(
-            int roleId)
+        private static void ValidatePositionId(
+            int positionId)
         {
-            if (roleId <= 0)
+            if (positionId <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(roleId),
-                    "Role ID must be greater than 0.");
+                    nameof(positionId),
+                    "Position ID must be greater than 0.");
             }
         }
 

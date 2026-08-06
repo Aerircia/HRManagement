@@ -218,7 +218,7 @@ public class DashboardService : IDashboardService
                 Month = month,
                 Year = today.Year,
                 TotalSalary = salary?.TotalSalary ?? 0,
-                HasValidPayout = salary is { HasValidContract: true, HasValidRole: true }
+                HasValidPayout = salary is { HasValidContract: true, HasValidPosition: true }
             });
         }
 

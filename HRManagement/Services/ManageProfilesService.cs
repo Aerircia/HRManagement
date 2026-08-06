@@ -1,6 +1,7 @@
 ﻿using HRManagement.Models;
 using HRManagement.Repositories.Interfaces;
 using HRManagement.Services.Interfaces;
+using HRManagement.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -153,11 +154,20 @@ namespace HRManagement.Services
 
             LogChanges(oldEmployee, employee);
 
+            var existingAccount = _accountRepository.GetByEmployeeId(employee.EmployeeId);
+
             // Allow provisioning an account later for an employee who didn't
             // get one when they were first added.
-            if (input.CreateAccount && _accountRepository.GetByEmployeeId(employee.EmployeeId) == null)
+            if (input.CreateAccount && existingAccount == null)
             {
                 CreateAccountForEmployee(employee, input);
+            }
+            // Admin/manager-initiated password reset for an employee who
+            // already has an account. Independent of the CreateAccount
+            // branch above, which only provisions brand new accounts.
+            else if (input.ResetPassword && existingAccount != null)
+            {
+                ResetEmployeePassword(employee, existingAccount, input.NewPassword);
             }
 
             var departments = _departmentRepository.GetAll();
@@ -194,6 +204,9 @@ namespace HRManagement.Services
             if (string.IsNullOrWhiteSpace(input.AccountPassword))
                 throw new ArgumentException("Password is required to create an account.", nameof(input.AccountPassword));
 
+            if (!ValidationRules.IsValidPassword(input.AccountPassword))
+                throw new ArgumentException(ValidationRules.PasswordErrorMessage, nameof(input.AccountPassword));
+
             var username = input.AccountUsername.Trim();
 
             if (_accountRepository.UsernameExists(username))
@@ -209,6 +222,22 @@ namespace HRManagement.Services
             _accountRepository.Insert(account, input.AccountPassword);
 
             _logService.WriteLog(CurrentAccountId(), $"Created login account for employee: {employee.FullName}");
+        }
+
+        private void ResetEmployeePassword(Employee employee, Account account, string? newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+                throw new ArgumentException("New password is required to reset the password.", nameof(newPassword));
+
+            if (!ValidationRules.IsValidPassword(newPassword))
+                throw new ArgumentException(ValidationRules.PasswordErrorMessage, nameof(newPassword));
+
+            var success = _accountRepository.SetPassword(account.AccountId, newPassword);
+
+            if (!success)
+                throw new InvalidOperationException("Failed to reset the employee's password.");
+
+            _logService.WriteLog(CurrentAccountId(), $"Reset password for employee: {employee.FullName}");
         }
 
         private void LogChanges(Employee oldEmployee, Employee employee)
@@ -290,6 +319,18 @@ namespace HRManagement.Services
 
             if (input.RoleId <= 0 || input.DepartmentId <= 0)
                 throw new ArgumentException("Role and department are required.");
+
+            if (!ValidationRules.IsValidEmail(input.Email))
+                throw new ArgumentException(ValidationRules.EmailErrorMessage, nameof(input.Email));
+
+            if (!ValidationRules.IsValidPhone(input.Phone))
+                throw new ArgumentException(ValidationRules.PhoneErrorMessage, nameof(input.Phone));
+
+            if (!ValidationRules.IsValidHireDate(input.HireDate))
+                throw new ArgumentException(ValidationRules.HireDateErrorMessage, nameof(input.HireDate));
+
+            if (!ValidationRules.IsValidBirthDate(input.DateOfBirth))
+                throw new ArgumentException(ValidationRules.BirthDateErrorMessage, nameof(input.DateOfBirth));
         }
     }
 }

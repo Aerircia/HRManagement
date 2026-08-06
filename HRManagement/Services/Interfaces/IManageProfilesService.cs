@@ -36,11 +36,20 @@ namespace HRManagement.Services.Interfaces
         public int RoleId { get; set; }
         public int DepartmentId { get; set; }
 
-        // Account creation (new employees only). CreateAccount is ignored
-        // when editing an existing employee that already has an account.
+        // Account creation (new employees only, or an existing employee who
+        // doesn't have an account yet). CreateAccount is ignored when
+        // editing an existing employee that already has an account.
         public bool CreateAccount { get; set; }
         public string? AccountUsername { get; set; }
         public string? AccountPassword { get; set; }
+
+        // Admin/manager-initiated password reset (edit mode only, for an
+        // employee who already has an account). Independent of
+        // CreateAccount/AccountPassword above, which only apply when
+        // provisioning a brand new account. ResetPassword is ignored
+        // unless the employee already has an account.
+        public bool ResetPassword { get; set; }
+        public string? NewPassword { get; set; }
     }
 
     public interface IManageProfilesService
@@ -68,6 +77,9 @@ namespace HRManagement.Services.Interfaces
 
         /// <summary>
         /// Updates an existing employee's profile fields and logs what changed.
+        /// If input.ResetPassword is set and the employee already has an
+        /// account, also resets their password (validated for complexity)
+        /// and logs that separately.
         /// </summary>
         EmployeeProfileItemModel UpdateEmployee(EmployeeProfileInput input);
 

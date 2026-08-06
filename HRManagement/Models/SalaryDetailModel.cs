@@ -10,7 +10,7 @@ public class SalaryDetailModel
     public string DepartmentName { get; set; }
         = string.Empty;
 
-    public string RoleName { get; set; }
+    public string PositionName { get; set; }
         = string.Empty;
 
     public decimal BaseSalary { get; set; }

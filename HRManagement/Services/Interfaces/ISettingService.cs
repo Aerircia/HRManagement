@@ -19,8 +19,11 @@ public interface ISettingService
     /// <summary>
     /// Changes the password for the given account, verifying the current
     /// password first. Returns false if the current password does not
-    /// match; throws for invalid input the caller should have already
-    /// validated (empty new password, etc. are left to the caller/UI).
+    /// match. Throws <see cref="ArgumentException"/> if the new password
+    /// does not meet complexity requirements (8+ characters, at least one
+    /// uppercase letter, at least one OWASP special character) - this is
+    /// the service-layer guard and holds even if the caller/UI failed to
+    /// validate first.
     /// </summary>
     bool ChangePassword(int accountId, string currentPassword, string newPassword);
 

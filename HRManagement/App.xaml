@@ -25,7 +25,9 @@
                 <ResourceDictionary Source="/Resources/LogsStyles.xaml"/>
                 <ResourceDictionary Source="Resources/AnnouncementBoardStyles.xaml"/>
                 <ResourceDictionary Source="Resources/LoginStyles.xaml"/>
+                <ResourceDictionary Source="Resources/ScrollViewerStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ShellStyles.xaml"/>
+                <ResourceDictionary Source="Resources/KpiStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
 

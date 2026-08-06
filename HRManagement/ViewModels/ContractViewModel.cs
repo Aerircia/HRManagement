@@ -101,14 +101,14 @@ namespace HRManagement.ViewModels
             ContractIdDisplay = $"CTR-{contract.ContractId:0000}";
             ContractType = contract.ContractType;
             Status = contract.Status;
-            RoleDisplay = data.RoleName;
+            RoleDisplay = data.PositionName;
             BaseSalaryDisplay = contract.BaseSalary.ToString("C0");
             StartDateDisplay = contract.StartDate.ToString("MMM dd, yyyy");
             EndDateDisplay = contract.EndDate.HasValue ? contract.EndDate.Value.ToString("MMM dd, yyyy") : "No end date";
 
             EmployerNameDisplay = data.EmployerName;
             EmployerAddressDisplay = data.EmployerAddress;
-            EmployeeAddressDisplay = (data.EmployeeAddress==null)?"NO ADDRESS":data.EmployeeAddress;
+            EmployeeAddressDisplay = (data.EmployeeAddress == null) ? "NO ADDRESS" : data.EmployeeAddress;
             NoticePeriodDaysDisplay = data.NoticePeriodDays;
         }
     }

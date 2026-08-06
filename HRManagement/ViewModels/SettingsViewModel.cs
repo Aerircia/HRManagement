@@ -124,9 +124,9 @@ public class SettingsViewModel : PageViewModel
             return;
         }
 
-        if (NewPassword.Length < 8)
+        if (!ValidationRules.IsValidPassword(NewPassword))
         {
-            PasswordStatusMessage = "New password must be at least 8 characters long.";
+            PasswordStatusMessage = ValidationRules.PasswordErrorMessage;
             return;
         }
 
@@ -136,7 +136,20 @@ public class SettingsViewModel : PageViewModel
             return;
         }
 
-        var success = _settingService.ChangePassword(accountId, CurrentPassword, NewPassword);
+        bool success;
+
+        try
+        {
+            success = _settingService.ChangePassword(accountId, CurrentPassword, NewPassword);
+        }
+        catch (ArgumentException ex)
+        {
+            // Service-layer complexity guard - shouldn't normally trigger
+            // since we already validated above, but stays authoritative if
+            // this path is ever reached some other way.
+            PasswordStatusMessage = ex.Message;
+            return;
+        }
 
         if (!success)
         {
@@ -151,7 +164,7 @@ public class SettingsViewModel : PageViewModel
         NewPassword = string.Empty;
         ConfirmPassword = string.Empty;
 
-        _logService.WriteLog(accountId,$"User {_sessionService.CurrentUser.Account.Username} changed their password successfully.");
+        _logService.WriteLog(accountId, $"User {_sessionService.CurrentUser.Account.Username} changed their password successfully.");
     }
 
     #endregion
