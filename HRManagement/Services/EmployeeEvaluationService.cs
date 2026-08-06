@@ -23,17 +23,9 @@ namespace HRManagement.Services
         private readonly ISalaryRepository
             _salaryRepository;
 
-        private readonly SessionManager
-            _sessionManager;
-
-        private readonly ILogService
-            _logService;
-
         public EmployeeEvaluationService(
             HRManagement.Repositories.Interfaces.IEmployeeEvaluationRepository evaluationRepository,
-            ISalaryRepository salaryRepository,
-            SessionManager sessionManager,
-            ILogService logService)
+            ISalaryRepository salaryRepository)
         {
             _evaluationRepository =
                 evaluationRepository
@@ -44,16 +36,6 @@ namespace HRManagement.Services
                 salaryRepository
                 ?? throw new ArgumentNullException(
                     nameof(salaryRepository));
-
-            _sessionManager =
-                sessionManager
-                ?? throw new ArgumentNullException(
-                    nameof(sessionManager));
-
-            _logService =
-                logService
-                ?? throw new ArgumentNullException(
-                    nameof(logService));
         }
 
         public IReadOnlyList<Department>
@@ -174,16 +156,8 @@ namespace HRManagement.Services
                         NormalizeOptionalText(comment)
                 };
 
-            var newId = _evaluationRepository
+            return _evaluationRepository
                 .AddEvaluation(evaluation);
-
-            _logService.WriteLog(
-                CurrentAccountId(),
-                $"Created {normalizedBonusType.ToLowerInvariant()} evaluation " +
-                $"(ID: {newId}) for employee {employeeId}: " +
-                $"{normalizedEvaluationType}, {amount:C0}");
-
-            return newId;
         }
 
         public void UpdateEvaluation(
@@ -205,6 +179,9 @@ namespace HRManagement.Services
                 throw new InvalidOperationException(
                     $"Employee evaluation {evaluationId} was not found.");
             }
+
+            EnsureEvaluationCanBeModified(
+                existingEvaluation);
 
             var normalizedBonusType =
                 NormalizeBonusType(bonusType);
@@ -249,15 +226,6 @@ namespace HRManagement.Services
                     bonusDate.Year);
             }
 
-            var changes =
-                DescribeChanges(
-                    existingEvaluation,
-                    normalizedBonusType,
-                    normalizedEvaluationType,
-                    amount,
-                    bonusDate,
-                    comment);
-
             existingEvaluation.BonusType =
                 normalizedBonusType;
 
@@ -275,16 +243,6 @@ namespace HRManagement.Services
 
             _evaluationRepository.UpdateEvaluation(
                 existingEvaluation);
-
-            var message = changes.Count > 0
-                ? $"Updated evaluation (ID: {evaluationId}) for employee " +
-                  $"{existingEvaluation.EmployeeId}: {string.Join(", ", changes)}"
-                : $"Updated evaluation (ID: {evaluationId}) for employee " +
-                  $"{existingEvaluation.EmployeeId}";
-
-            _logService.WriteLog(
-                CurrentAccountId(),
-                message);
         }
 
         public void DeleteEvaluation(
@@ -302,6 +260,9 @@ namespace HRManagement.Services
                     $"Employee evaluation {evaluationId} was not found.");
             }
 
+            EnsureEvaluationCanBeModified(
+                existingEvaluation);
+
             EnsurePayrollNotCreated(
                 existingEvaluation.EmployeeId,
                 existingEvaluation.BonusDate.Month,
@@ -309,45 +270,9 @@ namespace HRManagement.Services
 
             _evaluationRepository.DeleteEvaluation(
                 evaluationId);
-
-            _logService.WriteLog(
-                CurrentAccountId(),
-                $"Deleted evaluation (ID: {evaluationId}) for employee " +
-                $"{existingEvaluation.EmployeeId}");
         }
 
 
-
-        private int CurrentAccountId() =>
-            _sessionManager.CurrentUser!.Account.AccountId;
-
-        private static List<string> DescribeChanges(
-            EmployeeEvaluation existingEvaluation,
-            string normalizedBonusType,
-            string normalizedEvaluationType,
-            decimal amount,
-            DateTime bonusDate,
-            string? comment)
-        {
-            var changes = new List<string>();
-
-            if (existingEvaluation.BonusType != normalizedBonusType)
-                changes.Add("Bonus Type");
-
-            if (existingEvaluation.EvaluationType != normalizedEvaluationType)
-                changes.Add("Evaluation Type");
-
-            if (existingEvaluation.Amount != amount)
-                changes.Add("Amount");
-
-            if (existingEvaluation.BonusDate.Date != bonusDate.Date)
-                changes.Add("Bonus Date");
-
-            if ((existingEvaluation.Comment ?? "") != (NormalizeOptionalText(comment) ?? ""))
-                changes.Add("Comment");
-
-            return changes;
-        }
 
         private void EnsureEmployeeExists(
             int employeeId)
@@ -379,6 +304,27 @@ namespace HRManagement.Services
             throw new InvalidOperationException(
                 $"The evaluation cannot be changed because payroll " +
                 $"for {month:00}/{year} has already been created.");
+        }
+
+        private static void EnsureEvaluationCanBeModified(
+            EmployeeEvaluation evaluation)
+        {
+            var isAutomaticKpiEvaluation =
+                string.Equals(
+                    evaluation.EvaluationType,
+                    "KPI",
+                    StringComparison.OrdinalIgnoreCase)
+                && evaluation.Comment?.StartsWith(
+                    "Automatic KPI evaluation.",
+                    StringComparison.OrdinalIgnoreCase)
+                    == true;
+
+            if (isAutomaticKpiEvaluation)
+            {
+                throw new InvalidOperationException(
+                    "Automatic KPI evaluations are generated by the KPI " +
+                    "finalization process and cannot be edited or deleted.");
+            }
         }
 
         private static string NormalizeBonusType(

@@ -85,8 +85,39 @@ namespace HRManagement.ViewModels
         public decimal CurrentValue
         {
             get => _currentValue;
-            set { if (SetProperty(ref _currentValue, value)) RecalculateProgress(); }
+            set
+            {
+                if (SetProperty(ref _currentValue, value))
+                {
+                    RecalculateProgress();
+                    NotifyActionState();
+                }
+            }
         }
+
+        /*
+         * Employee enters only this value.
+         * It represents an increment waiting for Manager/Admin approval.
+         * CurrentValue remains read-only on Personal KPI.
+         */
+        private decimal? _pendingValue;
+        public decimal? PendingValue
+        {
+            get => _pendingValue;
+            set
+            {
+                if (SetProperty(ref _pendingValue, value))
+                {
+                    OnPropertyChanged(nameof(PendingValueDisplay));
+                    NotifyActionState();
+                }
+            }
+        }
+
+        public string PendingValueDisplay =>
+            PendingValue.HasValue
+                ? PendingValue.Value.ToString("N2")
+                : "-";
 
         private decimal _assignedWeight;
         public decimal AssignedWeight { get => _assignedWeight; set => SetProperty(ref _assignedWeight, value); }
@@ -95,10 +126,79 @@ namespace HRManagement.ViewModels
         public double ProgressPercent { get => _progressPercent; private set => SetProperty(ref _progressPercent, value); }
 
         private string _status = "Not Started";
-        public string Status { get => _status; set => SetProperty(ref _status, value); }
+        public string Status
+        {
+            get => _status;
+            set
+            {
+                if (SetProperty(ref _status, value))
+                {
+                    NotifyActionState();
+                }
+            }
+        }
+
+        private bool _isLocked;
+        public bool IsLocked
+        {
+            get => _isLocked;
+            set
+            {
+                if (SetProperty(ref _isLocked, value))
+                {
+                    NotifyActionState();
+                }
+            }
+        }
 
         private bool _isEditing;
-        public bool IsEditing { get => _isEditing; set => SetProperty(ref _isEditing, value); }
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set => SetProperty(ref _isEditing, value);
+        }
+
+        public bool HasPendingApproval =>
+            PendingValue.HasValue
+            || string.Equals(
+                Status,
+                "Pending Approval",
+                StringComparison.OrdinalIgnoreCase);
+
+        public bool CanUpdateProgress =>
+            !IsLocked
+            && !HasPendingApproval
+            && !string.Equals(
+                Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(
+                Status,
+                "Cancelled",
+                StringComparison.OrdinalIgnoreCase);
+
+        public bool CanApprovePending =>
+            !IsLocked
+            && PendingValue.HasValue
+            && string.Equals(
+                Status,
+                "Pending Approval",
+                StringComparison.OrdinalIgnoreCase);
+
+        public bool CanRejectPending =>
+            CanApprovePending;
+
+        public bool CanModify =>
+            !IsLocked;
+
+        private void NotifyActionState()
+        {
+            OnPropertyChanged(nameof(HasPendingApproval));
+            OnPropertyChanged(nameof(CanUpdateProgress));
+            OnPropertyChanged(nameof(CanApprovePending));
+            OnPropertyChanged(nameof(CanRejectPending));
+            OnPropertyChanged(nameof(CanModify));
+        }
 
         private void RecalculateProgress()
         {
@@ -149,6 +249,9 @@ namespace HRManagement.ViewModels
     /// </summary>
     public class EmployeeAssignmentCard : ViewModelBase
     {
+        private const decimal RequiredTotalWeight = 100m;
+        private const decimal WeightTolerance = 0.01m;
+
         public int EmployeeId { get; set; }
         public string EmployeeName { get; set; } = string.Empty;
         public string EmployeeCode { get; set; } = string.Empty;
@@ -158,27 +261,62 @@ namespace HRManagement.ViewModels
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(EmployeeName)) return "?";
-                var parts = EmployeeName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (string.IsNullOrWhiteSpace(EmployeeName))
+                    return "?";
+
+                var parts = EmployeeName.Split(
+                    ' ',
+                    StringSplitOptions.RemoveEmptyEntries);
+
                 return parts.Length switch
                 {
                     0 => "?",
                     1 => parts[0][..1].ToUpperInvariant(),
-                    _ => (parts[0][..1] + parts[^1][..1]).ToUpperInvariant()
+                    _ => (parts[0][..1] + parts[^1][..1])
+                        .ToUpperInvariant()
                 };
             }
         }
 
-        /// <summary>
-        /// Every KPI line item available from the chosen pack, each with
-        /// its own IsSelected checkbox state for this employee.
-        /// </summary>
         public ObservableCollection<KpiSelectionItem> KpiItems { get; } = new();
 
-        public int SelectedCount => System.Linq.Enumerable.Count(KpiItems, k => k.IsSelected);
+        public int SelectedCount =>
+            KpiItems.Count(item => item.IsSelected);
+
+        public decimal TotalSelectedWeight =>
+            KpiItems
+                .Where(item => item.IsSelected)
+                .Sum(item => item.AssignedWeight);
+
+        public decimal RemainingWeight =>
+            RequiredTotalWeight - TotalSelectedWeight;
+
+        public bool HasValidWeight =>
+            Math.Abs(TotalSelectedWeight - RequiredTotalWeight)
+            <= WeightTolerance;
+
+        public string WeightSummary =>
+            HasValidWeight
+                ? $"Total Weight: {TotalSelectedWeight:N2}%"
+                : RemainingWeight > 0
+                    ? $"Total Weight: {TotalSelectedWeight:N2}% | Remaining: {RemainingWeight:N2}%"
+                    : $"Total Weight: {TotalSelectedWeight:N2}% | Exceeded: {Math.Abs(RemainingWeight):N2}%";
 
         private bool _isExpanded = true;
-        public bool IsExpanded { get => _isExpanded; set => SetProperty(ref _isExpanded, value); }
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set => SetProperty(ref _isExpanded, value);
+        }
+
+        public void RefreshWeightState()
+        {
+            OnPropertyChanged(nameof(SelectedCount));
+            OnPropertyChanged(nameof(TotalSelectedWeight));
+            OnPropertyChanged(nameof(RemainingWeight));
+            OnPropertyChanged(nameof(HasValidWeight));
+            OnPropertyChanged(nameof(WeightSummary));
+        }
     }
 
     /// <summary>
@@ -194,14 +332,36 @@ namespace HRManagement.ViewModels
         public string KpiName { get; set; } = string.Empty;
         public string MeasurementUnit { get; set; } = string.Empty;
 
+        public EmployeeAssignmentCard? OwnerCard { get; set; }
+
         private bool _isSelected = true;
-        public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (SetProperty(ref _isSelected, value))
+                    OwnerCard?.RefreshWeightState();
+            }
+        }
 
         private decimal _assignedTarget;
-        public decimal AssignedTarget { get => _assignedTarget; set => SetProperty(ref _assignedTarget, value); }
+        public decimal AssignedTarget
+        {
+            get => _assignedTarget;
+            set => SetProperty(ref _assignedTarget, value);
+        }
 
         private decimal _assignedWeight;
-        public decimal AssignedWeight { get => _assignedWeight; set => SetProperty(ref _assignedWeight, value); }
+        public decimal AssignedWeight
+        {
+            get => _assignedWeight;
+            set
+            {
+                if (SetProperty(ref _assignedWeight, value))
+                    OwnerCard?.RefreshWeightState();
+            }
+        }
     }
 
     /// <summary>
@@ -226,16 +386,79 @@ namespace HRManagement.ViewModels
     /// </summary>
     public class KpiEditDialogViewModel : ViewModelBase
     {
+        private const decimal RequiredTotalWeight = 100m;
+        private const decimal WeightTolerance = 0.01m;
+
         public string KpiName { get; set; } = string.Empty;
         public string MeasurementUnit { get; set; } = string.Empty;
 
         private decimal _assignedTarget;
-        public decimal AssignedTarget { get => _assignedTarget; set => SetProperty(ref _assignedTarget, value); }
+        public decimal AssignedTarget
+        {
+            get => _assignedTarget;
+            set
+            {
+                if (SetProperty(ref _assignedTarget, value))
+                    OnPropertyChanged(nameof(IsValid));
+            }
+        }
 
         private decimal _currentValue;
-        public decimal CurrentValue { get => _currentValue; set => SetProperty(ref _currentValue, value); }
+        public decimal CurrentValue
+        {
+            get => _currentValue;
+            set => SetProperty(ref _currentValue, value);
+        }
 
         private decimal _assignedWeight;
-        public decimal AssignedWeight { get => _assignedWeight; set => SetProperty(ref _assignedWeight, value); }
+        public decimal AssignedWeight
+        {
+            get => _assignedWeight;
+            set
+            {
+                if (SetProperty(ref _assignedWeight, value))
+                    RefreshValidation();
+            }
+        }
+
+        private decimal _otherKpiWeight;
+        public decimal OtherKpiWeight
+        {
+            get => _otherKpiWeight;
+            set
+            {
+                if (SetProperty(ref _otherKpiWeight, value))
+                    RefreshValidation();
+            }
+        }
+
+        public decimal TotalWeightAfterEdit =>
+            OtherKpiWeight + AssignedWeight;
+
+        public bool IsWeightValid =>
+            Math.Abs(TotalWeightAfterEdit - RequiredTotalWeight)
+            <= WeightTolerance;
+
+        public bool IsValid =>
+            AssignedTarget > 0
+            && AssignedWeight > 0
+            && AssignedWeight <= RequiredTotalWeight
+            && IsWeightValid;
+
+        public string WeightValidationMessage =>
+            IsWeightValid
+                ? $"Total Weight: {TotalWeightAfterEdit:N2}%"
+                : TotalWeightAfterEdit < RequiredTotalWeight
+                    ? $"Total Weight: {TotalWeightAfterEdit:N2}% | Remaining: {RequiredTotalWeight - TotalWeightAfterEdit:N2}%"
+                    : $"Total Weight: {TotalWeightAfterEdit:N2}% | Exceeded: {TotalWeightAfterEdit - RequiredTotalWeight:N2}%";
+
+        private void RefreshValidation()
+        {
+            OnPropertyChanged(nameof(TotalWeightAfterEdit));
+            OnPropertyChanged(nameof(IsWeightValid));
+            OnPropertyChanged(nameof(WeightValidationMessage));
+            OnPropertyChanged(nameof(IsValid));
+        }
     }
+
 }

@@ -350,6 +350,12 @@ public class EmployeeEvaluationViewModel : PageViewModel
                 nameof(IsEditMode));
 
             OnPropertyChanged(
+                nameof(IsAutomaticKpiEvaluation));
+
+            OnPropertyChanged(
+                nameof(CanModifySelectedEvaluation));
+
+            OnPropertyChanged(
                 nameof(FormTitle));
 
             OnPropertyChanged(
@@ -367,6 +373,19 @@ public class EmployeeEvaluationViewModel : PageViewModel
 
     public bool IsEditMode =>
         SelectedEvaluation != null;
+
+    public bool IsAutomaticKpiEvaluation =>
+        SelectedEvaluation != null
+        && string.Equals(
+            SelectedEvaluation.EvaluationType,
+            "KPI",
+            StringComparison.OrdinalIgnoreCase)
+        && SelectedEvaluation.Comment.StartsWith(
+            "Automatic KPI evaluation.",
+            StringComparison.OrdinalIgnoreCase);
+
+    public bool CanModifySelectedEvaluation =>
+        !IsAutomaticKpiEvaluation;
 
     public string SelectedEmployeeName =>
         SelectedEmployee?.FullName
@@ -819,6 +838,7 @@ public class EmployeeEvaluationViewModel : PageViewModel
     private bool CanSaveEvaluation()
     {
         return !IsLoading
+               && CanModifySelectedEvaluation
                && SelectedEmployee != null
                && !string.IsNullOrWhiteSpace(
                    SelectedBonusType)
@@ -902,7 +922,8 @@ public class EmployeeEvaluationViewModel : PageViewModel
     private bool CanDeleteEvaluation()
     {
         return !IsLoading
-               && SelectedEvaluation != null;
+               && SelectedEvaluation != null
+               && CanModifySelectedEvaluation;
     }
 
     private void DeleteSelectedEvaluation()
@@ -994,6 +1015,12 @@ public class EmployeeEvaluationViewModel : PageViewModel
 
         OnPropertyChanged(
             nameof(IsEditMode));
+
+        OnPropertyChanged(
+            nameof(IsAutomaticKpiEvaluation));
+
+        OnPropertyChanged(
+            nameof(CanModifySelectedEvaluation));
 
         OnPropertyChanged(
             nameof(FormTitle));

@@ -42,7 +42,57 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="KPI Assignment" FontSize="30" FontWeight="Bold" Margin="0,0,0,16" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,16">
+
+                <TextBlock Text="KPI Assignment"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource PrimaryTextBrush}" />
+
+                <Border Margin="0,10,0,0"
+                        Padding="12,9"
+                        CornerRadius="6"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        BorderThickness="1"
+                        Visibility="{Binding HasOperationMessage,
+                                             Converter={StaticResource BoolToVisibility}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush"
+                                    Value="{DynamicResource SuccessBrush}"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsOperationError}"
+                                             Value="True">
+                                    <Setter Property="BorderBrush"
+                                            Value="{DynamicResource DangerBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <TextBlock Text="{Binding OperationMessage}"
+                               TextWrapping="Wrap"
+                               FontSize="13"
+                               FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource SuccessBrush}"/>
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOperationError}"
+                                                 Value="True">
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource DangerBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
 
             <!-- Stat row -->
             <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
@@ -239,11 +289,15 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <Button Grid.Column="1" Content="+ Assign KPI"
+                            <Button Grid.Column="1"
+                                    Content="+ Assign KPI"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding OpenAssignDialogCommand}"
+                                    Visibility="{Binding IsAdmin,
+                                                         Converter={StaticResource BoolToVisibility}}"
                                     Width="200"
-                                    Height="38" Padding="20,0"/>
+                                    Height="38"
+                                    Padding="20,0"/>
                         </Grid>
 
                         <!-- Empty state -->
@@ -279,10 +333,19 @@
                                 <DataGridTextColumn Header="Target" Binding="{Binding AssignedTarget, StringFormat=N0}" Width="*"
                                                      ElementStyle="{StaticResource TableCellTextStyle}"/>
 
-                                <DataGridTextColumn Header="Actual" Binding="{Binding CurrentValue, StringFormat=N0}" Width="*"
+                                <DataGridTextColumn Header="Current"
+                                                     Binding="{Binding CurrentValue, StringFormat=N2}"
+                                                     Width="0.8*"
                                                      ElementStyle="{StaticResource TableCellTextStyle}"/>
 
-                                <DataGridTextColumn Header="Weight" Binding="{Binding AssignedWeight, StringFormat={}{0}%}" Width="0.7*"
+                                <DataGridTextColumn Header="Pending"
+                                                     Binding="{Binding PendingValueDisplay}"
+                                                     Width="0.8*"
+                                                     ElementStyle="{StaticResource TableCellTextStyle}"/>
+
+                                <DataGridTextColumn Header="Weight"
+                                                     Binding="{Binding AssignedWeight, StringFormat={}{0}%}"
+                                                     Width="0.65*"
                                                      ElementStyle="{StaticResource TableCellTextStyle}"/>
 
                                 <!-- KPI MTD progress bar -->
@@ -312,22 +375,53 @@
                                      Segoe MDL2 glyphs (E70F edit / E74D delete) as
                                      ManageProfilesView.xaml's employee table, for a matching
                                      look across both tables. -->
-                                <DataGridTemplateColumn Header="" Width="70">
+                                <DataGridTemplateColumn Header="Approval" Width="190">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
+                                            <StackPanel Orientation="Horizontal"
+                                                        HorizontalAlignment="Center">
+
+                                                <Button Content="Approve"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Width="72"
+                                                        Height="30"
+                                                        Margin="0,0,6,0"
+                                                        Padding="8,0"
+                                                        FontSize="11"
+                                                        IsEnabled="{Binding CanApprovePending}"
+                                                        Command="{Binding DataContext.ApprovePendingCommand,
+                                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+
+                                                <Button Content="Reject"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Visibility="{Binding DataContext.IsAdmin,
+                                                                             RelativeSource={RelativeSource AncestorType=UserControl},
+                                                                             Converter={StaticResource BoolToVisibility}}"
+                                                        Width="66"
+                                                        Height="30"
+                                                        Margin="0,0,8,0"
+                                                        Padding="8,0"
+                                                        FontSize="11"
+                                                        IsEnabled="{Binding CanRejectPending}"
+                                                        Command="{Binding DataContext.RejectPendingCommand,
+                                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+
                                                 <Button Style="{StaticResource RowIconButtonStyle}"
-                                                        Command="{Binding DataContext.EditKpiRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        Visibility="{Binding DataContext.IsAdmin,
+                                                                             RelativeSource={RelativeSource AncestorType=UserControl},
+                                                                             Converter={StaticResource BoolToVisibility}}"
+                                                        IsEnabled="{Binding CanModify}"
+                                                        Command="{Binding DataContext.EditKpiRowCommand,
+                                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding}">
-                                                    <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets"
+                                                    <TextBlock Text="&#xE70F;"
+                                                               FontFamily="Segoe MDL2 Assets"
                                                                Foreground="{DynamicResource PrimaryBrush}"/>
                                                 </Button>
-                                                <Button Style="{StaticResource RowIconButtonStyle}"
-                                                        Command="{Binding DataContext.DeleteKpiRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}">
-                                                    <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets"
-                                                               Foreground="{DynamicResource DangerBrush}"/>
-                                                </Button>
+
+
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -708,12 +802,38 @@
                                                             </StackPanel>
                                                         </StackPanel>
 
-                                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="11.5" Foreground="{DynamicResource SecondaryTextBrush}">
-                                                            <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
-                                                            <Run Text=" / "/>
-                                                            <Run Text="{Binding KpiItems.Count, Mode=OneWay}"/>
-                                                            <Run Text=" selected"/>
-                                                        </TextBlock>
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    HorizontalAlignment="Right">
+                                                            <TextBlock HorizontalAlignment="Right"
+                                                                       FontSize="11.5"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}">
+                                                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                                                <Run Text=" / "/>
+                                                                <Run Text="{Binding KpiItems.Count, Mode=OneWay}"/>
+                                                                <Run Text=" selected"/>
+                                                            </TextBlock>
+
+                                                            <TextBlock Text="{Binding WeightSummary}"
+                                                                       Margin="0,3,0,0"
+                                                                       HorizontalAlignment="Right"
+                                                                       FontSize="11.5"
+                                                                       FontWeight="SemiBold">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground"
+                                                                                Value="{DynamicResource DangerBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasValidWeight}"
+                                                                                         Value="True">
+                                                                                <Setter Property="Foreground"
+                                                                                        Value="{DynamicResource SuccessBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </StackPanel>
                                                     </Grid>
 
                                                     <!-- Checkbox rows for every KPI in the chosen pack -->
@@ -786,13 +906,31 @@
                                         <DataTemplate>
                                             <Border Background="{DynamicResource InputBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,0,0,10">
                                                 <StackPanel>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                        <TextBlock Text="{Binding EmployeeName}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                                                        <TextBlock Margin="8,0,0,0" FontSize="11.5" Foreground="{DynamicResource SecondaryTextBrush}">
-                                                            <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
-                                                            <Run Text=" KPIs"/>
-                                                        </TextBlock>
-                                                    </StackPanel>
+                                                    <Grid Margin="0,0,0,8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0"
+                                                                    Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding EmployeeName}"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                                            <TextBlock Margin="8,0,0,0"
+                                                                       FontSize="11.5"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}">
+                                                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                                                <Run Text=" KPIs"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
+
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding WeightSummary}"
+                                                                   FontSize="11.5"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource SuccessBrush}"/>
+                                                    </Grid>
                                                     <ItemsControl ItemsSource="{Binding KpiItems}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
@@ -897,8 +1035,21 @@
                     </Grid>
 
                     <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="Weight (%)" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding AssignedWeight, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}"/>
+                        <TextBlock Text="Weight (%)"
+                                   Style="{StaticResource FormLabelStyle}"/>
+
+                        <TextBox Text="{Binding AssignedWeight,
+                                               Mode=OneWay,
+                                               StringFormat=N2}"
+                                 IsReadOnly="True"
+                                 IsTabStop="False"
+                                 Style="{StaticResource FormTextBoxStyle}"/>
+
+                        <TextBlock Text="Weight is read-only here. Use Assign KPI to rebalance and replace the complete employee KPI set."
+                                   Margin="0,6,0,0"
+                                   TextWrapping="Wrap"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -906,10 +1057,14 @@
                                 Command="{Binding DataContext.CloseEditDialogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Width="100"
                                 Height="40" Padding="24,0" Margin="0,0,10,0"/>
-                        <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}"
-                                Command="{Binding DataContext.SaveEditDialogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        <Button Content="Save"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding DataContext.SaveEditDialogCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                IsEnabled="True"
                                 Width="100"
-                                Height="40" Padding="24,0"/>
+                                Height="40"
+                                Padding="24,0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

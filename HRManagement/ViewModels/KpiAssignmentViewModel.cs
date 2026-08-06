@@ -52,6 +52,14 @@ namespace HRManagement.ViewModels
             SelectEmployeeCommand = new RelayCommand(p => SelectEmployee(p));
             DeleteKpiRowCommand = new RelayCommand(p => DeleteKpiRow(p));
 
+            ApprovePendingCommand =
+                new RelayCommand(
+                    p => ApprovePending(p));
+
+            RejectPendingCommand =
+                new RelayCommand(
+                    p => RejectPending(p));
+
             // ===== Wizard =====
             OpenAssignDialogCommand = new RelayCommand(_ => OpenAssignWizard());
             CloseAssignDialogCommand = new RelayCommand(_ => CloseAssignWizard());
@@ -74,8 +82,20 @@ namespace HRManagement.ViewModels
 
         public override string Title => "KPI Assignment";
 
-        public bool IsAdmin => _sessionManager.CurrentUser != null &&
-                                _sessionManager.CurrentUser.Role.RoleName.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+        public bool IsAdmin =>
+            _sessionManager.CurrentUser != null
+            && _sessionManager.CurrentUser.Role.RoleName.Equals(
+                "Admin",
+                StringComparison.OrdinalIgnoreCase);
+
+        public bool IsManager =>
+            _sessionManager.CurrentUser != null
+            && _sessionManager.CurrentUser.Role.RoleName.Equals(
+                "Manager",
+                StringComparison.OrdinalIgnoreCase);
+
+        public bool CanManageAssignments =>
+            IsAdmin;
 
         public ObservableCollection<string> Departments { get; }
         public ObservableCollection<KpiEmployeeRowViewModel> Employees { get; }
@@ -116,6 +136,45 @@ namespace HRManagement.ViewModels
         }
 
         public bool IsEmployeeSelected => SelectedEmployee != null;
+
+        private string _operationMessage = string.Empty;
+        public string OperationMessage
+        {
+            get => _operationMessage;
+            private set
+            {
+                if (SetProperty(ref _operationMessage, value))
+                    OnPropertyChanged(nameof(HasOperationMessage));
+            }
+        }
+
+        private bool _isOperationError;
+        public bool IsOperationError
+        {
+            get => _isOperationError;
+            private set => SetProperty(ref _isOperationError, value);
+        }
+
+        public bool HasOperationMessage =>
+            !string.IsNullOrWhiteSpace(OperationMessage);
+
+        private void SetSuccessMessage(string message)
+        {
+            IsOperationError = false;
+            OperationMessage = message;
+        }
+
+        private void SetErrorMessage(Exception exception)
+        {
+            IsOperationError = true;
+            OperationMessage = exception.Message;
+        }
+
+        private void ClearOperationMessage()
+        {
+            IsOperationError = false;
+            OperationMessage = string.Empty;
+        }
 
         // ===== Top stat cards =====
 
@@ -211,6 +270,10 @@ namespace HRManagement.ViewModels
         public ICommand ConfirmAssignCommand { get; }
         public ICommand DeleteKpiRowCommand { get; }
 
+        public ICommand ApprovePendingCommand { get; }
+
+        public ICommand RejectPendingCommand { get; }
+
         // ===== Edit KPI modal state =====
 
         private bool _isEditDialogOpen;
@@ -268,6 +331,13 @@ namespace HRManagement.ViewModels
 
         private void LoadEmployees()
         {
+            /*
+             * Desktop application is not continuously running.
+             * Synchronize expired assignments whenever the management
+             * page refreshes its data.
+             */
+            _kpiService.SynchronizeExpiredAssignments();
+
             Employees.Clear();
 
             var departmentId = ResolveSelectedDepartmentId();
@@ -315,8 +385,10 @@ namespace HRManagement.ViewModels
                     MeasurementUnit = dto.MeasurementUnit,
                     AssignedTarget = dto.AssignedTarget,
                     CurrentValue = dto.CurrentValue,
+                    PendingValue = dto.PendingValue,
                     AssignedWeight = dto.AssignedWeight,
-                    Status = dto.Status
+                    Status = dto.Status,
+                    IsLocked = dto.IsLocked
                 });
             }
         }
@@ -327,10 +399,64 @@ namespace HRManagement.ViewModels
                 SelectedEmployee = row;
         }
 
+        private void ApprovePending(object? param)
+        {
+            if (param is not AssignedKpiRowViewModel row
+                || !row.CanApprovePending)
+            {
+                return;
+            }
+
+            try
+            {
+                _kpiService.ApprovePendingProgress(
+                    row.AssignmentId);
+
+                SetSuccessMessage(
+                    $"Pending progress for '{row.KpiName}' was approved.");
+
+                LoadAssignedKpis();
+                LoadEmployees();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
+        }
+
+        private void RejectPending(object? param)
+        {
+            if (!IsAdmin
+                || param is not AssignedKpiRowViewModel row
+                || !row.CanRejectPending)
+            {
+                return;
+            }
+
+            try
+            {
+                _kpiService.RejectPendingProgress(
+                    row.AssignmentId);
+
+                SetSuccessMessage(
+                    $"Pending progress for '{row.KpiName}' was rejected.");
+
+                LoadAssignedKpis();
+                LoadEmployees();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
+        }
+
         private void DeleteKpiRow(object? param)
         {
-            if (param is not AssignedKpiRowViewModel row)
+            if (!IsAdmin
+                || param is not AssignedKpiRowViewModel row)
+            {
                 return;
+            }
 
             _kpiService.DeleteAssignment(row.AssignmentId);
             LoadAssignedKpis();
@@ -343,6 +469,10 @@ namespace HRManagement.ViewModels
 
         private void OpenAssignWizard()
         {
+            if (!IsAdmin)
+                return;
+
+            ClearOperationMessage();
             WizardStep = 1;
             DialogSelectedMonth = SelectedMonth ?? AvailableMonths.FirstOrDefault();
             LoadMonthlyListsForMonth();
@@ -458,29 +588,35 @@ namespace HRManagement.ViewModels
                 // Every KPI in the chosen pack is listed, pre-checked.
                 foreach (var detail in DialogSelectedList.Details)
                 {
-                    card.KpiItems.Add(new KpiSelectionItem
-                    {
-                        KpiSetDetailId = detail.KpiSetDetailId,
-                        KpiId = detail.KpiId,
-                        KpiName = detail.KpiName,
-                        MeasurementUnit = detail.MeasurementUnit,
-                        AssignedTarget = detail.TargetValue,
-                        AssignedWeight = detail.Weight,
-                        IsSelected = true
-                    });
+                    var item =
+                        new KpiSelectionItem
+                        {
+                            KpiSetDetailId = detail.KpiSetDetailId,
+                            KpiId = detail.KpiId,
+                            KpiName = detail.KpiName,
+                            MeasurementUnit = detail.MeasurementUnit,
+                            AssignedTarget = detail.TargetValue,
+                            AssignedWeight = detail.Weight,
+                            IsSelected = true,
+                            OwnerCard = card
+                        };
+
+                    card.KpiItems.Add(item);
                 }
 
+                card.RefreshWeightState();
                 WizardEmployeeCards.Add(card);
             }
         }
 
         private void ToggleKpiSelection(object? param)
         {
-            if (param is KpiSelectionItem item)
-            {
-                item.IsSelected = !item.IsSelected;
-                WizardNextCommand.RaiseCanExecuteChanged();
-            }
+            if (param is not KpiSelectionItem item)
+                return;
+
+            item.IsSelected = !item.IsSelected;
+            item.OwnerCard?.RefreshWeightState();
+            WizardNextCommand.RaiseCanExecuteChanged();
         }
 
         // ---- Step navigation ----
@@ -491,7 +627,11 @@ namespace HRManagement.ViewModels
             {
                 1 => DialogSelectedList != null,
                 2 => DialogEmployees.Any(e => e.IsSelected),
-                3 => WizardEmployeeCards.Any(c => c.KpiItems.Any(k => k.IsSelected)),
+                3 => WizardEmployeeCards.Count > 0
+                     && WizardEmployeeCards.All(
+                         card =>
+                             card.KpiItems.Any(item => item.IsSelected)
+                             && card.HasValidWeight),
                 _ => true
             };
         }
@@ -520,35 +660,84 @@ namespace HRManagement.ViewModels
         {
             if (DialogSelectedList == null)
             {
-                IsAssignDialogOpen = false;
+                SetErrorMessage(
+                    new InvalidOperationException(
+                        "Please select a KPI set."));
                 return;
             }
 
-            var request = new Models.AssignKpiRequest
+            if (WizardEmployeeCards.Count == 0
+                || WizardEmployeeCards.Any(
+                    card =>
+                        !card.HasValidWeight
+                        || !card.KpiItems.Any(
+                            item => item.IsSelected)))
             {
-                KpiSetId = DialogSelectedList.KpiSetId,
-                Month = DialogSelectedMonth ?? string.Empty,
-                EmployeeIds = WizardEmployeeCards.Select(c => c.EmployeeId).ToList(),
-                EmployeeAssignments = WizardEmployeeCards.Select(card => new Models.EmployeeKpiAssignmentInput
+                SetErrorMessage(
+                    new InvalidOperationException(
+                        "Each employee must have at least one KPI and " +
+                        "a total Weight of exactly 100%."));
+                return;
+            }
+
+            var request =
+                new Models.AssignKpiRequest
                 {
-                    EmployeeId = card.EmployeeId,
-                    SelectedDetails = card.KpiItems
-                        .Where(k => k.IsSelected)
-                        .Select(k => new Models.KpiSetDetailSelectionInput
-                        {
-                            KpiSetDetailId = k.KpiSetDetailId,
-                            AssignedTarget = k.AssignedTarget,
-                            AssignedWeight = k.AssignedWeight
-                        })
-                        .ToList()
-                }).ToList()
-            };
+                    KpiSetId = DialogSelectedList.KpiSetId,
+                    Month = DialogSelectedMonth ?? string.Empty,
 
-            _kpiService.AssignKpis(request);
+                    EmployeeIds =
+                        WizardEmployeeCards
+                            .Select(card => card.EmployeeId)
+                            .ToList(),
 
-            IsAssignDialogOpen = false;
-            LoadEmployees();
-            LoadAssignedKpis();
+                    EmployeeAssignments =
+                        WizardEmployeeCards
+                            .Select(
+                                card =>
+                                    new Models.EmployeeKpiAssignmentInput
+                                    {
+                                        EmployeeId = card.EmployeeId,
+
+                                        SelectedDetails =
+                                            card.KpiItems
+                                                .Where(item => item.IsSelected)
+                                                .Select(
+                                                    item =>
+                                                        new Models.KpiSetDetailSelectionInput
+                                                        {
+                                                            KpiSetDetailId =
+                                                                item.KpiSetDetailId,
+
+                                                            AssignedTarget =
+                                                                item.AssignedTarget,
+
+                                                            AssignedWeight =
+                                                                item.AssignedWeight
+                                                        })
+                                                .ToList()
+                                    })
+                            .ToList()
+                };
+
+            try
+            {
+                _kpiService.AssignKpis(request);
+
+                IsAssignDialogOpen = false;
+
+                SetSuccessMessage(
+                    $"KPI assignments for " +
+                    $"{request.EmployeeAssignments.Count} employee(s) " +
+                    $"were saved successfully.");
+
+                LoadEmployees();
+                LoadAssignedKpis();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
         }
 
         // ============================================================
@@ -557,10 +746,20 @@ namespace HRManagement.ViewModels
 
         private void OpenEditDialog(object? param)
         {
-            if (param is not AssignedKpiRowViewModel row)
+            ClearOperationMessage();
+
+            if (!IsAdmin
+                || param is not AssignedKpiRowViewModel row)
+            {
                 return;
+            }
 
             _editingTargetRow = row;
+
+            var otherKpiWeight =
+                AssignedKpis
+                    .Where(item => item.AssignmentId != row.AssignmentId)
+                    .Sum(item => item.AssignedWeight);
 
             EditDialog = new KpiEditDialogViewModel
             {
@@ -568,7 +767,8 @@ namespace HRManagement.ViewModels
                 MeasurementUnit = row.MeasurementUnit,
                 AssignedTarget = row.AssignedTarget,
                 CurrentValue = row.CurrentValue,
-                AssignedWeight = row.AssignedWeight
+                AssignedWeight = row.AssignedWeight,
+                OtherKpiWeight = otherKpiWeight
             };
 
             IsEditDialogOpen = true;
@@ -576,26 +776,57 @@ namespace HRManagement.ViewModels
 
         private void SaveEditDialog()
         {
-            if (_editingTargetRow == null || EditDialog == null)
+            if (_editingTargetRow == null
+                || EditDialog == null)
             {
                 IsEditDialogOpen = false;
                 return;
             }
 
-            _kpiService.UpdateAssignment(new Models.UpdateKpiAssignmentRequest
+            if (EditDialog.AssignedTarget <= 0)
             {
-                AssignmentId = _editingTargetRow.AssignmentId,
-                AssignedTarget = EditDialog.AssignedTarget,
-                AssignedWeight = EditDialog.AssignedWeight,
-                CurrentValue = EditDialog.CurrentValue
-            });
+                SetErrorMessage(
+                    new InvalidOperationException(
+                        "KPI Target must be greater than 0."));
+                return;
+            }
 
-            IsEditDialogOpen = false;
-            _editingTargetRow = null;
-            EditDialog = null;
+            try
+            {
+                _kpiService.UpdateAssignment(
+                    new Models.UpdateKpiAssignmentRequest
+                    {
+                        AssignmentId =
+                            _editingTargetRow.AssignmentId,
 
-            LoadAssignedKpis();
-            LoadEmployees();
+                        AssignedTarget =
+                            EditDialog.AssignedTarget,
+
+                        AssignedWeight =
+                            _editingTargetRow.AssignedWeight,
+
+                        CurrentValue =
+                            _editingTargetRow.CurrentValue
+                    });
+
+                var kpiName =
+                    _editingTargetRow.KpiName;
+
+                IsEditDialogOpen = false;
+                _editingTargetRow = null;
+                EditDialog = null;
+
+                SetSuccessMessage(
+                    $"Target for KPI '{kpiName}' was updated successfully.");
+
+                LoadAssignedKpis();
+                LoadEmployees();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
         }
+
     }
 }
