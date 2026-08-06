@@ -103,3 +103,23 @@ namespace HRManagement.Models
         public string? MeasurementUnit { get; set; }
     }
 }
+
+namespace HRManagement.Models
+{
+    /// <summary>
+    /// Row shown on the "Manage KPI" table (Master KPI catalog) - the Kpi
+    /// entity plus display-friendly fields.
+    /// </summary>
+    public class KpiRow
+    {
+        public Kpi Kpi { get; set; } = null!;
+        public string KpiName { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string KpiType { get; set; } = string.Empty;
+        public string MeasurementUnit { get; set; } = string.Empty;
+        public decimal DefaultTarget { get; set; }
+        public string CalculationMethod { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public string StatusDisplay => IsActive ? "Active" : "Inactive";
+    }
+}
