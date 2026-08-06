@@ -165,7 +165,7 @@ public class KpiSetRepository : RepositoryBase, IKpiSetRepository
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             SELECT d.[KPI_Set_Detail_ID], d.[KPI_Set_ID], d.[KPI_ID], d.[Target_Value], d.[Weight],
-                   k.[KPI_Name], k.[Measurement_Unit]
+                   k.[KPI_Name], k.[Measurement_Unit], k.[Calculation_Method], k.[KPI_Type], k.[Is_Active]
             FROM [dbo].[KPI_Set_Detail] d
             INNER JOIN [dbo].[KPI] k ON k.[KPI_ID] = d.[KPI_ID]
             WHERE d.[KPI_Set_ID] = @kpiSetId

@@ -15,6 +15,7 @@
     <utilities:CollapsedToWidthConverter x:Key="CollapsedToWidthConverter"/>
     <utilities:NavSearchVisibilityConverter x:Key="NavSearchVisibilityConverter"/>
     <utilities:StringEmptyToVisibilityConverter x:Key="StringEmptyToVisibility"/>
+    <utilities:CollectionEmptyToVisibilityConverter x:Key="CollectionEmptyToVisibility"/>
     <utilities:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter"/>
     <utilities:InitialsConverter x:Key="InitialsConverter"/>
     <utilities:AnnouncementTypeConverter x:Key="AnnouncementTypeConverter"/>

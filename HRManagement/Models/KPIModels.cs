@@ -102,4 +102,40 @@ namespace HRManagement.Models
         public string? KpiName { get; set; }
         public string? MeasurementUnit { get; set; }
     }
+
+    /// <summary>
+    /// UI row model for displaying KPI Sets in a grid.
+    /// </summary>
+    public class KpiSetRow
+    {
+        public KpiSet KpiSet { get; set; } = null!;
+        public int KpiSetId { get; set; }
+        public string KpiSetName { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? DepartmentName { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string CreatedAtDisplay { get; set; } = string.Empty;
+        public DateTime CreatedDate { get; set; }
+        public int DetailCount { get; set; }
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Collection of KPI details for this KPI Set.
+        /// </summary>
+        public List<KpiSetDetailRow> Details { get; set; } = new();
+    }
+
+    /// <summary>
+    /// UI row model for displaying KPI details within a KPI Set form.
+    /// </summary>
+    public class KpiSetDetailRow
+    {
+        public KpiSetDetail Detail { get; set; } = null!;
+        public int KpiSetDetailId { get; set; }
+        public int KpiId { get; set; }
+        public string KpiName { get; set; } = string.Empty;
+        public string MeasurementUnit { get; set; } = string.Empty;
+        public decimal TargetValue { get; set; }
+        public decimal Weight { get; set; }
+    }
 }

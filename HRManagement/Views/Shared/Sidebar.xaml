@@ -622,6 +622,31 @@
 
                     </Button>
 
+                    <!-- Manage KPI Sets -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:ManageKpiSetViewModel}"
+                            ToolTip="KPI Sets">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="ChartLine"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="KPI Sets"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Button>
+
                     <Separator Margin="0,14"/>
 
                     <!-- Setting -->

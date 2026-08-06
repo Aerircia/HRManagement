@@ -73,4 +73,8 @@
         <views:PersonalKpiView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:ManageKpiSetViewModel}">
+        <views:ManageKpiSetView/>
+    </DataTemplate>
+
 </ResourceDictionary>
