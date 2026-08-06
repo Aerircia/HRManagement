@@ -597,6 +597,31 @@
 
                     </Button>
 
+                    <!-- Manage Department -->
+                    <Button Style="{StaticResource NavigationButtonStyle}"
+                            Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Type vm:ManageDepartmentsViewModel}"
+                            ToolTip="Manage Department">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <fa:IconBlock Icon="Building"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+
+                            <TextBlock Margin="16,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       Text="Manage Department"
+                                       Visibility="{Binding IsCollapsed, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                        </StackPanel>
+
+                    </Button>
+
                     <!-- Manage Announcements -->
                     <Button Style="{StaticResource NavigationButtonStyle}"
                             Visibility="{Binding IsAdmin,Converter={StaticResource BoolToVisibility}}"

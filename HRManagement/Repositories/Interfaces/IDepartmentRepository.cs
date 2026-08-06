@@ -10,5 +10,11 @@ namespace HRManagement.Repositories.Interfaces
     {
         Department? GetById(int id);
         List<Department> GetAll();
+
+        int Insert(Department department);
+
+        void Update(Department department);
+
+        void Delete(int id);
     }
 }

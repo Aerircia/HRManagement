@@ -48,7 +48,11 @@
     <DataTemplate DataType="{x:Type vm:ManageSalariesViewModel}">
         <views:ManageSalariesView/>
     </DataTemplate>
-
+    
+    <DataTemplate DataType="{x:Type vm:ManageDepartmentsViewModel}">
+        <views:ManageDepartmentsView/>
+    </DataTemplate>
+    
     <DataTemplate DataType="{x:Type vm:ProfileViewModel}">
         <views:ProfileView/>
     </DataTemplate>
