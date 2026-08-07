@@ -62,6 +62,47 @@ namespace HRManagement.ViewModels
 
         public ObservableCollection<AssignedKpiRowViewModel> AssignedKpis { get; }
 
+        private string _operationMessage = string.Empty;
+        public string OperationMessage
+        {
+            get => _operationMessage;
+            private set
+            {
+                if (SetProperty(ref _operationMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasOperationMessage));
+                }
+            }
+        }
+
+        private bool _isOperationError;
+        public bool IsOperationError
+        {
+            get => _isOperationError;
+            private set => SetProperty(ref _isOperationError, value);
+        }
+
+        public bool HasOperationMessage =>
+            !string.IsNullOrWhiteSpace(OperationMessage);
+
+        private void SetSuccessMessage(string message)
+        {
+            IsOperationError = false;
+            OperationMessage = message;
+        }
+
+        private void SetErrorMessage(Exception exception)
+        {
+            IsOperationError = true;
+            OperationMessage = exception.Message;
+        }
+
+        private void ClearOperationMessage()
+        {
+            IsOperationError = false;
+            OperationMessage = string.Empty;
+        }
+
         // ===== Top stat cards =====
 
         private int _totalKpiCount;
@@ -80,7 +121,7 @@ namespace HRManagement.ViewModels
         public ICommand SaveProgressCommand { get; }
         public ICommand CancelProgressCommand { get; }
 
-        private readonly Dictionary<int, decimal> _preEditActualBackup = new();
+        private readonly Dictionary<int, decimal?> _preEditPendingBackup = new();
 
         private int CurrentEmployeeId => _sessionManager.CurrentUser?.Employee?.EmployeeId ?? 0;
 
@@ -100,7 +141,23 @@ namespace HRManagement.ViewModels
             if (string.IsNullOrEmpty(SelectedMonth))
                 return;
 
-            var kpis = _kpiService.GetMyAssignedKpis(CurrentEmployeeId, SelectedMonth);
+            try
+            {
+                /*
+                 * Desktop app is not continuously running. Synchronize
+                 * expired KPI periods whenever Personal KPI is loaded.
+                 */
+                _kpiService.SynchronizeExpiredAssignments();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
+
+            var kpis =
+                _kpiService.GetMyAssignedKpis(
+                    CurrentEmployeeId,
+                    SelectedMonth);
 
             foreach (var dto in kpis)
             {
@@ -112,8 +169,10 @@ namespace HRManagement.ViewModels
                     MeasurementUnit = dto.MeasurementUnit,
                     AssignedTarget = dto.AssignedTarget,
                     CurrentValue = dto.CurrentValue,
+                    PendingValue = dto.PendingValue,
                     AssignedWeight = dto.AssignedWeight,
-                    Status = dto.Status
+                    Status = dto.Status,
+                    IsLocked = dto.IsLocked
                 });
             }
 
@@ -122,21 +181,79 @@ namespace HRManagement.ViewModels
 
         private void RecalculateStats()
         {
-            TotalKpiCount = AssignedKpis.Count;
-            CompletedKpiCount = AssignedKpis.Count(k => k.ProgressPercent >= 100);
-            InProgressKpiCount = AssignedKpis.Count(k => k.ProgressPercent is > 0 and < 100);
-            OverallKpiMtdPercent = AssignedKpis.Count == 0 ? 0 : Math.Round(AssignedKpis.Average(k => k.ProgressPercent), 1);
+            TotalKpiCount =
+                AssignedKpis.Count;
+
+            /*
+             * Status must drive completion because an expired KPI is
+             * Completed even when CurrentValue is below Target.
+             */
+            CompletedKpiCount =
+                AssignedKpis.Count(
+                    item =>
+                        string.Equals(
+                            item.Status,
+                            "Completed",
+                            StringComparison.OrdinalIgnoreCase));
+
+            InProgressKpiCount =
+                AssignedKpis.Count(
+                    item =>
+                        string.Equals(
+                            item.Status,
+                            "In Progress",
+                            StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(
+                            item.Status,
+                            "Pending Approval",
+                            StringComparison.OrdinalIgnoreCase));
+
+            var totalWeight =
+                AssignedKpis.Sum(
+                    item =>
+                        item.AssignedWeight);
+
+            if (totalWeight <= 0)
+            {
+                OverallKpiMtdPercent = 0;
+                return;
+            }
+
+            var weightedProgress =
+                AssignedKpis.Sum(
+                    item =>
+                        (decimal)item.ProgressPercent
+                        * item.AssignedWeight);
+
+            OverallKpiMtdPercent =
+                Math.Round(
+                    (double)(
+                        weightedProgress
+                        / totalWeight),
+                    1);
         }
 
         // ===== Progress-only update (employee self-service) =====
 
         private void EditProgress(object? param)
         {
-            if (param is AssignedKpiRowViewModel row)
+            ClearOperationMessage();
+
+            if (param is not AssignedKpiRowViewModel row
+                || !row.CanUpdateProgress)
             {
-                _preEditActualBackup[row.AssignmentId] = row.CurrentValue;
-                row.IsEditing = true;
+                return;
             }
+
+            _preEditPendingBackup[row.AssignmentId] =
+                row.PendingValue;
+
+            /*
+             * Start from 0 because PendingValue is an increment,
+             * not the replacement total CurrentValue.
+             */
+            row.PendingValue = 0;
+            row.IsEditing = true;
         }
 
         private void SaveProgress(object? param)
@@ -144,24 +261,57 @@ namespace HRManagement.ViewModels
             if (param is not AssignedKpiRowViewModel row)
                 return;
 
-            _kpiService.UpdateMyProgress(row.AssignmentId, CurrentEmployeeId, row.CurrentValue);
+            var pendingIncrement =
+                row.PendingValue ?? 0;
 
-            row.IsEditing = false;
-            _preEditActualBackup.Remove(row.AssignmentId);
-            RecalculateStats();
+            if (pendingIncrement <= 0)
+            {
+                SetErrorMessage(
+                    new InvalidOperationException(
+                        "Pending progress must be greater than 0."));
+                return;
+            }
+
+            try
+            {
+                _kpiService.UpdateMyProgress(
+                    row.AssignmentId,
+                    CurrentEmployeeId,
+                    pendingIncrement);
+
+                row.IsEditing = false;
+
+                _preEditPendingBackup.Remove(
+                    row.AssignmentId);
+
+                SetSuccessMessage(
+                    $"Progress update for '{row.KpiName}' was submitted " +
+                    "and is waiting for Manager/Admin approval.");
+
+                LoadKpisForMonth();
+            }
+            catch (Exception exception)
+            {
+                SetErrorMessage(exception);
+            }
         }
 
         private void CancelProgress(object? param)
         {
-            if (param is AssignedKpiRowViewModel row)
+            if (param is not AssignedKpiRowViewModel row)
+                return;
+
+            if (_preEditPendingBackup.TryGetValue(
+                    row.AssignmentId,
+                    out var original))
             {
-                if (_preEditActualBackup.TryGetValue(row.AssignmentId, out var original))
-                {
-                    row.CurrentValue = original;
-                    _preEditActualBackup.Remove(row.AssignmentId);
-                }
-                row.IsEditing = false;
+                row.PendingValue = original;
+
+                _preEditPendingBackup.Remove(
+                    row.AssignmentId);
             }
+
+            row.IsEditing = false;
         }
     }
 }

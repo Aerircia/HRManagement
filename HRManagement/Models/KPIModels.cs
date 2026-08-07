@@ -101,6 +101,9 @@ namespace HRManagement.Models
         // not columns on the table itself.
         public string? KpiName { get; set; }
         public string? MeasurementUnit { get; set; }
+
+        public string CalculationMethod { get; set; }
+            = "HigherIsBetter";
     }
 
     /// <summary>

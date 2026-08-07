@@ -34,19 +34,4 @@ namespace HRManagement.Repositories.Interfaces
         void UpdateDetail(KpiSetDetail detail);
         void DeleteDetail(int kpiSetDetailId);
     }
-
-    /// <summary>
-    /// Per-employee KPI assignments (Employee_KPI_Assignment table).
-    /// </summary>
-    public interface IEmployeeKpiAssignmentRepository
-    {
-        List<EmployeeKpiAssignment> GetByEmployee(int employeeId);
-        List<EmployeeKpiAssignment> GetByEmployeeAndPeriod(int employeeId, System.DateTime startDate, System.DateTime endDate);
-        List<EmployeeKpiAssignment> GetByDepartment(int? departmentId, System.DateTime startDate, System.DateTime endDate);
-        EmployeeKpiAssignment? GetById(int assignmentId);
-
-        int Add(EmployeeKpiAssignment assignment);
-        void Update(EmployeeKpiAssignment assignment);
-        void Delete(int assignmentId);
-    }
 }

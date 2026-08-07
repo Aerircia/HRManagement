@@ -20,6 +20,9 @@ public class KpiService : IKpiService
 
     private const string MonthFormat = "MM/yyyy";
 
+    private const decimal RequiredTotalWeight = 100m;
+    private const decimal WeightTolerance = 0.01m;
+
     public KpiService(
         IKpiRepository kpiRepository,
         IKpiSetRepository kpiSetRepository,
@@ -207,110 +210,279 @@ public class KpiService : IKpiService
         return results;
     }
 
-    public void AssignKpis(AssignKpiRequest request)
+    public void AssignKpis(
+        AssignKpiRequest request)
     {
-        if (request == null) throw new ArgumentNullException(nameof(request));
+        EnsureAdmin();
 
-        if (!TryParseMonth(request.Month, out var startDate, out var endDate))
-            throw new ArgumentException($"Invalid month '{request.Month}'. Expected format {MonthFormat}.", nameof(request));
-
-        var accountId = CurrentAccountId();
-        var insertedCount = 0;
-        var updatedCount = 0;
-
-        foreach (var employeeAssignment in request.EmployeeAssignments)
+        if (request == null)
         {
-            // Load once per employee so re-assigning an already-assigned
-            // KPI (same employee + KPI_Set_Detail + period) updates the
-            // existing row instead of violating
-            // UQ_Assignment_EmployeeKPI and crashing.
-            var existingForEmployee = _assignmentRepository
-                .GetByEmployeeAndPeriod(employeeAssignment.EmployeeId, startDate, endDate)
-                .ToDictionary(a => a.KpiSetDetailId);
-
-            foreach (var selection in employeeAssignment.SelectedDetails)
-            {
-                if (existingForEmployee.TryGetValue(selection.KpiSetDetailId, out var existing))
-                {
-                    if (existing.IsLocked)
-                        continue; // locked assignments are not touched by re-assignment
-
-                    existing.AssignedTarget = selection.AssignedTarget;
-                    existing.AssignedWeight = selection.AssignedWeight;
-
-                    _assignmentRepository.Update(existing);
-                    updatedCount++;
-                }
-                else
-                {
-                    var assignment = new EmployeeKpiAssignment
-                    {
-                        EmployeeId = employeeAssignment.EmployeeId,
-                        KpiSetDetailId = selection.KpiSetDetailId,
-                        AssignedTarget = selection.AssignedTarget,
-                        AssignedWeight = selection.AssignedWeight,
-                        CurrentValue = 0,
-                        PendingValue = null,
-                        Status = "Not Started",
-                        StartDate = startDate,
-                        EndDate = endDate,
-                        IsLocked = false
-                    };
-
-                    _assignmentRepository.Add(assignment);
-                    insertedCount++;
-                }
-            }
+            throw new ArgumentNullException(
+                nameof(request));
         }
 
-        _logService.WriteLog(accountId,
-            $"Assigned KPI set {request.KpiSetId} to {request.EmployeeAssignments.Count} employee(s) for {request.Month} " +
-            $"({insertedCount} new, {updatedCount} updated).");
+        if (!TryParseMonth(
+                request.Month,
+                out var startDate,
+                out var endDate))
+        {
+            throw new ArgumentException(
+                $"Invalid month '{request.Month}'. " +
+                $"Expected format {MonthFormat}.",
+                nameof(request));
+        }
+
+        if (request.EmployeeAssignments.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "At least one employee must be selected.");
+        }
+
+        /*
+         * Validate every employee before the first database write.
+         * The selected rows represent that employee's complete final KPI
+         * set for the period, not an additive merge.
+         */
+        var replacements =
+            new List<PeriodAssignmentReplacement>();
+
+        foreach (var employeeInput
+                 in request.EmployeeAssignments)
+        {
+            if (employeeInput.SelectedDetails.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Employee {employeeInput.EmployeeId} must have " +
+                    "at least one selected KPI.");
+            }
+
+            var duplicateDetail =
+                employeeInput.SelectedDetails
+                    .GroupBy(
+                        item =>
+                            item.KpiSetDetailId)
+                    .FirstOrDefault(
+                        group =>
+                            group.Count() > 1);
+
+            if (duplicateDetail != null)
+            {
+                throw new InvalidOperationException(
+                    $"KPI detail {duplicateDetail.Key} is duplicated " +
+                    $"for employee {employeeInput.EmployeeId}.");
+            }
+
+            foreach (var selection
+                     in employeeInput.SelectedDetails)
+            {
+                ValidateAssignmentValues(
+                    selection.AssignedTarget,
+                    selection.AssignedWeight);
+            }
+
+            var totalWeight =
+                employeeInput.SelectedDetails
+                    .Sum(
+                        selection =>
+                            selection.AssignedWeight);
+
+            ValidateTotalWeight(
+                totalWeight,
+                employeeInput.EmployeeId);
+
+            var existingAssignments =
+                _assignmentRepository
+                    .GetByEmployeeAndPeriod(
+                        employeeInput.EmployeeId,
+                        startDate,
+                        endDate);
+
+            if (existingAssignments.Any(
+                    HasProgressStarted))
+            {
+                throw new InvalidOperationException(
+                    $"KPI assignments for employee " +
+                    $"{employeeInput.EmployeeId} cannot be replaced " +
+                    "after progress has started.");
+            }
+
+            var assignments =
+                employeeInput.SelectedDetails
+                    .Select(
+                        selection =>
+                            new EmployeeKpiAssignment
+                            {
+                                EmployeeId =
+                                    employeeInput.EmployeeId,
+
+                                KpiSetDetailId =
+                                    selection.KpiSetDetailId,
+
+                                AssignedTarget =
+                                    selection.AssignedTarget,
+
+                                AssignedWeight =
+                                    selection.AssignedWeight,
+
+                                CurrentValue = 0,
+                                PendingValue = null,
+                                Status = "Not Started",
+                                StartDate = startDate,
+                                EndDate = endDate,
+                                IsLocked = false
+                            })
+                    .ToList();
+
+            replacements.Add(
+                new PeriodAssignmentReplacement(
+                    employeeInput.EmployeeId,
+                    assignments));
+        }
+
+        /*
+         * Replace each employee period atomically. Existing unselected
+         * KPIs are removed; the selected set is inserted as the final
+         * 100%-weight assignment set.
+         */
+        foreach (var replacement
+                 in replacements)
+        {
+            _assignmentRepository
+                .ReplacePeriodAssignments(
+                    replacement.EmployeeId,
+                    startDate,
+                    endDate,
+                    replacement.Assignments);
+        }
+
+        var totalAssignmentCount =
+            replacements.Sum(
+                replacement =>
+                    replacement.Assignments.Count);
+
+        _logService.WriteLog(
+            CurrentAccountId(),
+            $"Assigned KPI set {request.KpiSetId} to " +
+            $"{replacements.Count} employee(s) for {request.Month}. " +
+            $"Replaced period assignments with " +
+            $"{totalAssignmentCount} KPI row(s).");
     }
 
-    public void UpdateAssignment(UpdateKpiAssignmentRequest request)
+    public void UpdateAssignment(
+        UpdateKpiAssignmentRequest request)
     {
-        if (request == null) throw new ArgumentNullException(nameof(request));
+        EnsureAdmin();
 
-        var existing = _assignmentRepository.GetById(request.AssignmentId);
-        if (existing == null)
-            return;
+        if (request == null)
+            throw new ArgumentNullException(
+                nameof(request));
 
-        var changes = new List<string>();
+        ValidateAssignmentValues(
+            request.AssignedTarget,
+            request.AssignedWeight);
 
-        if (existing.AssignedTarget != request.AssignedTarget)
-            changes.Add($"Target {existing.AssignedTarget} -> {request.AssignedTarget}");
+        var existing =
+            _assignmentRepository.GetById(
+                request.AssignmentId)
+            ?? throw new InvalidOperationException(
+                "KPI assignment was not found.");
 
-        if (existing.AssignedWeight != request.AssignedWeight)
-            changes.Add($"Weight {existing.AssignedWeight} -> {request.AssignedWeight}");
+        /*
+         * A single-row Weight edit would immediately make the period
+         * total different from 100%. Weight changes must therefore be
+         * submitted as a complete replacement set through Assign KPI.
+         */
+        if (Math.Abs(
+                request.AssignedWeight
+                - existing.AssignedWeight)
+            > WeightTolerance)
+        {
+            throw new InvalidOperationException(
+                "Weight cannot be changed from the single KPI edit form. " +
+                "Use Assign KPI to replace and rebalance the complete " +
+                "employee KPI set.");
+        }
 
-        if (existing.CurrentValue != request.CurrentValue)
-            changes.Add($"Current value {existing.CurrentValue} -> {request.CurrentValue}");
+        if (HasProgressStarted(existing))
+        {
+            throw new InvalidOperationException(
+                "Target and weight can only be edited before " +
+                "KPI progress starts.");
+        }
 
-        existing.AssignedTarget = request.AssignedTarget;
-        existing.AssignedWeight = request.AssignedWeight;
-        existing.CurrentValue = request.CurrentValue;
-        existing.Status = ResolveStatus(existing.AssignedTarget, existing.CurrentValue, existing.Status);
+        var changes =
+            new List<string>();
 
-        _assignmentRepository.Update(existing);
+        if (existing.AssignedTarget
+            != request.AssignedTarget)
+        {
+            changes.Add(
+                $"Target {existing.AssignedTarget} " +
+                $"-> {request.AssignedTarget}");
+        }
 
-        var accountId = CurrentAccountId();
-        var changeSummary = changes.Count > 0 ? string.Join("; ", changes) : "no field changes";
-        _logService.WriteLog(accountId, $"Updated KPI assignment {existing.AssignmentId} ({changeSummary}).");
+        if (existing.AssignedWeight
+            != request.AssignedWeight)
+        {
+            changes.Add(
+                $"Weight {existing.AssignedWeight} " +
+                $"-> {request.AssignedWeight}");
+        }
+
+        /*
+         * CurrentValue is intentionally not modified from this dialog.
+         * It changes only through Employee Pending -> Manager/Admin
+         * approval.
+         */
+        existing.AssignedTarget =
+            request.AssignedTarget;
+
+        existing.AssignedWeight =
+            request.AssignedWeight;
+
+        _assignmentRepository.Update(
+            existing);
+
+        var changeSummary =
+            changes.Count > 0
+                ? string.Join(
+                    "; ",
+                    changes)
+                : "no field changes";
+
+        _logService.WriteLog(
+            CurrentAccountId(),
+            $"Updated KPI assignment " +
+            $"{existing.AssignmentId} " +
+            $"({changeSummary}).");
     }
 
-    public void DeleteAssignment(int assignmentId)
+    public void DeleteAssignment(
+        int assignmentId)
     {
-        var existing = _assignmentRepository.GetById(assignmentId);
+        EnsureAdmin();
 
-        _assignmentRepository.Delete(assignmentId);
+        var existing =
+            _assignmentRepository.GetById(
+                assignmentId)
+            ?? throw new InvalidOperationException(
+                "KPI assignment was not found.");
 
-        var accountId = CurrentAccountId();
-        var description = existing != null
-            ? $"Deleted KPI assignment {assignmentId} ({existing.KpiName}) for employee {existing.EmployeeId}."
-            : $"Deleted KPI assignment {assignmentId}.";
+        if (HasProgressStarted(existing))
+        {
+            throw new InvalidOperationException(
+                "A KPI assignment cannot be removed after progress starts.");
+        }
 
-        _logService.WriteLog(accountId, description);
+        /*
+         * Removing one weighted KPI from a valid 100% period always
+         * leaves an invalid total. Use the replacement wizard so the
+         * remaining KPI weights can be rebalanced and saved atomically.
+         */
+        throw new InvalidOperationException(
+            "A single KPI assignment cannot be deleted because the " +
+            "remaining total Weight would be below 100%. " +
+            "Use Assign KPI to replace the complete employee KPI set.");
     }
 
     // ============================================================
@@ -322,35 +494,404 @@ public class KpiService : IKpiService
         return GetAssignedKpis(employeeId, month);
     }
 
-    public void UpdateMyProgress(int assignmentId, int employeeId, decimal currentValue)
+    public void UpdateMyProgress(
+        int assignmentId,
+        int employeeId,
+        decimal pendingValue)
     {
-        var existing = _assignmentRepository.GetById(assignmentId);
-        if (existing == null)
-            return;
+        if (pendingValue <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pendingValue),
+                "Pending progress must be greater than 0.");
+        }
 
-        // Enforce server-side that an employee can only update their own
-        // assignment - the UI already scopes to the logged-in employee,
-        // but that is cosmetic only.
+        var existing =
+            _assignmentRepository.GetById(assignmentId)
+            ?? throw new InvalidOperationException(
+                "KPI assignment was not found.");
+
         if (existing.EmployeeId != employeeId)
-            return;
+        {
+            throw new UnauthorizedAccessException(
+                "You cannot update another employee's KPI.");
+        }
 
-        var previousValue = existing.CurrentValue;
+        if (existing.IsLocked)
+        {
+            throw new InvalidOperationException(
+                "This KPI assignment is locked.");
+        }
 
-        // Only Current_Value may change here - all other fields are left
-        // untouched, per the self-service contract.
-        existing.CurrentValue = currentValue;
-        existing.Status = ResolveStatus(existing.AssignedTarget, currentValue, existing.Status);
+        if (string.Equals(
+                existing.Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Completed KPI cannot be updated.");
+        }
+
+        if (string.Equals(
+                existing.Status,
+                "Cancelled",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Cancelled KPI cannot be updated.");
+        }
+
+        if (existing.PendingValue.HasValue)
+        {
+            throw new InvalidOperationException(
+                "A progress update is already pending approval.");
+        }
+
+        if (DateTime.Today > existing.EndDate.Date)
+        {
+            throw new InvalidOperationException(
+                "The KPI period has ended.");
+        }
+
+        /*
+         * Employee submits only an increment waiting for approval.
+         * CurrentValue remains unchanged until Manager/Admin approves.
+         */
+        existing.PendingValue = pendingValue;
+        existing.Status = "Pending Approval";
 
         _assignmentRepository.Update(existing);
 
-        var accountId = CurrentAccountId();
-        _logService.WriteLog(accountId,
-            $"Updated progress on KPI assignment {assignmentId} ({existing.KpiName}): {previousValue} -> {currentValue}.");
+        _logService.WriteLog(
+            CurrentAccountId(),
+            $"Submitted pending KPI progress {pendingValue:N2} " +
+            $"for assignment {assignmentId} ({existing.KpiName}).");
+    }
+
+    public void ApprovePendingProgress(int assignmentId)
+    {
+        EnsureManagerOrAdmin();
+
+        var assignment =
+            _assignmentRepository.GetById(assignmentId)
+            ?? throw new InvalidOperationException(
+                "KPI assignment was not found.");
+
+        EnsureCanApproveEmployee(
+            assignment.EmployeeId);
+
+        if (assignment.IsLocked)
+        {
+            throw new InvalidOperationException(
+                "This KPI assignment is locked.");
+        }
+
+        if (!assignment.PendingValue.HasValue)
+        {
+            throw new InvalidOperationException(
+                "There is no pending progress to approve.");
+        }
+
+        var approvedValue =
+            assignment.PendingValue.Value;
+
+        assignment.CurrentValue +=
+            approvedValue;
+
+        assignment.PendingValue = null;
+
+        assignment.Status =
+            assignment.AssignedTarget > 0
+            && assignment.CurrentValue
+                >= assignment.AssignedTarget
+                ? "Completed"
+                : "In Progress";
+
+        _assignmentRepository.Update(
+            assignment);
+
+        _logService.WriteLog(
+            CurrentAccountId(),
+            $"Approved pending KPI progress {approvedValue:N2} " +
+            $"for assignment {assignmentId}. " +
+            $"Current value is now {assignment.CurrentValue:N2}.");
+
+        TryFinalizeEmployeePeriod(
+            assignment.EmployeeId,
+            assignment.StartDate,
+            assignment.EndDate);
+    }
+
+    public void RejectPendingProgress(int assignmentId)
+    {
+        EnsureAdmin();
+
+        var assignment =
+            _assignmentRepository.GetById(assignmentId)
+            ?? throw new InvalidOperationException(
+                "KPI assignment was not found.");
+
+        if (assignment.IsLocked)
+        {
+            throw new InvalidOperationException(
+                "This KPI assignment is locked.");
+        }
+
+        if (!assignment.PendingValue.HasValue)
+        {
+            throw new InvalidOperationException(
+                "There is no pending progress to reject.");
+        }
+
+        var rejectedValue =
+            assignment.PendingValue.Value;
+
+        assignment.PendingValue = null;
+
+        assignment.Status =
+            assignment.CurrentValue <= 0
+                ? "Not Started"
+                : "In Progress";
+
+        _assignmentRepository.Update(
+            assignment);
+
+        _logService.WriteLog(
+            CurrentAccountId(),
+            $"Rejected pending KPI progress {rejectedValue:N2} " +
+            $"for assignment {assignmentId}.");
+    }
+
+    public void SynchronizeExpiredAssignments()
+    {
+        var expiredAssignments =
+            _assignmentRepository.GetExpiredUnlocked(
+                DateTime.Today);
+
+        var affectedPeriods =
+            expiredAssignments
+                .Select(a => new
+                {
+                    a.EmployeeId,
+                    StartDate = a.StartDate.Date,
+                    EndDate = a.EndDate.Date
+                })
+                .Distinct()
+                .ToList();
+
+        foreach (var assignment in expiredAssignments)
+        {
+            assignment.PendingValue = null;
+            assignment.Status = "Completed";
+            _assignmentRepository.Update(assignment);
+        }
+
+        foreach (var period in affectedPeriods)
+        {
+            TryFinalizeEmployeePeriod(
+                period.EmployeeId,
+                period.StartDate,
+                period.EndDate);
+        }
+
+        if (expiredAssignments.Count > 0)
+        {
+            _logService.WriteLog(
+                CurrentAccountId(),
+                $"Completed and finalized {expiredAssignments.Count} expired KPI assignment(s).");
+        }
     }
 
     // ============================================================
     // Helpers
     // ============================================================
+
+    private void TryFinalizeEmployeePeriod(
+        int employeeId,
+        DateTime startDate,
+        DateTime endDate)
+    {
+        var assignments =
+            _assignmentRepository.GetByEmployeeAndPeriod(
+                employeeId,
+                startDate,
+                endDate);
+
+        if (assignments.Count == 0
+            || assignments.All(a => a.IsLocked)
+            || assignments.Any(a => !string.Equals(
+                a.Status,
+                "Completed",
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        var totalScore =
+            CalculateTotalKpiScore(assignments);
+
+        var result =
+            ResolveKpiRewardPenalty(totalScore);
+
+        EmployeeEvaluation? evaluation = null;
+
+        if (result.Amount > 0)
+        {
+            evaluation = new EmployeeEvaluation
+            {
+                EmployeeId = employeeId,
+                EvaluationType = "KPI",
+                BonusType = result.BonusType,
+                Amount = result.Amount,
+                BonusDate = endDate.Date,
+                Comment =
+                    $"Automatic KPI evaluation. Total KPI score: {totalScore:N2}."
+            };
+        }
+
+        _assignmentRepository.FinalizePeriod(
+            employeeId,
+            startDate,
+            endDate,
+            evaluation);
+
+        _logService.WriteLog(
+            CurrentAccountId(),
+            evaluation == null
+                ? $"Finalized KPI period for employee {employeeId}. Score {totalScore:N2}; no reward or penalty."
+                : $"Finalized KPI period for employee {employeeId}. Score {totalScore:N2}; {result.BonusType} ${result.Amount:N2}.");
+    }
+
+    private static decimal CalculateTotalKpiScore(
+        IReadOnlyList<EmployeeKpiAssignment> assignments)
+    {
+        var totalWeight =
+            assignments.Sum(a => a.AssignedWeight);
+
+        if (totalWeight <= 0)
+            return 0;
+
+        var weightedSum =
+            assignments.Sum(
+                a => CalculateAchievementRate(a)
+                     * a.AssignedWeight);
+
+        return decimal.Round(
+            weightedSum / totalWeight,
+            2,
+            MidpointRounding.AwayFromZero);
+    }
+
+    private static decimal CalculateAchievementRate(
+        EmployeeKpiAssignment assignment)
+    {
+        if (assignment.AssignedTarget <= 0)
+            return 0;
+
+        decimal achievement;
+
+        if (string.Equals(
+                assignment.CalculationMethod,
+                "LowerIsBetter",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            achievement =
+                assignment.CurrentValue <= 0
+                    ? 100m
+                    : assignment.AssignedTarget
+                      / assignment.CurrentValue
+                      * 100m;
+        }
+        else
+        {
+            achievement =
+                assignment.CurrentValue
+                / assignment.AssignedTarget
+                * 100m;
+        }
+
+        return Math.Clamp(
+            achievement,
+            0m,
+            100m);
+    }
+
+    private static KpiEvaluationResult ResolveKpiRewardPenalty(
+        decimal score)
+    {
+        var normalizedScore =
+            Math.Clamp(score, 0m, 100m);
+
+        if (normalizedScore >= 90m)
+            return new KpiEvaluationResult("Reward", 200m);
+
+        if (normalizedScore >= 80m)
+            return new KpiEvaluationResult("Reward", 100m);
+
+        if (normalizedScore >= 60m)
+            return new KpiEvaluationResult("None", 0m);
+
+        return new KpiEvaluationResult("Penalty", 100m);
+    }
+
+    private sealed record KpiEvaluationResult(
+        string BonusType,
+        decimal Amount);
+
+    private static void ValidateAssignmentValues(
+        decimal target,
+        decimal weight)
+    {
+        if (target <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(target),
+                "KPI target must be greater than 0.");
+        }
+
+        if (weight <= 0
+            || weight > RequiredTotalWeight)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(weight),
+                "KPI weight must be greater than 0 " +
+                "and must not exceed 100%.");
+        }
+    }
+
+    private static void ValidateTotalWeight(
+        decimal totalWeight,
+        int employeeId)
+    {
+        if (Math.Abs(
+                totalWeight
+                - RequiredTotalWeight)
+            <= WeightTolerance)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Total KPI weight for employee {employeeId} " +
+            $"must equal 100%. " +
+            $"Current total: {totalWeight:N2}%.");
+    }
+
+    private static bool HasProgressStarted(
+        EmployeeKpiAssignment assignment)
+    {
+        return assignment.IsLocked
+               || assignment.CurrentValue > 0
+               || assignment.PendingValue.HasValue
+               || !string.Equals(
+                   assignment.Status,
+                   "Not Started",
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed record PeriodAssignmentReplacement(
+        int EmployeeId,
+        List<EmployeeKpiAssignment> Assignments);
 
     private static bool TryParseMonth(string? month, out DateTime startDate, out DateTime endDate)
     {
@@ -460,5 +1001,84 @@ public class KpiService : IKpiService
     /// against ManageProfilesService/ContractService - not repeated here).
     /// Falls back to 0 (unauthenticated) when there is no active session.
     /// </summary>
+    private void EnsureAdmin()
+    {
+        var currentUser =
+            _sessionManager.CurrentUser
+            ?? throw new UnauthorizedAccessException(
+                "An authenticated user is required.");
+
+        if (!currentUser.Role.RoleName.Equals(
+                "Admin",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException(
+                "Only Admin can manage KPI assignments.");
+        }
+    }
+
+    private void EnsureCanApproveEmployee(
+        int employeeId)
+    {
+        var currentUser =
+            _sessionManager.CurrentUser
+            ?? throw new UnauthorizedAccessException(
+                "An authenticated user is required.");
+
+        if (currentUser.Role.RoleName.Equals(
+                "Admin",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (!currentUser.Role.RoleName.Equals(
+                "Manager",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException(
+                "Only Manager or Admin can approve KPI progress.");
+        }
+
+        var employee =
+            _employeeRepository
+                .GetAll()
+                .FirstOrDefault(
+                    item =>
+                        item.EmployeeId == employeeId)
+            ?? throw new InvalidOperationException(
+                "Employee was not found.");
+
+        if (employee.DepartmentId
+            != currentUser.Employee.DepartmentId)
+        {
+            throw new UnauthorizedAccessException(
+                "Manager can approve KPI progress only for employees " +
+                "in their department.");
+        }
+    }
+
+    private void EnsureManagerOrAdmin()
+    {
+        var currentUser =
+            _sessionManager.CurrentUser
+            ?? throw new UnauthorizedAccessException(
+                "An authenticated user is required.");
+
+        var roleName =
+            currentUser.Role.RoleName;
+
+        if (!roleName.Equals(
+                "Admin",
+                StringComparison.OrdinalIgnoreCase)
+            && !roleName.Equals(
+                "Manager",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException(
+                "Only Manager or Admin can approve KPI progress.");
+        }
+    }
+
     private int CurrentAccountId() => _sessionManager.CurrentUser?.Account.AccountId ?? 0;
 }
