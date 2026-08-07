@@ -67,6 +67,7 @@ public partial class App : Application
         services.AddSingleton<IManageAnnouncementsService, ManageAnnouncementsService>();
         services.AddSingleton<IManageDepartmentsService, ManageDepartmentsService>();
         services.AddSingleton<IManageKpisService, ManageKpisService>();
+        services.AddSingleton<IManageKpiSetService, ManageKpiSetService>();
         services.AddSingleton<IKpiService, KpiService>();
 
 
@@ -117,6 +118,7 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<KpiAssignmentViewModel>();
         services.AddTransient<PersonalKpiViewModel>();
+        services.AddTransient<ManageKpiSetViewModel>();
 
         // Windows
         services.AddTransient<MainWindow>();
