@@ -48,13 +48,19 @@ namespace HRManagement.ViewModels
             AddDetailCommand = new RelayCommand(_ => AddDetailRow());
             RemoveDetailCommand = new RelayCommand(param => RemoveDetailRow(param as KpiSetDetailRow));
 
+            RefreshCommand = new RelayCommand(_ => Refresh());
+
             HasAccess = _manageKpiSetService.CurrentUserHasAccess();
             HasNoAccess = !HasAccess;
 
             if (HasAccess)
             {
-                LoadKpiSets();
+                // Departments must be loaded first: LoadKpiSets() builds a
+                // department-name lookup from this collection while mapping
+                // rows, so loading it after would leave every row showing
+                // the "Dept {id}" fallback instead of the real name.
                 LoadDepartments();
+                LoadKpiSets();
             }
         }
 
@@ -68,6 +74,44 @@ namespace HRManagement.ViewModels
         public ObservableCollection<KpiSetRow> KpiSets { get; }
         public ICollectionView KpiSetsView { get; }
 
+        // Stat cards - derived from KpiSets, refreshed alongside it in
+        // LoadKpiSets() rather than bound to any fake/static numbers.
+
+        private int _totalSetsCount;
+        public int TotalSetsCount
+        {
+            get => _totalSetsCount;
+            set => SetProperty(ref _totalSetsCount, value);
+        }
+
+        private int _totalKpiCount;
+        public int TotalKpiCount
+        {
+            get => _totalKpiCount;
+            set => SetProperty(ref _totalKpiCount, value);
+        }
+
+        private int _activeSetsCount;
+        public int ActiveSetsCount
+        {
+            get => _activeSetsCount;
+            set => SetProperty(ref _activeSetsCount, value);
+        }
+
+        private int _inactiveSetsCount;
+        public int InactiveSetsCount
+        {
+            get => _inactiveSetsCount;
+            set => SetProperty(ref _inactiveSetsCount, value);
+        }
+
+        // Bound directly by ManageKpiSetView.xaml's ItemsControl - this is
+        // the collection actually rendered on screen, so it must always be
+        // rebuilt from the *filtered* view (KpiSetsView), not from the raw
+        // KpiSets collection. Both LoadKpiSets() and SearchText funnel
+        // through RebuildDepartmentGroups() so the grouped list and the
+        // DepartmentGroups.Count-based empty-state binding stay correct
+        // whether the list was just reloaded or just filtered.
         private ObservableCollection<IGrouping<string, KpiSetRow>>? _departmentGroups;
         public ObservableCollection<IGrouping<string, KpiSetRow>>? DepartmentGroups
         {
@@ -82,7 +126,10 @@ namespace HRManagement.ViewModels
             set
             {
                 if (SetProperty(ref _searchText, value))
+                {
                     KpiSetsView.Refresh();
+                    RebuildDepartmentGroups();
+                }
             }
         }
 
@@ -91,6 +138,7 @@ namespace HRManagement.ViewModels
         public RelayCommand DeleteCommand { get; }
         public RelayCommand SaveCommand { get; }
         public RelayCommand CancelCommand { get; }
+        public RelayCommand RefreshCommand { get; }
 
         // Add/Edit form overlay
 
@@ -176,10 +224,23 @@ namespace HRManagement.ViewModels
             set => SetProperty(ref _pendingDelete, value);
         }
 
+        private string? _deleteErrorMessage;
+        public string? DeleteErrorMessage
+        {
+            get => _deleteErrorMessage;
+            set => SetProperty(ref _deleteErrorMessage, value);
+        }
+
         public RelayCommand ConfirmDeleteCommand { get; }
         public RelayCommand CancelDeleteCommand { get; }
 
         // Loading
+
+        private void Refresh()
+        {
+            LoadDepartments();
+            LoadKpiSets();
+        }
 
         private void LoadKpiSets()
         {
@@ -194,16 +255,7 @@ namespace HRManagement.ViewModels
                 var setWithDetails = _manageKpiSetService.GetKpiSetById(kpiSet.KpiSetId);
                 if (setWithDetails != null)
                 {
-                    var row = ToRow(kpiSet, setWithDetails.Details.Count);
-
-                    // Map department name from lookup
-                    if (row.DepartmentName?.StartsWith("Dept") == true && kpiSet.DepartmentId.HasValue)
-                    {
-                        var deptName = deptLookup.TryGetValue(kpiSet.DepartmentId.Value, out var name) 
-                            ? name 
-                            : $"Dept {kpiSet.DepartmentId}";
-                        row.DepartmentName = deptName;
-                    }
+                    var row = ToRow(kpiSet, setWithDetails.Details.Count, deptLookup);
 
                     // Populate detail rows
                     foreach (var detail in setWithDetails.Details)
@@ -224,23 +276,54 @@ namespace HRManagement.ViewModels
                 }
             }
 
-            // Group by Department for the grouped view
-            var grouped = KpiSets
+            TotalSetsCount = KpiSets.Count;
+            TotalKpiCount = KpiSets.Sum(k => k.DetailCount);
+            ActiveSetsCount = KpiSets.Count(k => k.IsActive);
+            InactiveSetsCount = KpiSets.Count(k => !k.IsActive);
+
+            // Group by Department for the grouped view - built from the
+            // filtered view so an active search term is respected on load
+            // too (e.g. after Refresh while a search is still typed in).
+            RebuildDepartmentGroups();
+        }
+
+        /// <summary>
+        /// Rebuilds DepartmentGroups (the collection actually bound in
+        /// ManageKpiSetView.xaml) from the current filtered KpiSetsView.
+        /// Must be called both after reloading KpiSets and whenever the
+        /// search filter changes, otherwise the grouped list on screen and
+        /// the DepartmentGroups.Count empty-state binding go stale.
+        /// </summary>
+        private void RebuildDepartmentGroups()
+        {
+            var grouped = KpiSetsView.Cast<KpiSetRow>()
                 .GroupBy(k => k.DepartmentName ?? "Organization-wide")
                 .ToList();
 
             DepartmentGroups = new ObservableCollection<IGrouping<string, KpiSetRow>>(grouped);
         }
 
-        private static KpiSetRow ToRow(KpiSet kpiSet, int detailCount)
+        private static KpiSetRow ToRow(KpiSet kpiSet, int detailCount, Dictionary<int, string> deptLookup)
         {
+            string departmentName;
+            if (kpiSet.DepartmentId.HasValue)
+            {
+                departmentName = deptLookup.TryGetValue(kpiSet.DepartmentId.Value, out var name)
+                    ? name
+                    : $"Department {kpiSet.DepartmentId}";
+            }
+            else
+            {
+                departmentName = "Organization-wide";
+            }
+
             return new KpiSetRow
             {
                 KpiSet = kpiSet,
                 KpiSetId = kpiSet.KpiSetId,
                 KpiSetName = kpiSet.KpiSetName,
                 Description = kpiSet.Description,
-                DepartmentName = kpiSet.DepartmentId.HasValue ? $"Dept {kpiSet.DepartmentId}" : "Organization-wide",
+                DepartmentName = departmentName,
                 Status = kpiSet.IsActive ? "Active" : "Inactive",
                 CreatedAtDisplay = kpiSet.CreatedAt.ToString("MMM dd, yyyy"),
                 CreatedDate = kpiSet.CreatedAt,
@@ -250,6 +333,13 @@ namespace HRManagement.ViewModels
             };
         }
 
+        /// <summary>
+        /// Matches SearchText against the KPI Set name, description,
+        /// department name, and the name of any KPI included in the set -
+        /// so searching "Sales" surfaces sets named after it, sets
+        /// belonging to that department, and sets that merely contain a
+        /// "Sales ..." KPI line item.
+        /// </summary>
         private bool FilterKpiSet(object obj)
         {
             if (obj is not KpiSetRow row)
@@ -261,7 +351,9 @@ namespace HRManagement.ViewModels
             var term = SearchText.Trim();
 
             return row.KpiSetName.Contains(term, StringComparison.OrdinalIgnoreCase)
-                || (row.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
+                || (row.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (row.DepartmentName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || row.Details.Any(d => d.KpiName.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         // Add / Edit
@@ -433,6 +525,7 @@ namespace HRManagement.ViewModels
             if (row == null)
                 return;
 
+            DeleteErrorMessage = null;
             PendingDelete = row;
             IsDeleteConfirmOpen = true;
         }
@@ -444,6 +537,8 @@ namespace HRManagement.ViewModels
                 if (PendingDelete == null)
                     return;
 
+                DeleteErrorMessage = null;
+
                 _manageKpiSetService.DeleteKpiSet(
                     PendingDelete.KpiSetId,
                     PendingDelete.KpiSetName);
@@ -453,8 +548,7 @@ namespace HRManagement.ViewModels
             }
             catch (Exception ex)
             {
-                // Could show error in UI here
-                System.Diagnostics.Debug.WriteLine($"Delete failed: {ex.Message}");
+                DeleteErrorMessage = $"Could not delete: {ex.Message}";
             }
         }
 
@@ -462,6 +556,7 @@ namespace HRManagement.ViewModels
         {
             IsDeleteConfirmOpen = false;
             PendingDelete = null;
+            DeleteErrorMessage = null;
         }
     }
 }

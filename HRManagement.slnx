@@ -4,4 +4,5 @@
     <Build />
     <Deploy />
   </Project>
+  <Project Path="Tests/Tests.csproj" Id="4c7fa825-2ea7-4806-b366-9a358fc4b450" />
 </Solution>

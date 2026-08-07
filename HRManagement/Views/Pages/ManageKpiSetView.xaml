@@ -5,454 +5,475 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              xmlns:local="clr-namespace:HRManagement.Models"
+             xmlns:vm="clr-namespace:HRManagement.ViewModels"
              mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:ManageKpiSetViewModel}"
              d:DesignWidth="1400" d:DesignHeight="900"
              Background="{DynamicResource CardBackgroundBrush}">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
-        <!-- ============ Header Section ============ -->
-        <Border Grid.Row="0" Padding="28,24,28,20" Background="{DynamicResource CardBackgroundBrush}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource DividerBrush}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- ============ Access denied state ============ -->
+        <Grid Visibility="{Binding HasNoAccess, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <fa:IconImage Icon="Lock" Width="40" Height="40" Foreground="{DynamicResource SecondaryTextBrush}"
+                              HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                <TextBlock Text="You don't have access to Manage KPI Sets." FontSize="15"
+                           Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
 
-                <!-- Title and Description -->
-                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
-                    <TextBlock Text="Quản lý Bộ KPI" FontSize="32" FontWeight="Bold" 
-                               Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,6"/>
-                    <TextBlock Text="Cấu hình và theo dõi các chỉ tiêu KPI theo kỳ hạn - Configure and track KPI items according to the period" 
-                               FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.8"/>
-                </StackPanel>
+        <!-- ============ Main content ============ -->
+        <Grid Visibility="{Binding HasAccess, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <!-- Top Right Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,8,0">
-                        <Button x:Name="BtnPeriod" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnPeriod_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Calendar" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Q2/2026" VerticalAlignment="Center"/>
+            <!-- ============ Header Section ============ -->
+            <Border Grid.Row="0" Padding="28,24,28,20" Background="{DynamicResource CardBackgroundBrush}" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource DividerBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Title and Description -->
+                    <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="Manage KPI Sets" FontSize="32" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Configure and track KPI packs assigned to employees"
+                                   FontSize="14" Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.8"/>
+                    </StackPanel>
+
+                    <!-- Top Right Buttons -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,12,0">
+                            <Button Padding="10,8,10,8"
+                                   Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
+                                   FontSize="12" Cursor="Hand" BorderThickness="0"
+                                   Command="{Binding RefreshCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:IconImage Icon="RotateRight" Width="14" Height="14" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Refresh" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="6">
+                            <Button Command="{Binding AddCommand}" Padding="12,8,12,8"
+                                   Background="Transparent" Foreground="White"
+                                   FontSize="12" FontWeight="SemiBold" Cursor="Hand" BorderThickness="0">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:IconImage Icon="Plus" Width="14" Height="14" Foreground="White" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Add KPI Set" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ============ Statistics Cards Section ============ -->
+            <Border Grid.Row="1" Padding="28,16,28,16" Background="{DynamicResource PrimaryTintBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Card 1: Total KPI Sets -->
+                    <Border Grid.Column="0" Margin="0,0,12,0" Style="{StaticResource StatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryTintBrush}" Padding="8">
+                                <fa:IconImage Icon="ListCheck" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TotalSetsCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock Text="KPI Sets" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
                             </StackPanel>
-                        </Button>
+                        </Grid>
                     </Border>
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,8,0">
-                        <Button x:Name="BtnDepartment" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnDepartment_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Users" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Tất cả phòng ban" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,12,0">
-                        <Button x:Name="BtnRefresh" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnRefresh_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="RotateRight" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Làm mới" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                    <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="6">
-                        <Button Command="{Binding AddCommand}" Padding="12,8,12,8"
-                               Background="Transparent" Foreground="White"
-                               FontSize="12" FontWeight="SemiBold" Cursor="Hand" BorderThickness="0">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Plus" Width="14" Height="14" Foreground="White" Margin="0,0,6,0"/>
-                                <TextBlock Text="Thêm bộ KPI" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </Border>
 
-        <!-- ============ Statistics Cards Section ============ -->
-        <Border Grid.Row="1" Padding="28,16,28,16" Background="{DynamicResource PrimaryTintBrush}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+                    <!-- Card 2: Total KPI line items -->
+                    <Border Grid.Column="1" Margin="0,0,12,0" Style="{StaticResource StatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}" Padding="8">
+                                <fa:IconImage Icon="Hourglass" Width="24" Height="24" Foreground="{DynamicResource WarningBrush}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding TotalKpiCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock Text="Total KPIs assigned" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                <!-- Card 1: Total KPI Sets -->
-                <Border Grid.Column="0" Margin="0,0,12,0" Background="White" Padding="12,12,12,12" CornerRadius="6">
+                    <!-- Card 3: Active sets -->
+                    <Border Grid.Column="2" Margin="0,0,12,0" Style="{StaticResource StatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}" Padding="8">
+                                <fa:IconImage Icon="CheckCircle" Width="24" Height="24" Foreground="{DynamicResource SuccessBrush}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ActiveSetsCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock Text="Active sets" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Card 4: Inactive sets -->
+                    <Border Grid.Column="3" Style="{StaticResource StatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}" Padding="8">
+                                <fa:IconImage Icon="ExclamationTriangle" Width="24" Height="24" Foreground="{DynamicResource DangerBrush}"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding InactiveSetsCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock Text="Inactive sets" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ============ Search Section ============ -->
+            <Border Grid.Row="2" Padding="28,16,28,16" Background="{DynamicResource CardBackgroundBrush}" BorderThickness="0,1,0,1"
+                    BorderBrush="{DynamicResource DividerBrush}">
+                <Border HorizontalAlignment="Left" Width="320" BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="{DynamicResource PrimaryTintBrush}" CornerRadius="6" Width="40" Height="40" Padding="8">
-                            <fa:IconImage Icon="ListCheck" Width="24" Height="24" Foreground="{DynamicResource PrimaryBrush}"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="5" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                            <TextBlock Text="Bộ KPI" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
-                        </StackPanel>
+                        <fa:IconImage Grid.Column="0" Icon="MagnifyingGlass" Width="14" Height="14" Margin="12,0,0,0"
+                                      Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Style="{StaticResource FormTextBoxStyle}" Background="Transparent"
+                                 FontSize="12" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
                 </Border>
+            </Border>
 
-                <!-- Card 2: In Progress -->
-                <Border Grid.Column="1" Margin="0,0,12,0" Background="White" Padding="12,12,12,12" CornerRadius="6">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#FFFAF0" CornerRadius="6" Width="40" Height="40" Padding="8">
-                            <fa:IconImage Icon="Hourglass" Width="24" Height="24" Foreground="{DynamicResource WarningBrush}"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="24" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                            <TextBlock Text="Tổng chỉ tiêu" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+            <!-- ============ KPI Sets List ============ -->
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="28,20,28,20">
 
-                <!-- Card 3: Completed -->
-                <Border Grid.Column="2" Margin="0,0,12,0" Background="White" Padding="12,12,12,12" CornerRadius="6">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#F0FDF4" CornerRadius="6" Width="40" Height="40" Padding="8">
-                            <fa:IconImage Icon="CheckCircle" Width="24" Height="24" Foreground="{DynamicResource SuccessBrush}"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="24" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                            <TextBlock Text="Chỉ tiêu được dùng" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                    <!-- Empty state -->
+                    <TextBlock Text="No KPI sets found." Style="{StaticResource TableEmptyStateStyle}"
+                               Visibility="{Binding DepartmentGroups.Count, Converter={StaticResource ZeroToVisibleConverter}, FallbackValue=Collapsed}"/>
 
-                <!-- Card 4: Issues -->
-                <Border Grid.Column="3" Background="White" Padding="12,12,12,12" CornerRadius="6">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#FEF2F2" CornerRadius="6" Width="40" Height="40" Padding="8">
-                            <fa:IconImage Icon="ExclamationTriangle" Width="24" Height="24" Foreground="{DynamicResource DangerBrush}"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="0" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                            <TextBlock Text="Lỗi" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Grid>
-        </Border>
-
-        <!-- ============ Search and Filter Section ============ -->
-        <Border Grid.Row="2" Padding="28,16,28,16" Background="{DynamicResource CardBackgroundBrush}" BorderThickness="0,1,0,1" 
-                BorderBrush="{DynamicResource DividerBrush}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Department Filter -->
-                <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,8,0">
-                    <ComboBox  Background="{DynamicResource InputBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}" Padding="12,8,12,8" FontSize="12">
-                        <ComboBoxItem>Tất cả phòng ban</ComboBoxItem>
-                        <ComboBoxItem>Sales</ComboBoxItem>
-                        <ComboBoxItem>Marketing</ComboBoxItem>
-                    </ComboBox>
-                </Border>
-
-                <!-- Spacer -->
-                <Border Grid.Column="1"/>
-
-                <!-- Action Buttons -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,8,0">
-                        <Button x:Name="BtnAddByCriteria" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnAddByCriteria_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Plus" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Thêm theo tiêu chí" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6" Margin="0,0,8,0">
-                        <Button x:Name="BtnCopyPeriod" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnCopyPeriod_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Copy" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Copy kỳ trước" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                    <Border BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}" CornerRadius="6">
-                        <Button x:Name="BtnExport" Padding="10,8,10,8"
-                               Background="Transparent" Foreground="{DynamicResource PrimaryTextBrush}"
-                               FontSize="12" Cursor="Hand" BorderThickness="0"
-                               Click="BtnExport_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <fa:IconImage Icon="Download" Width="14" Height="14" Margin="0,0,6,0"/>
-                                <TextBlock Text="Xuất báo cáo" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- ============ KPI Sets List ============ -->
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl ItemsSource="{Binding DepartmentGroups}" Margin="28,20,28,20">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="0,0,0,24" CornerRadius="8" Background="{DynamicResource CardBackgroundBrush}" 
-                               BorderThickness="1" BorderBrush="{DynamicResource DividerBrush}">
-                            <StackPanel>
-                                <!-- KPI Set Header (Group Header) -->
-                                <Border Padding="20,16,20,16" Background="{DynamicResource PrimaryBrush}" CornerRadius="8,8,0,0">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <fa:IconImage Icon="FolderOpen" Width="18" Height="18" Foreground="White" Margin="0,0,12,0"/>
-                                            <TextBlock Text="{Binding Key}" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,12,0"/>
-                                            <Border Padding="6,3,6,3" Background="White" CornerRadius="12" Opacity="0.25">
-                                                <TextBlock Text="{Binding Count, StringFormat='{}{0} sets'}" 
-                                                          FontSize="11" Foreground="White" FontWeight="Medium"/>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                            <Button x:Name="BtnGroupAdd" Padding="6" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
-                                                   Click="BtnGroupAdd_Click" Tag="{Binding}">
-                                                <fa:IconImage Icon="Plus" Width="16" Height="16" Foreground="White"/>
-                                            </Button>
-                                            <Button x:Name="BtnGroupMore" Padding="6" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                                   Click="BtnGroupMore_Click" Tag="{Binding}">
-                                                <fa:IconImage Icon="Ellipsis" Width="16" Height="16" Foreground="White"/>
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-
-                                <!-- KPI Sets in this group -->
-                                <ItemsControl ItemsSource="{Binding}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="local:KpiSetRow">
-                                            <StackPanel>
-                                                <!-- KPI Set Row -->
-                                                <Border Padding="20,16,20,16" BorderThickness="0,0,0,1" 
-                                                       BorderBrush="{DynamicResource DividerBrush}" Background="Transparent">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <!-- KPI Set Info -->
-                                                        <StackPanel Grid.Column="0" Orientation="Vertical">
-                                                            <TextBlock Text="{Binding KpiSetName}" FontSize="14" FontWeight="SemiBold" 
-                                                                      Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
-                                                            <TextBlock Text="{Binding Description}" FontSize="12" 
-                                                                      Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap"/>
-                                                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                                                <Border Padding="4,2,4,2" Background="{DynamicResource PrimaryTintBrush}" CornerRadius="3" Margin="0,0,8,0">
-                                                                    <TextBlock Text="{Binding DetailCount, StringFormat='{}Có {0} chỉ tiêu'}" 
-                                                                              FontSize="11" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                                </Border>
-                                                                <TextBlock Text="{Binding CreatedAtDisplay}" FontSize="11" 
-                                                                          Foreground="{DynamicResource SecondaryTextBrush}"/>
-                                                            </StackPanel>
-                                                        </StackPanel>
-
-                                                        <!-- Action Buttons -->
-                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                            <Button x:Name="BtnRowEdit" Padding="8" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
-                                                                   Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                   CommandParameter="{Binding}">
-                                                                <fa:IconImage Icon="Edit" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                            </Button>
-                                                            <Button x:Name="BtnRowCopy" Padding="8" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,8,0"
-                                                                   Click="BtnRowCopy_Click" Tag="{Binding}">
-                                                                <fa:IconImage Icon="Copy" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                            </Button>
-                                                            <Button x:Name="BtnRowDelete" Padding="8" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                                                   Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                   CommandParameter="{Binding}">
-                                                                <fa:IconImage Icon="Trash" Width="16" Height="16" Foreground="{DynamicResource DangerBrush}"/>
-                                                            </Button>
-                                                        </StackPanel>
-                                                    </Grid>
+                    <ItemsControl x:Name="KpiSetGroupsList" ItemsSource="{Binding DepartmentGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,24" Style="{StaticResource TableCardStyle}">
+                                    <StackPanel>
+                                        <!-- KPI Set Group Header (Department) -->
+                                        <Border Padding="20,16,20,16" Background="{DynamicResource PrimaryBrush}" CornerRadius="16,16,0,0">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <fa:IconImage Icon="FolderOpen" Width="18" Height="18" Foreground="White" Margin="0,0,12,0"/>
+                                                <TextBlock Text="{Binding Key}" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,12,0"/>
+                                                <Border Padding="6,3,6,3" Background="White" CornerRadius="12" Opacity="0.25">
+                                                    <TextBlock Text="{Binding Count, StringFormat='{}{0} sets'}"
+                                                              FontSize="11" Foreground="White" FontWeight="Medium"/>
                                                 </Border>
+                                            </StackPanel>
+                                        </Border>
 
-                                                <!-- KPI Details Table Header -->
-                                                <Border Padding="20,12,20,12" Background="{DynamicResource InputBackgroundBrush}" 
-                                                       BorderThickness="0,1,0,1" BorderBrush="{DynamicResource DividerBrush}">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="40"/>
-                                                            <ColumnDefinition Width="200"/>
-                                                            <ColumnDefinition Width="100"/>
-                                                            <ColumnDefinition Width="100"/>
-                                                            <ColumnDefinition Width="80"/>
-                                                            <ColumnDefinition Width="120"/>
-                                                            <ColumnDefinition Width="120"/>
-                                                            <ColumnDefinition Width="100"/>
-                                                            <ColumnDefinition Width="120"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                        </Grid.ColumnDefinitions>
+                                        <!-- KPI Sets in this group -->
+                                        <ItemsControl ItemsSource="{Binding}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type local:KpiSetRow}">
+                                                    <StackPanel>
+                                                        <!-- KPI Set Row -->
+                                                        <Border Padding="20,16,20,16" BorderThickness="0,0,0,1"
+                                                               BorderBrush="{DynamicResource DividerBrush}" Background="Transparent">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
 
-                                                        <TextBlock Grid.Column="0" Text="STT" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="1" Text="Chỉ tiêu" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="2" Text="Kế hoạch" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="3" Text="Cần tính" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="4" Text="Tỷ trọng" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="5" Text="KPI tối đa" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="6" Text="Cách chấm" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="7" Text="Cách tính" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"/>
-                                                        <TextBlock Grid.Column="8" Text="Trạng thái" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"
-                                                                  HorizontalAlignment="Center"/>
-                                                        <TextBlock Grid.Column="9" Text="Thao tác" FontWeight="SemiBold" FontSize="11"
-                                                                  Foreground="{DynamicResource SecondaryTextBrush}" Opacity="0.7"
-                                                                  HorizontalAlignment="Center"/>
-                                                    </Grid>
-                                                </Border>
-
-                                                <!-- Table Rows -->
-                                                <ItemsControl ItemsSource="{Binding Details}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate DataType="local:KpiSetDetailRow">
-                                                            <Border Padding="20,14,20,14" BorderThickness="0,0,0,1" 
-                                                                   BorderBrush="{DynamicResource DividerBrush}" Background="Transparent">
-                                                                <Grid>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="40"/>
-                                                                        <ColumnDefinition Width="200"/>
-                                                                        <ColumnDefinition Width="100"/>
-                                                                        <ColumnDefinition Width="100"/>
-                                                                        <ColumnDefinition Width="80"/>
-                                                                        <ColumnDefinition Width="120"/>
-                                                                        <ColumnDefinition Width="120"/>
-                                                                        <ColumnDefinition Width="100"/>
-                                                                        <ColumnDefinition Width="120"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                    </Grid.ColumnDefinitions>
-
-                                                                    <!-- Row Number -->
-                                                                    <TextBlock Grid.Column="0" Text="1" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center"/>
-
-                                                                    <!-- KPI Name -->
-                                                                    <TextBlock Grid.Column="1" Text="{Binding KpiName}" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-
-                                                                    <!-- Target Value -->
-                                                                    <TextBlock Grid.Column="2" Text="{Binding TargetValue}" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center"/>
-
-                                                                    <!-- Plan Value -->
-                                                                    <TextBlock Grid.Column="3" Text="{Binding TargetValue}" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center"/>
-
-                                                                    <!-- Weight -->
-                                                                    <TextBlock Grid.Column="4" Text="{Binding Weight, StringFormat='0%'}" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center"/>
-
-                                                                    <!-- Major KPI (indicator) -->
-                                                                    <Border Grid.Column="5" Padding="6,3,6,3" Background="{DynamicResource WarningBrush}" CornerRadius="4"
-                                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                           Opacity="0.2">
-                                                                        <TextBlock Text="Cần chấm" FontSize="10" Foreground="{DynamicResource WarningBrush}" FontWeight="Medium"/>
-                                                                    </Border>
-
-                                                                    <!-- Scoring Method -->
-                                                                    <TextBlock Grid.Column="6" Text="Nhập trực tiếp" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryBrush}" FontWeight="Medium"
-                                                                              VerticalAlignment="Center"/>
-
-                                                                    <!-- Calculation Formula -->
-                                                                    <TextBlock Grid.Column="7" Text="{Binding MeasurementUnit}" FontSize="12"
-                                                                              Foreground="{DynamicResource PrimaryTextBrush}"
-                                                                              VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-
-                                                                    <!-- Status Badge -->
-                                                                    <Border Grid.Column="8" Padding="6,3,6,3" Background="{DynamicResource SuccessBrush}" CornerRadius="4"
-                                                                           HorizontalAlignment="Left" VerticalAlignment="Center"
-                                                                           Opacity="0.15">
-                                                                        <TextBlock Text="Đang dùng" FontSize="10" Foreground="{DynamicResource SuccessBrush}" FontWeight="Medium"/>
-                                                                    </Border>
-
-                                                                    <!-- Actions -->
-                                                                    <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center" 
-                                                                               HorizontalAlignment="Center">
-                                                                        <Button x:Name="BtnDetailEdit" Padding="4" Background="Transparent" BorderThickness="0" 
-                                                                               Cursor="Hand" Margin="0,0,8,0" Click="BtnDetailEdit_Click" Tag="{Binding}">
-                                                                            <fa:IconImage Icon="Edit" Width="14" Height="14" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                                        </Button>
-                                                                        <Button x:Name="BtnDetailCopy" Padding="4" Background="Transparent" BorderThickness="0" 
-                                                                               Cursor="Hand" Margin="0,0,8,0" Click="BtnDetailCopy_Click" Tag="{Binding}">
-                                                                            <fa:IconImage Icon="Copy" Width="14" Height="14" Foreground="{DynamicResource PrimaryBrush}"/>
-                                                                        </Button>
-                                                                        <Button x:Name="BtnDetailDelete" Padding="4" Background="Transparent" BorderThickness="0" 
-                                                                               Cursor="Hand" Click="BtnDetailDelete_Click" Tag="{Binding}">
-                                                                            <fa:IconImage Icon="Trash" Width="14" Height="14" Foreground="{DynamicResource DangerBrush}"/>
-                                                                        </Button>
+                                                                <!-- KPI Set Info -->
+                                                                <StackPanel Grid.Column="0" Orientation="Vertical">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="{Binding KpiSetName}" FontSize="14" FontWeight="SemiBold"
+                                                                                  Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,10,0"/>
+                                                                        <Border Style="{StaticResource StatusPillStyle}">
+                                                                            <TextBlock Text="{Binding Status}" FontSize="10.5" FontWeight="Medium"
+                                                                                      Foreground="{DynamicResource PrimaryBrush}"/>
+                                                                        </Border>
                                                                     </StackPanel>
+                                                                    <TextBlock Text="{Binding Description}" FontSize="12"
+                                                                              Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                                                        <Border Padding="4,2,4,2" Background="{DynamicResource PrimaryTintBrush}" CornerRadius="3" Margin="0,0,8,0">
+                                                                            <TextBlock Text="{Binding DetailCount, StringFormat='{}{0} KPIs'}"
+                                                                                      FontSize="11" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                                        </Border>
+                                                                        <TextBlock Text="{Binding CreatedAtDisplay}" FontSize="11"
+                                                                                  Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+
+                                                                <!-- Action Buttons -->
+                                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                                    <Button Style="{StaticResource RowIconButtonStyle}" Margin="0,0,8,0"
+                                                                           Command="{Binding DataContext.EditCommand, ElementName=KpiSetGroupsList}"
+                                                                           CommandParameter="{Binding}">
+                                                                        <fa:IconImage Icon="Edit" Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"/>
+                                                                    </Button>
+                                                                    <Button Style="{StaticResource RowIconButtonStyle}"
+                                                                           Command="{Binding DataContext.DeleteCommand, ElementName=KpiSetGroupsList}"
+                                                                           CommandParameter="{Binding}">
+                                                                        <fa:IconImage Icon="Trash" Width="16" Height="16" Foreground="{DynamicResource DangerBrush}"/>
+                                                                    </Button>
+                                                                </StackPanel>
                                                             </Grid>
                                                         </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+
+                                                        <!-- KPI Details Table Header -->
+                                                        <Border Padding="20,12,20,12" Background="{DynamicResource InputBackgroundBrush}"
+                                                               BorderThickness="0,1,0,1" BorderBrush="{DynamicResource DividerBrush}">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="140"/>
+                                                                    <ColumnDefinition Width="120"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <TextBlock Grid.Column="0" Text="KPI" Style="{StaticResource TableHeaderTextStyle}" Margin="0"/>
+                                                                <TextBlock Grid.Column="1" Text="Target" Style="{StaticResource TableHeaderTextStyle}" Margin="0" HorizontalAlignment="Right"/>
+                                                                <TextBlock Grid.Column="2" Text="Weight" Style="{StaticResource TableHeaderTextStyle}" Margin="0" HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </Border>
+
+                                                        <!-- No KPIs in this set -->
+                                                        <TextBlock Text="No KPIs in this set." Style="{StaticResource TableEmptyStateStyle}" Margin="0,16"
+                                                                   Visibility="{Binding Details.Count, Converter={StaticResource ZeroToVisibleConverter}, FallbackValue=Collapsed}"/>
+
+                                                        <!-- Table Rows -->
+                                                        <ItemsControl ItemsSource="{Binding Details}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="{x:Type local:KpiSetDetailRow}">
+                                                                    <Border Padding="20,14,20,14" BorderThickness="0,0,0,1"
+                                                                           BorderBrush="{DynamicResource DividerBrush}" Background="Transparent">
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                                <ColumnDefinition Width="140"/>
+                                                                                <ColumnDefinition Width="120"/>
+                                                                            </Grid.ColumnDefinitions>
+
+                                                                            <!-- KPI Name + unit -->
+                                                                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                                                <TextBlock Text="{Binding KpiName}" FontSize="13"
+                                                                                          Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                          VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                                                <TextBlock Text="{Binding MeasurementUnit, StringFormat='({0})'}" FontSize="11"
+                                                                                          Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                                          VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                                                            </StackPanel>
+
+                                                                            <!-- Target Value -->
+                                                                            <TextBlock Grid.Column="1" Text="{Binding TargetValue}" FontSize="13"
+                                                                                      Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                                      VerticalAlignment="Center" HorizontalAlignment="Right"/>
+
+                                                                            <!-- Weight -->
+                                                                            <Border Grid.Column="2" Style="{StaticResource KpiWeightPillStyle}">
+                                                                                <TextBlock Text="{Binding Weight, StringFormat='{}{0}%'}" Style="{StaticResource KpiWeightPillTextStyle}"/>
+                                                                            </Border>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ============ Add / Edit KPI Set Modal ============ -->
+        <Grid Style="{StaticResource ModalScrimStyle}"
+              Visibility="{Binding IsFormOpen, Converter={StaticResource BoolToVisibility}}"
+              MouseDown="FormScrim_MouseDown">
+            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="18" Padding="28"
+                    Width="640" MaxHeight="720" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Modal Header -->
+                    <TextBlock Grid.Row="0" Text="{Binding FormTitleText}" FontSize="20" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,18"/>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!-- Form error -->
+                            <Border Background="{DynamicResource DangerBadgeBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,0,14"
+                                    Visibility="{Binding HasFormError, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding FormErrorMessage}" FontSize="12.5" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap"/>
+                            </Border>
+
+                            <!-- Name -->
+                            <TextBlock Text="KPI Set Name" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Style="{StaticResource FormTextBoxStyle}" Margin="0,0,0,14"
+                                     Text="{Binding FormKpiSetName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Description -->
+                            <TextBlock Text="Description" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Style="{StaticResource FormTextAreaStyle}" Margin="0,0,0,14"
+                                     Text="{Binding FormDescription, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Department -->
+                            <TextBlock Text="Department (leave blank for organization-wide)" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox Style="{StaticResource ModernComboBox}" Margin="0,0,0,14"
+                                      ItemsSource="{Binding Departments}"
+                                      SelectedValuePath="DepartmentId"
+                                      DisplayMemberPath="DepartmentName"
+                                      SelectedValue="{Binding FormDepartmentId}"/>
+
+                            <!-- Active toggle -->
+                            <CheckBox Content="Active" IsChecked="{Binding FormIsActive}"
+                                      Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,18"/>
+
+                            <!-- KPI Details -->
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="KPIs in this set" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" Width="100" Height="32" Padding="14,0" FontSize="12"
+                                        Command="{Binding AddDetailCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <fa:IconImage Icon="Plus" Width="12" Height="12" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Add KPI"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <ItemsControl x:Name="SelectedDetailsList" ItemsSource="{Binding SelectedDetails}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:KpiSetDetailRow}">
+                                        <Border Style="{StaticResource KpiCheckableRowStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="90"/>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ComboBox Grid.Column="0" Style="{StaticResource ModernComboBox}" Height="34" Margin="0,0,8,0"
+                                                          ItemsSource="{Binding DataContext.AvailableKpis, ElementName=SelectedDetailsList}"
+                                                          SelectedValuePath="KpiId"
+                                                          DisplayMemberPath="KpiName"
+                                                          SelectedValue="{Binding KpiId}"/>
+
+                                                <TextBox Grid.Column="1" Style="{StaticResource KpiInlineValueBoxStyle}" Margin="0,0,8,0"
+                                                         Text="{Binding TargetValue, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                                <TextBox Grid.Column="2" Style="{StaticResource KpiInlineValueBoxStyle}" Margin="0,0,8,0"
+                                                         Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                                <Button Grid.Column="3" Style="{StaticResource RowIconButtonStyle}"
+                                                        Command="{Binding DataContext.RemoveDetailCommand, ElementName=SelectedDetailsList}"
+                                                        CommandParameter="{Binding}">
+                                                    <fa:IconImage Icon="Trash" Width="14" Height="14" Foreground="{DynamicResource DangerBrush}"/>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="No KPIs added yet. Click &quot;Add KPI&quot; to start." Style="{StaticResource TableEmptyStateStyle}" Margin="0,16"
+                                       Visibility="{Binding SelectedDetails.Count, Converter={StaticResource ZeroToVisibleConverter}, FallbackValue=Collapsed}"/>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Modal Footer -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Content="Cancel" Width="100" Margin="0,0,10,0"
+                                Command="{Binding CancelCommand}"/>
+                        <Button Style="{StaticResource PrimaryButtonStyle}" Content="Save" Width="100"
+                                Command="{Binding SaveCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============ Delete Confirmation Modal ============ -->
+        <Grid Style="{StaticResource ModalScrimStyle}"
+              Visibility="{Binding IsDeleteConfirmOpen, Converter={StaticResource BoolToVisibility}}"
+              MouseDown="DeleteScrim_MouseDown">
+            <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="18" Padding="28"
+                    Width="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <fa:IconImage Icon="ExclamationTriangle" Width="32" Height="32" Foreground="{DynamicResource DangerBrush}"
+                                  HorizontalAlignment="Center" Margin="0,0,0,14"/>
+                    <TextBlock Text="Delete KPI Set" FontSize="17" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <TextBlock FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,4">
+                        <Run Text="Are you sure you want to delete "/>
+                        <Run Text="{Binding PendingDelete.KpiSetName, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="? This will also remove all KPI line items in this set and cannot be undone."/>
+                    </TextBlock>
+
+                    <Border Background="{DynamicResource DangerBadgeBrush}" CornerRadius="8" Padding="12,10" Margin="0,10,0,0"
+                            Visibility="{Binding DeleteErrorMessage, Converter={StaticResource StringEmptyToVisibility}, FallbackValue=Collapsed}">
+                        <TextBlock Text="{Binding DeleteErrorMessage}" FontSize="12.5" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Content="Cancel" Margin="0,0,10,0"
+                                Command="{Binding CancelDeleteCommand}"/>
+                        <Button Content="Delete" Height="42" Padding="30,0" FontSize="14" FontWeight="SemiBold"
+                                Background="{DynamicResource DangerBrush}" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Command="{Binding ConfirmDeleteCommand}">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="21"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
