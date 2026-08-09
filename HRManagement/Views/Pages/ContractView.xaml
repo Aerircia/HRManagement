@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.ContractView"
+<UserControl x:Class="HRManagement.Views.Pages.ContractView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -185,13 +185,28 @@
                 <StackPanel Grid.Row="1"
                             VerticalAlignment="Top"
                             HorizontalAlignment="Center"
-                            Margin="0,40,0,0"
+                            Margin="0,60,0,0"
                             Visibility="{Binding HasNoContract, Converter={StaticResource BoolToVisibility}}">
+
+                    <TextBlock Text="&#xE8A5;"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="32"
+                               Foreground="{DynamicResource HintTextBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,12"/>
 
                     <TextBlock Text="No contract on file yet."
                                FontSize="15"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
                                HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Your signed employment contract will appear here once it's on file."
+                               FontSize="12.5"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,4,0,0"/>
                 </StackPanel>
 
             </Grid>

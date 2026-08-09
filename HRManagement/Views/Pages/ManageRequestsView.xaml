@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.ManageRequestsView"
+<UserControl x:Class="HRManagement.Views.Pages.ManageRequestsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -46,51 +46,63 @@
         <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,20">
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
-                        <fa:IconBlock Icon="Inbox" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Total" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding TotalCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Style="{StaticResource StatCardAccentStripBlueStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                            <fa:IconBlock Icon="Inbox" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Total" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
-                        <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Pending" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding PendingCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Style="{StaticResource StatCardAccentStripAmberStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                            <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Pending" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding PendingCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
-                        <fa:IconBlock Icon="Check" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Approved" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding ApprovedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Style="{StaticResource StatCardAccentStripGreenStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                            <fa:IconBlock Icon="Check" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Approved" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding ApprovedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
-                        <fa:IconBlock Icon="Xmark" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Rejected" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding RejectedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Style="{StaticResource StatCardAccentStripRedStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                            <fa:IconBlock Icon="Xmark" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Rejected" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding RejectedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
         </UniformGrid>
@@ -198,7 +210,7 @@
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
 
-                    <ItemsControl ItemsSource="{Binding Requests}">
+                    <ItemsControl ItemsSource="{Binding Requests}" AlternationCount="2">
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

@@ -75,4 +75,26 @@ public interface IManageAttendancesService
     /// attendance calendar knows the employee's effective start date.
     /// </summary>
     DateTime? GetEmployeeHireDate(int employeeId);
+
+    /// <summary>
+    /// Open check-ins (checked in, never checked out) for the "Open
+    /// Check-Ins" grid, scoped by the current user's role: Managers always
+    /// see only their own department's employees regardless of
+    /// selectedDepartmentId (mirroring GetEmployeeAttendanceOverview's
+    /// scoping), Admins see the selected department or all departments
+    /// when selectedDepartmentId is 0/null.
+    /// </summary>
+    List<OpenCheckInRow> GetOpenCheckIns(int? selectedDepartmentId);
+
+    /// <summary>
+    /// Approves an open check-in: defaults its Check_out to the standard
+    /// 17:00 shift end for that day. Delegates to IAttendanceService.
+    /// </summary>
+    void ApproveOpenCheckIn(int attendanceId);
+
+    /// <summary>
+    /// Denies an open check-in: hard-deletes the attendance row.
+    /// Delegates to IAttendanceService.
+    /// </summary>
+    void DenyOpenCheckIn(int attendanceId);
 }

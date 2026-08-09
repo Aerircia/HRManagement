@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -32,19 +32,51 @@
     <!-- Soft brand tint, used for selected pills / icon badges over white -->
     <SolidColorBrush x:Key="PrimaryTintBrush" Color="#EEF2FF"/>
 
-    <!-- Sidebar is now a clean off-white surface (matches reference UIs),
-         not a dark/blue gradient. Kept as a LinearGradientBrush (same key
-         + type) so Sidebar.xaml's Background binding keeps working as-is,
-         but the gradient is now a near-imperceptible vertical hairline
-         wash rather than a bold brand fill. -->
-    <LinearGradientBrush x:Key="SidebarBackgroundBrush"
-                         StartPoint="0,0"
-                         EndPoint="0,1">
-        <GradientStop Color="#FFFFFF" Offset="0"/>
-        <GradientStop Color="#FCFDFF" Offset="0.6"/>
-        <GradientStop Color="#F8FAFE" Offset="1"/>
+    <!-- Real saturated echo of LoginWindow's LoginPanelGradientBrush
+         (#5B82F2/#3E63DD/#2947B8), used for the app shell (Sidebar/TopBar/
+         TitleBar) so the product identity established at login actually
+         carries through into the signed-in app.
+
+         Earlier version of these tokens diluted the login gradient down
+         to near-white pastel tints (#EEF2FF-#DAE3FA) - at that lightness
+         it lost all "blue-ness" and just read as another shade of gray
+         next to white page cards, and all three shell regions used the
+         same values, so there was no depth differentiation between them
+         either. This version uses the login panel's actual saturation and
+         gives each region a distinct tone so the shell reads with real
+         presence: TitleBarBackgroundBrush darkest (topmost, sets the
+         anchor), ShellChromeGradientBrush (TopBar) mid-tone,
+         SidebarBackgroundBrush lightest/fullest diagonal expression
+         (largest surface, closest analog to the login panel itself).
+
+         Because these are now real saturated blues, shell text/icons
+         switch to light/white variants (see SidebarTextBrush etc. below)
+         instead of the dark-navy text that worked on the old pastel
+         version. -->
+    <LinearGradientBrush x:Key="TitleBarBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2947B8" Offset="0"/>
+        <GradientStop Color="#233E9E" Offset="0.6"/>
+        <GradientStop Color="#1D3486" Offset="1"/>
     </LinearGradientBrush>
 
+    <LinearGradientBrush x:Key="ShellChromeGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#3757CC" Offset="0"/>
+        <GradientStop Color="#2E4CB8" Offset="0.6"/>
+        <GradientStop Color="#2947B8" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Sidebar gets the fullest, most diagonal gradient of the three
+         chrome regions (four stops vs. three, wider hue swing) since it's
+         the largest continuous shell surface and the one closest in
+         spirit to LoginWindow's own panel gradient. -->
+    <LinearGradientBrush x:Key="SidebarBackgroundBrush"
+                         StartPoint="0,0"
+                         EndPoint="1,1">
+        <GradientStop Color="#4A6EE0" Offset="0"/>
+        <GradientStop Color="#3E63DD" Offset="0.4"/>
+        <GradientStop Color="#2E4EB8" Offset="0.75"/>
+        <GradientStop Color="#243F9E" Offset="1"/>
+    </LinearGradientBrush>
     <!-- ========= Accent (secondary brand - warm, used sparingly) ========= -->
 
     <SolidColorBrush x:Key="AccentBrush" Color="#F5A623"/>
@@ -55,6 +87,30 @@
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#E2E8F0"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="#F3F5FA"/>
+
+    <!-- Subtle diagonal wash for the page canvas behind content (Border
+         wrapping ContentControl in MainWindow.xaml) - muted echo of the
+         LoginWindow's blue panel gradient so the app doesn't feel like a
+         different product once you're past the login screen. Kept very
+         light (all three stops are near-white/near-canvas) so it reads as
+         gentle depth, not a colored background fighting the cards on it. -->
+    <LinearGradientBrush x:Key="PageCanvasBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F6F8FD" Offset="0"/>
+        <GradientStop Color="#ECF0FB" Offset="0.55"/>
+        <GradientStop Color="#E7ECFA" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- ========= Card accent strips ========= -->
+    <!-- Top-border color coding for stat/summary cards (PTO=blue,
+         Compensation/success=green, Tenure/warning=amber, Performance/
+         danger=red) - same hues as the existing status brushes below, so
+         a card's accent strip always matches its own status pill/badge
+         color rather than introducing a second unrelated palette. -->
+    <SolidColorBrush x:Key="CardAccentBlueBrush" Color="#3E63DD"/>
+    <SolidColorBrush x:Key="CardAccentGreenBrush" Color="#12B76A"/>
+    <SolidColorBrush x:Key="CardAccentAmberBrush" Color="#F5A623"/>
+    <SolidColorBrush x:Key="CardAccentRedBrush" Color="#F04438"/>
+    <SolidColorBrush x:Key="CardAccentPurpleBrush" Color="#7C5CFC"/>
 
     <!-- ========= Borders ========= -->
 
@@ -69,28 +125,47 @@
 
     <SolidColorBrush x:Key="WhiteBrush" Color="#FFFFFF"/>
 
-    <!-- ========= Sidebar (light surface, dark text, blue active state) ========= -->
-    <!-- Sidebar now sits on the same white/light-blue language as the rest
-         of the app (see reference dashboards), with a thin right-hand
-         hairline border (applied in Sidebar.xaml's parent Grid via
-         BorderBrush already present in MainWindow.xaml) separating it from
-         the canvas. -->
+    <!-- ========= Shell text (TopBar/TitleBar on saturated blue) ========= -->
+    <!-- PrimaryTextBrush/SecondaryTextBrush/DividerBrush above are tuned
+         for white card backgrounds and are unreadable against the real
+         saturated blue ShellChromeGradientBrush/TitleBarBackgroundBrush
+         now in use - these are the on-shell equivalents, applied directly
+         in TopBar.xaml/TitleBar.xaml rather than changing the general
+         tokens (which are still correct everywhere else in the app). -->
+    <SolidColorBrush x:Key="ShellTextBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellSecondaryTextBrush" Color="#C7D2F5"/>
+    <SolidColorBrush x:Key="ShellDividerBrush" Color="#FFFFFF" Opacity="0.18"/>
+    <SolidColorBrush x:Key="ShellIconHoverBrush" Color="#FFFFFF" Opacity="0.12"/>
 
-    <SolidColorBrush x:Key="SidebarTextBrush" Color="#5B6489"/>
+    <!-- ========= Sidebar (saturated blue surface, light text, white
+         active-state indicator) ========= -->
+    <!-- Flipped from dark-navy-text-on-pastel to light-text-on-saturated-
+         blue now that SidebarBackgroundBrush above is a real blue gradient
+         rather than a near-white tint - #5B6489 dark text had roughly
+         1.3:1 contrast against the new background and was effectively
+         unreadable. -->
 
-    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#F3F5FC"/>
+    <!-- Inactive nav item text/icon: translucent white rather than solid,
+         so the active item's solid white text still reads as a clear step
+         up in emphasis. -->
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#C7D2F5"/>
 
-    <SolidColorBrush x:Key="SidebarPressedBrush" Color="#E9EDFB"/>
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFFFFF" Opacity="0.10"/>
 
-    <!-- Selected nav item: soft brand-tint pill instead of translucent white
-         (translucent white only worked against a dark sidebar). -->
-    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#EEF2FF"/>
+    <SolidColorBrush x:Key="SidebarPressedBrush" Color="#FFFFFF" Opacity="0.16"/>
 
-    <!-- Text color used on the active/selected nav item (blue-on-tint,
-         instead of white-on-glass). Sidebar.xaml's item icons/text still
-         bind to SidebarTextBrush by default; this key is available for
-         future selected-state styling without another breaking change. -->
-    <SolidColorBrush x:Key="SidebarSelectedTextBrush" Color="#3E63DD"/>
+    <!-- Selected nav item: translucent white pill (works on a real dark-
+         blue surface, unlike the previous solid near-white fill which
+         depended on a light sidebar background to read as a "tint"). -->
+    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#FFFFFF" Opacity="0.16"/>
+
+    <!-- Text color on the active/selected nav item: solid white, paired
+         with the left accent bar (PrimaryBrush) added via
+         NavItemBrushConverter's AccentBar mode - the combination of
+         solid-white text + translucent pill + white accent bar is the
+         active-state signal now, replacing the old blue-text-on-tint
+         approach that only worked on a light sidebar. -->
+    <SolidColorBrush x:Key="SidebarSelectedTextBrush" Color="#FFFFFF"/>
 
     <!-- ========= Status ========= -->
 
@@ -102,8 +177,15 @@
 
     <!-- ========= DataGrid ========= -->
 
-    <SolidColorBrush x:Key="TableHeaderBrush" Color="#F7F9FD"/>
+    <!-- Deepened from #F7F9FD: that value sat only ~2-3% darker than the
+         white CardBackgroundBrush behind it, so header rows visually
+         blended into the body rows instead of reading as a distinct band.
+         #EAEEF7 gives a clearly separated cool-gray strip while staying
+         light enough not to compete with row content. -->
+    <SolidColorBrush x:Key="TableHeaderBrush" Color="#EAEEF7"/>
+    <SolidColorBrush x:Key="TableHeaderTextBrush" Color="#5C6690"/>
     <SolidColorBrush x:Key="RowHoverBrush" Color="#F6F8FE"/>
+    <SolidColorBrush x:Key="RowAltBrush" Color="#FAFBFE"/>
     <SolidColorBrush x:Key="RowSelectedBrush" Color="#EBF0FF"/>
 
     <!-- ========= Buttons ========= -->
@@ -121,6 +203,12 @@
     <SolidColorBrush x:Key="WarningBadgeBrush" Color="#FDF1DF"/>
     <SolidColorBrush x:Key="SuccessBadgeBrush" Color="#E4F8EE"/>
     <SolidColorBrush x:Key="DangerBadgeBrush" Color="#FDEAE8"/>
+
+    <!-- Added for the purple ("OT"/CardAccentPurple family) stat-card
+         icon badge - same flat-pastel-tint pattern as the four badges
+         above, previously missing so purple-accented stat cards (e.g.
+         Manage KPI's "KPI Types" card) had no matching badge fill. -->
+    <SolidColorBrush x:Key="PurpleBadgeBrush" Color="#F0EBFF"/>
 
     <!-- ========= Shadows (shared DropShadow color/opacity tokens) ========= -->
     <!-- Centralized so TableStyles/ProfileView/DashboardView card shadows

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Shared.TopBar"
+<UserControl x:Class="HRManagement.Views.Shared.TopBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,9 +6,8 @@
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              mc:Ignorable="d">
 
-    <Border Background="{DynamicResource CardBackgroundBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,0,1">
+    <Border Background="{DynamicResource ShellChromeGradientBrush}"
+            BorderBrush="{DynamicResource BorderBrush}">
 
         <Grid Margin="24,0">
 
@@ -41,12 +40,12 @@
 
             <Button Grid.Column="2"
                     Margin="0,0,8,0"
-                    Style="{StaticResource TopBarIconButtonStyle}">
+                    Style="{StaticResource ShellIconButtonStyle}">
 
                 <fa:IconBlock Icon="Bell"
                   Width="16"
                   Height="16"
-                  Foreground="{DynamicResource SecondaryTextBrush}"/>
+                  Foreground="{DynamicResource ShellSecondaryTextBrush}"/>
 
             </Button>
 
@@ -54,12 +53,12 @@
 
             <Button Grid.Column="3"
                     Margin="0,0,16,0"
-                    Style="{StaticResource TopBarIconButtonStyle}">
+                    Style="{StaticResource ShellIconButtonStyle}">
 
                 <fa:IconBlock Icon="CircleQuestion"
                       Width="16"
                       Height="16"
-                      Foreground="{DynamicResource SecondaryTextBrush}" />
+                      Foreground="{DynamicResource ShellSecondaryTextBrush}" />
 
             </Button>
 
@@ -69,7 +68,7 @@
                     Width="1"
                     Height="28"
                     Margin="0,0,16,0"
-                    Background="{DynamicResource DividerBrush}"/>
+                    Background="{DynamicResource ShellDividerBrush}"/>
 
             <!-- ================= User ================= -->
 
@@ -82,7 +81,7 @@
 
                     <Ellipse Fill="{DynamicResource PrimaryTintBrush}"/>
 
-                    <Image Source="{Binding Avatar}"
+                    <Image Source="{Binding Avatar, Converter={StaticResource AvatarPathConverter}}"
                            Stretch="UniformToFill">
 
                         <Image.Clip>
@@ -104,12 +103,12 @@
                     <TextBlock
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Foreground="{DynamicResource ShellTextBrush}"
                         Text="{Binding UserName}" />
 
                     <TextBlock
                         FontSize="12"
-                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Foreground="{DynamicResource ShellSecondaryTextBrush}"
                         Text="{Binding RoleName}" />
 
                 </StackPanel>
@@ -120,14 +119,14 @@
 
             <Button Grid.Column="6"
                     Margin="16,0,0,0"
-                    Style="{StaticResource TopBarIconButtonStyle}"
+                    Style="{StaticResource ShellIconButtonStyle}"
                     Command="{Binding LogoutCommand}"
                     ToolTip="Log out">
 
                 <fa:IconBlock Icon="RightFromBracket"
                       Width="16"
                       Height="16"
-                      Foreground="{DynamicResource SecondaryTextBrush}" />
+                      Foreground="{DynamicResource ShellSecondaryTextBrush}" />
 
             </Button>
 

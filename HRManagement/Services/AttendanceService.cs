@@ -18,15 +18,20 @@ public class AttendanceService : IAttendanceService
     private static readonly TimeSpan CheckInCutoff = ShiftStart.Add(TimeSpan.FromHours(2));
 
     private readonly IAttendanceRepository _attendanceRepository;
+    private readonly IEmployeeRepository _employeeRepository;
     private readonly ILogService _logService;
     private readonly SessionManager _sessionManager;
 
     public AttendanceService(
         IAttendanceRepository attendanceRepository,
+        IEmployeeRepository employeeRepository,
         ILogService logService,
         SessionManager sessionManager)
     {
         _attendanceRepository = attendanceRepository;
+
+        _employeeRepository = employeeRepository
+            ?? throw new ArgumentNullException(nameof(employeeRepository));
 
         _logService = logService
             ?? throw new ArgumentNullException(nameof(logService));
@@ -604,6 +609,74 @@ public class AttendanceService : IAttendanceService
     // re-implementing the "find today's record" query (see FindToday below,
     // which this simply exposes through the interface).
     public Attendance? GetTodayAttendance(int employeeId) => FindToday(employeeId);
+
+    public List<OpenCheckInRow> GetOpenCheckIns()
+    {
+        var openRecords = _attendanceRepository.GetOpenCheckIns().ToList();
+
+        if (openRecords.Count == 0)
+            return [];
+
+        // Batch-resolve employee names via GetAll() rather than one
+        // GetById() call per row, matching the "load once, join in memory"
+        // approach ManageAttendancesService already uses elsewhere.
+        var employeeNames = _employeeRepository
+            .GetAll()
+            .ToDictionary(e => e.EmployeeId, e => e.FullName);
+
+        return [.. openRecords
+            .Where(a => a.CheckIn.HasValue)
+            .Select(a => new OpenCheckInRow
+            {
+                AttendanceId = a.AttendanceId,
+                EmployeeId = a.EmployeeId,
+                EmployeeName = employeeNames.TryGetValue(a.EmployeeId, out var name)
+                    ? name
+                    : $"Employee {a.EmployeeId}",
+                CheckIn = a.CheckIn!.Value,
+                Status = a.Status
+            })];
+    }
+
+    public void ApproveOpenCheckIn(int attendanceId)
+    {
+        var record = _attendanceRepository
+            .GetOpenCheckIns()
+            .FirstOrDefault(a => a.AttendanceId == attendanceId);
+
+        if (record == null || !record.CheckIn.HasValue)
+            return;
+
+        var defaultCheckOut = record.CheckIn.Value.Date.Add(ShiftEnd);
+
+        _attendanceRepository.UpsertAttendance(new Attendance
+        {
+            EmployeeId = record.EmployeeId,
+            CheckIn = record.CheckIn,
+            CheckOut = defaultCheckOut,
+            Status = record.Status
+        });
+
+        _logService.WriteLog(
+            CurrentAccountId,
+            $"Approved open check-in {attendanceId} for employee {record.EmployeeId} " +
+            $"(check-out defaulted to {defaultCheckOut:yyyy-MM-dd HH:mm})");
+    }
+
+    public void DenyOpenCheckIn(int attendanceId)
+    {
+        var record = _attendanceRepository
+            .GetOpenCheckIns()
+            .FirstOrDefault(a => a.AttendanceId == attendanceId);
+
+        _attendanceRepository.DeleteAttendance(attendanceId);
+
+        _logService.WriteLog(
+            CurrentAccountId,
+            record != null
+                ? $"Denied and deleted open check-in {attendanceId} for employee {record.EmployeeId}"
+                : $"Denied and deleted open check-in {attendanceId}");
+    }
 
     private static string ResolveStatus(AttendanceDayModel day, string? dbStatus)
     {

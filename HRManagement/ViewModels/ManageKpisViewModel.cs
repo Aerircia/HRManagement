@@ -1,4 +1,4 @@
-﻿using HRManagement.Models;
+using HRManagement.Models;
 using HRManagement.Services;
 using HRManagement.Services.Interfaces;
 using HRManagement.Utilities;
@@ -72,6 +72,36 @@ namespace HRManagement.ViewModels
         public ICollectionView KpisView { get; }
 
         public bool IsEmpty => Kpis.Count == 0;
+
+        // Summary stat cards (Total / Active / Inactive / Distinct Types)
+
+        private int _totalKpisCount;
+        public int TotalKpisCount
+        {
+            get => _totalKpisCount;
+            private set => SetProperty(ref _totalKpisCount, value);
+        }
+
+        private int _activeKpisCount;
+        public int ActiveKpisCount
+        {
+            get => _activeKpisCount;
+            private set => SetProperty(ref _activeKpisCount, value);
+        }
+
+        private int _inactiveKpisCount;
+        public int InactiveKpisCount
+        {
+            get => _inactiveKpisCount;
+            private set => SetProperty(ref _inactiveKpisCount, value);
+        }
+
+        private int _distinctKpiTypeCount;
+        public int DistinctKpiTypeCount
+        {
+            get => _distinctKpiTypeCount;
+            private set => SetProperty(ref _distinctKpiTypeCount, value);
+        }
 
         private string _searchText = string.Empty;
         public string SearchText
@@ -211,6 +241,19 @@ namespace HRManagement.ViewModels
                 Kpis.Add(kpi);
 
             OnPropertyChanged(nameof(IsEmpty));
+            UpdateStats();
+        }
+
+        private void UpdateStats()
+        {
+            TotalKpisCount = Kpis.Count;
+            ActiveKpisCount = Kpis.Count(k => k.Kpi.IsActive);
+            InactiveKpisCount = Kpis.Count(k => !k.Kpi.IsActive);
+            DistinctKpiTypeCount = Kpis
+                .Select(k => k.KpiType)
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
         }
 
         private bool FilterKpi(object obj)
@@ -310,6 +353,7 @@ namespace HRManagement.ViewModels
                 }
 
                 OnPropertyChanged(nameof(IsEmpty));
+                UpdateStats();
                 IsFormOpen = false;
             }
             catch (ArgumentException exception)
@@ -347,6 +391,7 @@ namespace HRManagement.ViewModels
 
                 Kpis.Remove(PendingDelete);
                 OnPropertyChanged(nameof(IsEmpty));
+                UpdateStats();
                 PendingDelete = null;
                 IsDeleteConfirmOpen = false;
             }

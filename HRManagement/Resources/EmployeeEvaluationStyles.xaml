@@ -1,0 +1,448 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        ============================================================
+        Employee Evaluations - styles not covered by existing shared
+        dictionaries.
+        ============================================================
+        Extracted from EmployeeEvaluationView.xaml's UserControl.Resources
+        into its own dictionary, following the same pattern as
+        KPIStyles.xaml / LogsStyles.xaml / AnnouncementBoardStyles.xaml -
+        page-specific styles that don't belong in the general-purpose
+        dictionaries (TableStyles.xaml, FormStyles.xaml, etc.) get their
+        own file, merged once at the app level in App.xaml.
+
+        Dark-theme fix included in this extraction: EvaluationTextBoxStyle
+        previously had no Foreground setter at all, so every TextBox using
+        it (Search employee, Amount, Comment) fell back to WPF's
+        SystemColors.WindowTextBrush default (solid black) regardless of
+        theme - same root cause as ManageSalaryTextBoxStyle's bug in
+        ManageSalariesView.xaml. Fixed here by adding an explicit
+        PrimaryTextBrush Foreground, matching every other form textbox
+        style in the app.
+
+        Task 6 restyle notes (carried over from the view file, still
+        accurate - card/summary-card/DataGrid chrome for this page uses
+        the shared TableStyles.xaml tokens; only the following remained
+        page-specific and are what live in this file):
+          FieldLabelStyle, EvaluationTextBoxStyle, EvaluationTypeComboBoxStyle
+          (IsEditable="True" combo, can't use ModernComboBox - see its own
+          comment below), EvaluationSecondaryButtonStyle,
+          EvaluationDangerButtonStyle, EmployeeEvaluationRowStyle,
+          EvaluationTypeBadgeStyle, LoadingOverlayStyle,
+          NoEmployeeSelectedStyle, EmployeeDetailContentStyle,
+          NoEmployeesStyle, NoEvaluationsStyle.
+
+        SectionTitleStyle: kept distinct from DashboardStyles.xaml's
+        SectionHeaderStyle. That shared style adds FontWeight="Bold" (vs
+        this page's "SemiBold") and, more importantly, Margin="0,0,0,14" -
+        but SectionTitleStyle here is used INLINE mid-row next to a stat
+        badge/count pill (the "Employees" header Grid and the
+        evaluation-form header Grid), not as a standalone block header.
+        Adding that bottom margin would push the adjacent badge out of
+        vertical alignment. Flagging this per the project's "flag rather
+        than guess" convention - the near-duplication with
+        SectionHeaderStyle is intentional, not an oversight.
+
+        Selected-row treatment: EmployeeEvaluationRowStyle is BasedOn the
+        shared DataGridRowStyle (so zebra + hover are inherited) with just
+        an added IsSelected trigger for a stronger highlight, since rows
+        here are clickable to load an evaluation into the edit form -
+        mirrors the pattern ManageAttendancesView.xaml and
+        KpiAssignmentView.xaml use for their own selectable employee lists.
+    -->
+
+    <Style x:Key="FieldLabelStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontSize"
+                Value="13" />
+
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+
+        <Setter Property="Margin"
+                Value="0,0,0,6" />
+
+        <!-- Dark-theme fix: this label style had no Foreground either -
+             same class of bug as EvaluationTextBoxStyle below. Field
+             labels (Search employee / Reward-Penalty / Amount / etc.)
+             were rendering black-on-dark-card without this. -->
+        <Setter Property="Foreground"
+                Value="{DynamicResource SecondaryTextBrush}" />
+
+    </Style>
+
+    <!-- Section title - kept distinct from DashboardStyles.xaml's
+         SectionHeaderStyle; see file header comment above for why. -->
+    <Style x:Key="SectionTitleStyle"
+           TargetType="TextBlock">
+
+        <Setter Property="FontSize"
+                Value="17" />
+
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+
+        <!-- Dark-theme fix: no Foreground previously - "Employees",
+             evaluation form title, and "Evaluation History" headers were
+             rendering black-on-dark-card without this. -->
+        <Setter Property="Foreground"
+                Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!-- Dark-theme fix (primary bug from this task): no Foreground setter
+         existed on this style at all, so the Search employee / Amount /
+         Comment TextBoxes fell back to WPF's black SystemColors default
+         and never responded to the theme toggle. -->
+    <Style x:Key="EvaluationTextBoxStyle"
+           TargetType="TextBox">
+
+        <Setter Property="MinHeight"
+                Value="38" />
+
+        <Setter Property="Padding"
+                Value="10,7" />
+
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource BorderBrush}" />
+
+        <Setter Property="BorderThickness"
+                Value="1" />
+
+        <Setter Property="Background"
+                Value="{DynamicResource CardBackgroundBrush}" />
+
+        <Setter Property="Foreground"
+                Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!-- ComboBox: non-editable dropdowns on this page use the shared
+         ModernComboBox style (Resources/ComboBoxStyles.xaml, merged
+         app-wide in App.xaml) so they match every other page's
+         dropdown chrome (rounded pill, styled chevron, floating
+         popup).
+
+         EvaluationTypeComboBoxStyle below is a separate, narrower
+         style used ONLY by the "Evaluation Type" combo, which sets
+         IsEditable="True" (lets the user type a custom category).
+         ModernComboBox's ControlTemplate has no PART_EditableTextBox,
+         which WPF requires for IsEditable="True" - applying it as-is
+         would silently break free-text entry on that one combo. This
+         style keeps the default (non-templated) editable ComboBox
+         behavior intact while still matching the app's visual
+         language (InputBackgroundBrush fill, rounded corners,
+         BorderBrush hairline) as closely as a non-templated
+         ComboBox can.
+
+         Note: this style already had Foreground set correctly (unlike
+         EvaluationTextBoxStyle above) - not part of the black-text bug. -->
+    <Style x:Key="EvaluationTypeComboBoxStyle"
+           TargetType="ComboBox">
+
+        <Setter Property="MinHeight"
+                Value="38" />
+
+        <Setter Property="Padding"
+                Value="10,6" />
+
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource BorderBrush}" />
+
+        <Setter Property="BorderThickness"
+                Value="1" />
+
+        <Setter Property="Background"
+                Value="{DynamicResource InputBackgroundBrush}" />
+
+        <Setter Property="Foreground"
+                Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- Secondary button                                           -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="EvaluationSecondaryButtonStyle"
+           TargetType="Button">
+
+        <Setter Property="MinHeight"
+                Value="38" />
+
+        <Setter Property="Padding"
+                Value="16,8" />
+
+        <Setter Property="Background"
+                Value="{DynamicResource CardBackgroundBrush}" />
+
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource BorderBrush}" />
+
+        <Setter Property="BorderThickness"
+                Value="1" />
+
+        <Setter Property="Cursor"
+                Value="Hand" />
+
+        <Setter Property="FontWeight"
+                Value="SemiBold" />
+
+        <!-- Dark-theme fix: no Foreground previously - button text
+             ("Clear", "Refresh", "Reset Form") was rendering black
+             against this style's CardBackgroundBrush fill in dark mode. -->
+        <Setter Property="Foreground"
+                Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- Danger button                                              -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="EvaluationDangerButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource EvaluationSecondaryButtonStyle}">
+
+        <Setter Property="Background"
+                Value="{DynamicResource DangerBrush}" />
+
+        <Setter Property="Foreground"
+                Value="White" />
+
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource DangerBrush}" />
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- DataGrid row: local override BasedOn the shared            -->
+    <!-- DataGridRowStyle so zebra striping + hover are inherited,  -->
+    <!-- with just a stronger IsSelected treatment layered on top,  -->
+    <!-- matching ManageAttendancesView.xaml / KpiAssignmentView.xaml -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="EmployeeEvaluationRowStyle"
+           TargetType="DataGridRow"
+           BasedOn="{StaticResource DataGridRowStyle}">
+
+        <Setter Property="Cursor" Value="Hand" />
+
+        <Style.Triggers>
+
+            <Trigger Property="IsSelected"
+                     Value="True">
+
+                <Setter Property="Background"
+                        Value="{DynamicResource PrimaryBrush}" />
+
+                <Setter Property="Foreground"
+                        Value="White" />
+
+            </Trigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- Reward/Penalty badge                                      -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="EvaluationTypeBadgeStyle"
+           TargetType="Border">
+
+        <Setter Property="Background"
+                Value="{DynamicResource DangerBrush}" />
+
+        <Setter Property="CornerRadius"
+                Value="12" />
+
+        <Setter Property="Padding"
+                Value="10,4" />
+
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding BonusType, Mode=OneWay}"
+                         Value="Reward">
+
+                <Setter Property="Background"
+                        Value="{DynamicResource SuccessBrush}" />
+
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding BonusType, Mode=OneWay}"
+                         Value="Penalty">
+
+                <Setter Property="Background"
+                        Value="{DynamicResource DangerBrush}" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- Loading overlay                                           -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="LoadingOverlayStyle"
+           TargetType="Border">
+
+        <Setter Property="Background"
+                Value="#80000000" />
+
+        <Setter Property="Visibility"
+                Value="Collapsed" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding IsLoading,
+                                          Mode=OneWay}"
+                         Value="True">
+
+                <Setter Property="Visibility"
+                        Value="Visible" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- No employee selected                                      -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="NoEmployeeSelectedStyle"
+           TargetType="Border">
+
+        <Setter Property="Visibility"
+                Value="Visible" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding HasSelectedEmployee,
+                                          Mode=OneWay}"
+                         Value="True">
+
+                <Setter Property="Visibility"
+                        Value="Collapsed" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- Employee detail content                                   -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="EmployeeDetailContentStyle"
+           TargetType="Grid">
+
+        <Setter Property="Visibility"
+                Value="Collapsed" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding HasSelectedEmployee,
+                                          Mode=OneWay}"
+                         Value="True">
+
+                <Setter Property="Visibility"
+                        Value="Visible" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- No employees                                              -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="NoEmployeesStyle"
+           TargetType="Border">
+
+        <Setter Property="Visibility"
+                Value="Collapsed" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding HasEmployees,
+                                          Mode=OneWay}"
+                         Value="False">
+
+                <Setter Property="Visibility"
+                        Value="Visible" />
+
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding IsLoading,
+                                          Mode=OneWay}"
+                         Value="True">
+
+                <Setter Property="Visibility"
+                        Value="Collapsed" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+    <!-- ========================================================= -->
+    <!-- No evaluations                                            -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="NoEvaluationsStyle"
+           TargetType="Border">
+
+        <Setter Property="Visibility"
+                Value="Collapsed" />
+
+        <Style.Triggers>
+
+            <DataTrigger Binding="{Binding HasEvaluations,
+                                          Mode=OneWay}"
+                         Value="False">
+
+                <Setter Property="Visibility"
+                        Value="Visible" />
+
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding IsLoading,
+                                          Mode=OneWay}"
+                         Value="True">
+
+                <Setter Property="Visibility"
+                        Value="Collapsed" />
+
+            </DataTrigger>
+
+        </Style.Triggers>
+
+    </Style>
+
+</ResourceDictionary>

@@ -126,4 +126,43 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Small pill action buttons for the Open Check-Ins grid. Same
+     template shape as AttendanceActionButtonBase (rounded pill,
+     disabled-opacity trigger) but sized down for an inline
+     per-row action instead of a full-width form button, and
+     colored via SuccessBrush/DangerBrush to match the existing
+     status-color language used elsewhere (StatCard badges, the
+     Summary card's On-time/Absent text on AttendanceView). -->
+    <Style x:Key="ApproveRowButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="15">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DenyRowButtonStyle" TargetType="Button" BasedOn="{StaticResource ApproveRowButtonStyle}">
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+    </Style>
+
 </ResourceDictionary>

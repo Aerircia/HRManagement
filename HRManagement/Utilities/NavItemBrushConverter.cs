@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -14,14 +14,23 @@ namespace HRManagement.Utilities
     {
         public object Convert(object[] values, Type targetType, object? parameter, CultureInfo culture)
         {
+            var mode = parameter as string;
+
             if (values.Length < 2)
-                return Application.Current.FindResource("SidebarTextBrush");
+                return mode == "AccentBar" ? 0d : Application.Current.FindResource("SidebarTextBrush");
 
             var isSelected = values[0] is Type current && values[1] is Type own && current == own;
-            var mode = parameter as string;
 
             if (mode == "Background")
                 return isSelected ? Application.Current.FindResource("SidebarSelectedBrush") : Brushes.Transparent;
+
+            // AccentBar: width of the left indicator bar bound to the
+            // button's Tag (see NavigationButtonStyle in ButtonStyles.xaml).
+            // 0 when inactive so the bar occupies no layout space at all,
+            // rather than rendering a same-color-as-background invisible
+            // border that would still be present dimensionally.
+            if (mode == "AccentBar")
+                return isSelected ? 3d : 0d;
 
             // Foreground (default)
             return Application.Current.FindResource(isSelected ? "SidebarSelectedTextBrush" : "SidebarTextBrush");

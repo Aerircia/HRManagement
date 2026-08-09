@@ -28,6 +28,8 @@
                 <ResourceDictionary Source="Resources/ScrollViewerStyles.xaml"/>
                 <ResourceDictionary Source="Resources/ShellStyles.xaml"/>
                 <ResourceDictionary Source="Resources/KpiStyles.xaml"/>
+                <ResourceDictionary Source="Resources/EmployeeEvaluationStyles.xaml"/>
+                <ResourceDictionary Source="/Resources/ManageSalariesStyles.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
 

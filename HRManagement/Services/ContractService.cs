@@ -245,7 +245,7 @@ namespace HRManagement.Services
         }
 
         private int CurrentAccountId() =>
-            _sessionManager.CurrentUser!.Employee.EmployeeId;
+            _sessionManager.CurrentUser!.Account.AccountId;
 
         private static ContractItemModel ToItem(Contract contract, List<Employee> employees, List<Position> positions)
         {

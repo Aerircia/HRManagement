@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -52,10 +52,15 @@
     </Style>
 
     <!-- ========= Table header row text (ItemsControl-based tables) ========= -->
+    <!-- Uses TableHeaderTextBrush (not SecondaryTextBrush) - the header
+         background (TableHeaderBrush) was deepened so it reads as a
+         distinct band from the white card body, and SecondaryTextBrush's
+         contrast ratio was tuned against the old near-white header, not
+         this one. -->
     <Style x:Key="TableHeaderTextStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11.5"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="20,0,10,0"/>
     </Style>
@@ -68,16 +73,41 @@
         <Setter Property="Height" Value="46"/>
     </Style>
 
-    <!-- Divider under each ItemsControl row -->
+    <!-- Divider under each ItemsControl row. Adds zebra striping (matches
+         DataGridRowStyle's AlternationIndex pattern) and a hover tint -
+         both opt-in via the ItemsControl needing AlternationCount="2" and
+         the row Border needing IsHitTestVisible unset (default true), so
+         existing usages keep their current plain-divider look until the
+         hosting view opts in.
+
+         NOTE (Task 3 fix): AlternationIndex is an attached property set by
+         the parent ItemsControl on the generated item CONTAINER (the
+         ContentPresenter wrapping each DataTemplate instance) - not on this
+         Border, which lives inside the DataTemplate. A plain
+         "Trigger Property=ItemsControl.AlternationIndex" on a Style only
+         matches a *local* value on the element the style is applied to, and
+         never walks up to an ancestor container, so it silently never fired.
+         Fixed by rebinding through RelativeSource AncestorType=ContentPresenter
+         to read the attached property off the actual container. The
+         IsMouseOver trigger stays a plain Trigger since that property really
+         is local to this Border. -->
     <Style x:Key="TableRowDividerStyle" TargetType="Border">
         <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}" Value="1">
+                <Setter Property="Background" Value="{DynamicResource RowAltBrush}"/>
+            </DataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ========= DataGrid header/row/cell (DataGrid-based tables) ========= -->
     <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}"/>
-        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}"/>
         <Setter Property="FontSize" Value="11.5"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="16,14"/>
@@ -85,9 +115,17 @@
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
     </Style>
 
+    <!-- Zebra striping: alternates RowAltBrush on odd rows (index 1) so
+         dense tables (Requests, Contracts, Manage Profiles) are easier to
+         scan across many columns, on top of the existing hover/selected
+         states. Consumers need AlternationCount="2" set on the DataGrid
+         itself for AlternationIndex to populate - see usage note below. -->
     <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
         <Setter Property="Background" Value="Transparent"/>
         <Style.Triggers>
+            <Trigger Property="AlternationIndex" Value="1">
+                <Setter Property="Background" Value="{DynamicResource RowAltBrush}"/>
+            </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
             </Trigger>
@@ -96,6 +134,20 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Usage note: existing DataGrid.Resources blocks that BasedOn this
+         style don't need changes - just add AlternationCount="2" on the
+         <DataGrid> element itself (e.g. PersonalKpiView.xaml's DataGrid)
+         to activate striping. Without it, AlternationIndex stays 0 for
+         every row and this trigger simply never fires - no visual change,
+         no error. -->
+
+    <!-- Divider-only row style for ItemsControl-based tables (Requests,
+         Manage Requests) mirroring the zebra pattern above via alternating
+         Border.Background instead of DataGridRow.AlternationIndex, since
+         these tables use ItemsControl+DataTemplate, not DataGrid. See
+         TableRowDividerStyle above (now fixed to use a DataTrigger bound
+         through the generated ContentPresenter container). -->
 
     <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
         <Setter Property="BorderThickness" Value="0"/>
@@ -121,6 +173,112 @@
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="16,0,0,0"/>
+    </Style>
+
+    <!-- ========= Stat card top-accent variants ========= -->
+    <!-- BasedOn ManageRequestsStyles.xaml's StatCardStyle (Background/Border/
+         CornerRadius/Padding/shadow) and adds a colored top strip via a
+         zero-height/zero-width Border trick isn't possible with BorderThickness
+         alone on rounded corners without clipping oddly, so this uses a
+         dedicated 4px-tall child Border placed at the top instead - see
+         usage note. Four color variants share one base so a card's accent
+         always matches its own status pill/badge hue rather than a
+         separate ad hoc palette.
+
+         Task 1 fix: this base style had no Margin, so on a card using
+         StatCardStyle (Padding="18,16", CornerRadius="16") the 4px strip
+         rendered *inside* the padding instead of flush against the card's
+         outer edge - it read as a small nested pill, not an edge accent.
+         The bleed margin below matches the already-correct inline pattern
+         used in PersonalKpiView.xaml (Margin="-18,-16,-18,0"), so every
+         color variant now inherits the fix automatically and consuming
+         views no longer need their own inline Margin override. This margin
+         is tuned specifically to StatCardStyle's Padding="18,16" /
+         CornerRadius="16" - a card using different padding/radius (e.g.
+         ManageSalariesView's local SummaryCardBorderStyle) must NOT rely on
+         this shared style, since the bleed math would misalign. -->
+    <Style x:Key="StatCardAccentStripStyle" TargetType="Border">
+        <Setter Property="Height" Value="4"/>
+        <Setter Property="CornerRadius" Value="16,16,0,0"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="-18,-16,-18,0"/>
+    </Style>
+
+    <Style x:Key="StatCardAccentStripBlueStyle" TargetType="Border" BasedOn="{StaticResource StatCardAccentStripStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardAccentBlueBrush}"/>
+    </Style>
+
+    <Style x:Key="StatCardAccentStripGreenStyle" TargetType="Border" BasedOn="{StaticResource StatCardAccentStripStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardAccentGreenBrush}"/>
+    </Style>
+
+    <Style x:Key="StatCardAccentStripAmberStyle" TargetType="Border" BasedOn="{StaticResource StatCardAccentStripStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardAccentAmberBrush}"/>
+    </Style>
+
+    <Style x:Key="StatCardAccentStripRedStyle" TargetType="Border" BasedOn="{StaticResource StatCardAccentStripStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardAccentRedBrush}"/>
+    </Style>
+
+    <Style x:Key="StatCardAccentStripPurpleStyle" TargetType="Border" BasedOn="{StaticResource StatCardAccentStripStyle}">
+        <Setter Property="Background" Value="{DynamicResource CardAccentPurpleBrush}"/>
+    </Style>
+
+    <!-- Usage: wrap the strip + existing card content in a Grid so the
+         strip overlays the top edge without disturbing the card's own
+         Padding:
+
+         <Border Style="{StaticResource StatCardStyle}">
+             <Grid>
+                 <Border Style="{StaticResource StatCardAccentStripBlueStyle}"/>
+                 <StackPanel Margin="0,4,0,0"> ... existing card content ... </StackPanel>
+             </Grid>
+         </Border>
+
+         The Margin="0,4,0,0" on the content keeps it clear of the 4px
+         strip; StatCardStyle's own Padding still applies via the outer
+         Border as before. The strip's own bleed Margin (now baked into
+         StatCardAccentStripStyle itself, see above) pulls it flush to the
+         card's outer edge - no per-instance Margin override needed. -->
+
+    <!-- Larger stat-value text style for card numbers ($2,710 / 93.6% /
+         100%) - previously these numbers used the same weight as their
+         surrounding labels (just bold), so they didn't lead visually
+         despite being the most important content on the card. -->
+    <Style x:Key="StatCardValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="LineHeight" Value="24"/>
+    </Style>
+
+    <!-- Eyebrow label above a stat value (PTO BALANCE, TENURE, etc.) -
+         smaller and more letter-spaced than before so it recedes and lets
+         StatCardValueStyle lead. -->
+    <Style x:Key="StatCardEyebrowStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="10.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <!-- ========= Empty-state pattern for a single detail card (Job History,
+         Compensation, etc. with no data) - icon + one line, in place of
+         literal blank space inside a card that otherwise looks broken. ========= -->
+    <Style x:Key="CardEmptyStateIconStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,16,0,8"/>
+    </Style>
+
+    <Style x:Key="CardEmptyStateTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,0,0,16"/>
     </Style>
 
     <!-- ========= Status pill (Contracts / Manage Profiles) ========= -->

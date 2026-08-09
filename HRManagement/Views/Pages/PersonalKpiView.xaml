@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.PersonalKpiView"
+<UserControl x:Class="HRManagement.Views.Pages.PersonalKpiView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -35,7 +35,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -62,105 +61,81 @@
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1"
-                Margin="0,0,0,12"
-                Padding="12,9"
-                CornerRadius="6"
-                Background="{DynamicResource CardBackgroundBrush}"
-                BorderThickness="1"
-                Visibility="{Binding HasOperationMessage,
-                                     Converter={StaticResource BoolToVisibility}}">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="BorderBrush"
-                            Value="{DynamicResource SuccessBrush}"/>
-
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsOperationError}"
-                                     Value="True">
-                            <Setter Property="BorderBrush"
-                                    Value="{DynamicResource DangerBrush}"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-
-            <TextBlock Text="{Binding OperationMessage}"
-                       TextWrapping="Wrap"
-                       FontSize="13"
-                       FontWeight="SemiBold">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground"
-                                Value="{DynamicResource SuccessBrush}"/>
-
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOperationError}"
-                                         Value="True">
-                                <Setter Property="Foreground"
-                                        Value="{DynamicResource DangerBrush}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-        </Border>
-
         <!-- Stat row -->
-        <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,16">
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
-                        <fa:IconBlock Icon="ListCheck" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Total KPIs" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding TotalKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Height="4" CornerRadius="16,16,0,0" VerticalAlignment="Top"
+                            Margin="-18,-16,-18,0"
+                            Background="{DynamicResource CardAccentBlueBrush}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                            <fa:IconBlock Icon="ListCheck" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Total KPIs" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalKpiCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
-                        <fa:IconBlock Icon="CircleCheck" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Completed" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding CompletedKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Height="4" CornerRadius="16,16,0,0" VerticalAlignment="Top"
+                            Margin="-18,-16,-18,0"
+                            Background="{DynamicResource CardAccentGreenBrush}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                            <fa:IconBlock Icon="CircleCheck" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Completed" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding CompletedKpiCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
-                        <fa:IconBlock Icon="Hourglass" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="In Progress" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding InProgressKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Height="4" CornerRadius="16,16,0,0" VerticalAlignment="Top"
+                            Margin="-18,-16,-18,0"
+                            Background="{DynamicResource CardAccentAmberBrush}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                            <fa:IconBlock Icon="Hourglass" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="In Progress" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding InProgressKpiCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border Style="{StaticResource StatCardStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
-                        <fa:IconBlock Icon="ChartLine" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Overall KPI MTD" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding OverallKpiMtdPercent, StringFormat={}{0}%}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                <Grid>
+                    <Border Height="4" CornerRadius="16,16,0,0" VerticalAlignment="Top"
+                            Margin="-18,-16,-18,0"
+                            Background="{DynamicResource CardAccentRedBrush}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                            <fa:IconBlock Icon="ChartLine" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Overall KPI MTD" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding OverallKpiMtdPercent, StringFormat={}{0}%}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Grid>
             </Border>
 
         </UniformGrid>
 
         <!-- KPI grid -->
-        <Border Grid.Row="3" Style="{StaticResource TableCardStyle}" Padding="20">
+        <Border Grid.Row="2" Style="{StaticResource TableCardStyle}" Padding="20">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -171,16 +146,23 @@
                            Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,14"/>
 
                 <!-- Empty state -->
-                <TextBlock Grid.Row="1"
-                           Text="No KPIs assigned for this month yet."
-                           Style="{StaticResource TableEmptyStateStyle}"
-                           Visibility="{Binding TotalKpiCount, Converter={StaticResource ZeroToVisibleConverter}}"/>
+                <StackPanel Grid.Row="1"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding TotalKpiCount, Converter={StaticResource ZeroToVisibleConverter}}">
+                    <fa:IconBlock Icon="ChartLine" Width="26" Height="26"
+                                  Foreground="{DynamicResource HintTextBrush}"
+                                  HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="No KPIs assigned for this month yet."
+                               FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
 
                 <DataGrid Grid.Row="1" ItemsSource="{Binding AssignedKpis}" AutoGenerateColumns="False" CanUserAddRows="False"
                           IsReadOnly="True"
+                          CanUserReorderColumns="False"
+                          AlternationCount="2"
                           GridLinesVisibility="None" HeadersVisibility="Column"
                           Background="Transparent"
-                          RowBackground="Transparent"
                           RowHeight="58"
                           BorderThickness="0"
                           Visibility="{Binding TotalKpiCount, Converter={StaticResource ZeroToVisibleConverter}, ConverterParameter=Inverse}"
@@ -199,30 +181,18 @@
                         <DataGridTextColumn Header="Target" Binding="{Binding AssignedTarget, StringFormat=N0}" Width="0.9*"
                                              ElementStyle="{StaticResource TableCellTextStyle}"/>
 
-                        <!-- Confirmed progress: read-only -->
-                        <DataGridTextColumn Header="Current"
-                                            Binding="{Binding CurrentValue, StringFormat=N2}"
-                                            Width="0.75*"
-                                            ElementStyle="{StaticResource TableCellTextStyle}"/>
-
-                        <!-- Employee submits only an incremental pending value -->
-                        <DataGridTemplateColumn Header="Pending" Width="0.85*">
+                        <!-- Only editable column: CurrentValue (Actual / progress) -->
+                        <DataGridTemplateColumn Header="Actual" Width="0.9*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <TextBlock Text="{Binding PendingValueDisplay}"
+                                        <TextBlock Text="{Binding CurrentValue, StringFormat=N0}"
                                                    Style="{StaticResource TableCellTextStyle}"
-                                                   Visibility="{Binding IsEditing,
-                                                                        Converter={StaticResource InverseBoolToVisibility}}"/>
-
-                                        <TextBox Text="{Binding PendingValue,
-                                                                Mode=TwoWay,
-                                                                UpdateSourceTrigger=PropertyChanged}"
+                                                   Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                        <TextBox Text="{Binding CurrentValue, UpdateSourceTrigger=PropertyChanged}"
                                                  Style="{StaticResource FormTextBoxStyle}"
-                                                 Height="30"
-                                                 Margin="16,0,0,0"
-                                                 Visibility="{Binding IsEditing,
-                                                                      Converter={StaticResource BoolToVisibility}}"/>
+                                                 Height="30" Margin="16,0,0,0"
+                                                 Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"/>
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -263,15 +233,10 @@
                                         <Button Content="Update"
                                                 Style="{StaticResource SecondaryButtonStyle}"
                                                 Width="100"
-                                                Height="30"
-                                                Padding="12,0"
-                                                FontSize="12"
-                                                IsEnabled="{Binding CanUpdateProgress}"
-                                                Command="{Binding DataContext.EditProgressCommand,
-                                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                Height="30" Padding="12,0" FontSize="12"
+                                                Command="{Binding DataContext.EditProgressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Visibility="{Binding IsEditing,
-                                                                     Converter={StaticResource InverseBoolToVisibility}}"/>
+                                                Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibility}}"/>
 
                                         <Button Style="{StaticResource RowIconButtonStyle}"
                                                 Command="{Binding DataContext.SaveProgressCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

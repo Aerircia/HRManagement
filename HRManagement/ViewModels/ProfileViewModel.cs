@@ -402,7 +402,7 @@ namespace HRManagement.ViewModels
             FullName = employee.FullName;
             RoleLabel = profile.RoleLabel;
             AvatarPath = string.IsNullOrWhiteSpace(employee.Avatar)
-                ? "/Resources/Images/DefaultAvatar.png"
+                ? "Assets/Avatars/DefaultAvatar.png"
                 : employee.Avatar;
 
             Email = employee.Email;

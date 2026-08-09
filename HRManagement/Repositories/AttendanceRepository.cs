@@ -239,4 +239,47 @@ public class AttendanceRepository : RepositoryBase, IAttendanceRepository
 
         return totalHours;
     }
+
+    public IEnumerable<Attendance> GetOpenCheckIns()
+    {
+        var list = new List<Attendance>();
+
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT Attendance_ID, Employee_ID, Check_in, Check_out, Status
+            FROM Attendance
+            WHERE Check_in IS NOT NULL
+              AND Check_out IS NULL
+            ORDER BY Check_in ASC;
+            ";
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new Attendance
+            {
+                AttendanceId = reader.GetInt32(0),
+                EmployeeId = reader.GetInt32(1),
+                CheckIn = reader.IsDBNull(2) ? null : reader.GetDateTime(2),
+                CheckOut = reader.IsDBNull(3) ? null : reader.GetDateTime(3),
+                Status = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+            });
+        }
+
+        return list;
+    }
+
+    public void DeleteAttendance(int attendanceId)
+    {
+        using var conn = Db.CreateConnection();
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"DELETE FROM Attendance WHERE Attendance_ID = @id";
+        cmd.Parameters.Add(new SqlParameter("@id", SqlDbType.Int) { Value = attendanceId });
+        cmd.ExecuteNonQuery();
+    }
 }

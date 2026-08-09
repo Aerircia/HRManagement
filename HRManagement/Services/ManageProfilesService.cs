@@ -261,7 +261,7 @@ namespace HRManagement.Services
         }
 
         private int CurrentAccountId() =>
-            _sessionManager.CurrentUser!.Employee.EmployeeId;
+            _sessionManager.CurrentUser!.Account.AccountId;
 
         private EmployeeProfileItemModel ToItem(Employee employee, List<Department> departments)
         {

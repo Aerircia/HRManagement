@@ -26,5 +26,26 @@ namespace HRManagement.Repositories.Interfaces
         /// hours across every department (Admin scope).
         /// </summary>
         double GetOrgHoursThisMonth(int year, int month);
+
+        /// <summary>
+        /// Attendance rows with a non-null Check_in and a null Check_out -
+        /// i.e. employees who checked in (manually, on a normal weekday)
+        /// and never checked out. Scheduled OT/day-off rows always have
+        /// both Check_in and Check_out set at creation time (see
+        /// AttendanceService.ScheduleOt/ScheduleDayOff), so this can only
+        /// ever surface manual weekday check-ins. No department filter is
+        /// applied here - callers that need department scoping (Manager
+        /// role) filter the returned set by Employee_ID membership
+        /// themselves, mirroring the existing pattern in
+        /// ManageAttendancesService.GetEmployeeAttendanceOverview.
+        /// </summary>
+        IEnumerable<Attendance> GetOpenCheckIns();
+
+        /// <summary>
+        /// Hard-deletes a single attendance row by ID. Used by the "Deny"
+        /// action on the open check-ins grid to remove a bad/incomplete
+        /// manual check-in entirely.
+        /// </summary>
+        void DeleteAttendance(int attendanceId);
     }
 }

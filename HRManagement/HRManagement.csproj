@@ -9,10 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Avatars\Admin.png" />
+    <None Remove="Assets\Avatars\DefaultAvatar.png" />
     <None Remove="Assets\logo.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\Avatars\Admin.png" />
+    <Resource Include="Assets\Avatars\DefaultAvatar.png" />
     <Resource Include="Assets\logo.png" />
   </ItemGroup>
 

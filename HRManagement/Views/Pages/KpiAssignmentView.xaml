@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HRManagement.Views.Pages.KpiAssignmentView"
+<UserControl x:Class="HRManagement.Views.Pages.KpiAssignmentView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -98,51 +98,63 @@
             <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
 
                 <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
-                            <fa:IconBlock Icon="Users" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="Employees With KPI" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                            <TextBlock Text="{Binding TotalAssignedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripBlueStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                                <fa:IconBlock Icon="Users" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Employees With KPI" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding TotalAssignedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
-                            <fa:IconBlock Icon="UserClock" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="Not Yet Assigned" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                            <TextBlock Text="{Binding EmployeesWithoutKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripAmberStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                                <fa:IconBlock Icon="UserClock" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Not Yet Assigned" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding EmployeesWithoutKpiCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
-                            <fa:IconBlock Icon="ChartLine" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="Avg KPI MTD" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                            <TextBlock Text="{Binding AverageKpiMtdPercent, StringFormat={}{0}%}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripGreenStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                                <fa:IconBlock Icon="ChartLine" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Avg KPI MTD" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding AverageKpiMtdPercent, StringFormat={}{0}%}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource StatCardStyle}">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
-                            <fa:IconBlock Icon="TriangleExclamation" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="At Risk (&lt; 50%)" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                            <TextBlock Text="{Binding AtRiskCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripRedStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                                <fa:IconBlock Icon="TriangleExclamation" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="At Risk (&lt; 50%)" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding AtRiskCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
             </UniformGrid>
@@ -200,6 +212,8 @@
 
                         <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False"
                                   SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" IsReadOnly="True"
+                                  CanUserReorderColumns="False"
+                                  AlternationCount="2"
                                   VerticalAlignment="Top" RowHeight="52"
                                   GridLinesVisibility="None" HeadersVisibility="Column"
                                   Background="Transparent"
@@ -309,6 +323,8 @@
                         <!-- Assigned KPI grid -->
                         <DataGrid Grid.Row="1" ItemsSource="{Binding AssignedKpis}" AutoGenerateColumns="False" CanUserAddRows="False"
                                   IsReadOnly="True"
+                                  CanUserReorderColumns="False"
+                                  AlternationCount="2"
                                   GridLinesVisibility="None" HeadersVisibility="Column"
                                   Background="Transparent"
                                   RowBackground="Transparent"

@@ -4,31 +4,20 @@ using HRManagement.Services.Interfaces;
 
 namespace HRManagement.Services;
 
-public class ManageAttendancesService : IManageAttendancesService
+public class ManageAttendancesService(
+    IEmployeeRepository employeeRepository,
+    IDepartmentRepository departmentRepository,
+    IAttendanceService attendanceService,
+    SessionManager sessionManager) : IManageAttendancesService
 {
-    private readonly IEmployeeRepository _employeeRepository;
-    private readonly IDepartmentRepository _departmentRepository;
-    private readonly IAttendanceService _attendanceService;
-    private readonly SessionManager _sessionManager;
-
-    public ManageAttendancesService(
-        IEmployeeRepository employeeRepository,
-        IDepartmentRepository departmentRepository,
-        IAttendanceService attendanceService,
-        SessionManager sessionManager)
-    {
-        _employeeRepository = employeeRepository
+    private readonly IEmployeeRepository _employeeRepository = employeeRepository
             ?? throw new ArgumentNullException(nameof(employeeRepository));
-
-        _departmentRepository = departmentRepository
+    private readonly IDepartmentRepository _departmentRepository = departmentRepository
             ?? throw new ArgumentNullException(nameof(departmentRepository));
-
-        _attendanceService = attendanceService
+    private readonly IAttendanceService _attendanceService = attendanceService
             ?? throw new ArgumentNullException(nameof(attendanceService));
-
-        _sessionManager = sessionManager
+    private readonly SessionManager _sessionManager = sessionManager
             ?? throw new ArgumentNullException(nameof(sessionManager));
-    }
 
     public List<Department> GetDepartmentOptions()
     {
@@ -176,6 +165,47 @@ public class ManageAttendancesService : IManageAttendancesService
     public DateTime? GetEmployeeHireDate(int employeeId)
     {
         return _employeeRepository.GetById(employeeId)?.HireDate.Date;
+    }
+
+    public List<OpenCheckInRow> GetOpenCheckIns(int? selectedDepartmentId)
+    {
+        var allOpenCheckIns = _attendanceService.GetOpenCheckIns();
+
+        if (allOpenCheckIns.Count == 0)
+            return [];
+
+        // Same scoping shape as GetEmployeeAttendanceOverview: Managers are
+        // always locked to their own department regardless of the selected
+        // filter; Admins get the selected department or everyone when
+        // selectedDepartmentId is 0/null.
+        HashSet<int>? scopedEmployeeIds = null;
+
+        if (_sessionManager.CurrentUser != null && IsManager())
+        {
+            scopedEmployeeIds = [.. _employeeRepository
+                .GetByDepartment(_sessionManager.CurrentUser.Employee.DepartmentId)
+                .Select(e => e.EmployeeId)];
+        }
+        else if (selectedDepartmentId is > 0)
+        {
+            scopedEmployeeIds = [.. _employeeRepository
+                .GetByDepartment(selectedDepartmentId.Value)
+                .Select(e => e.EmployeeId)];
+        }
+
+        return scopedEmployeeIds == null
+            ? allOpenCheckIns
+            : [.. allOpenCheckIns.Where(row => scopedEmployeeIds.Contains(row.EmployeeId))];
+    }
+
+    public void ApproveOpenCheckIn(int attendanceId)
+    {
+        _attendanceService.ApproveOpenCheckIn(attendanceId);
+    }
+
+    public void DenyOpenCheckIn(int attendanceId)
+    {
+        _attendanceService.DenyOpenCheckIn(attendanceId);
     }
 
     private bool IsAdmin() =>

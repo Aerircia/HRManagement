@@ -8,149 +8,267 @@
              xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
              Background="Transparent">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <!-- Whole page scrolls now: with a growing employee list and open
+         check-ins list, the page could exceed the viewport height even
+         with the inner grids capped below, so the outer ScrollViewer is
+         the safety net that guarantees the Open Check-Ins card (last row)
+         is always reachable. Horizontal scrolling is disabled since the
+         page layout is already width-constrained by its own columns. -->
+    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Manage Attendances" FontSize="30" FontWeight="Bold" Margin="0,0,0,16" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Grid.Row="0" Text="Manage Attendances" FontSize="30" FontWeight="Bold" Margin="0,0,0,16" Foreground="{DynamicResource PrimaryTextBrush}" />
 
-        <!-- Top stat row: 4 cards (Folkd-style reference pattern), reusing
-             ManageRequestsStyles.xaml's StatCardStyle/StatIconBadgeStyle. -->
-        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+            <!-- Top stat row: 4 cards (Folkd-style reference pattern), reusing
+             ManageRequestsStyles.xaml's StatCardStyle/StatIconBadgeStyle.
+             Each card now carries a top accent strip (Task 5) matching its
+             own icon-badge color, via the same Grid + StatCardAccentStripXStyle
+             pattern used in ManageKpisView.xaml / PersonalKpiView.xaml. -->
+            <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
 
-            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
-                        <fa:IconBlock Icon="UserCheck" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Present Today" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding PresentRateTodayDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                        <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="Late "/><Run Text="{Binding LateRateTodayDisplay, Mode=OneWay}"/>
-                            <Run Text=" · Absent "/><Run Text="{Binding AbsentRateTodayDisplay, Mode=OneWay}"/>
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripGreenStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource SuccessBadgeBrush}">
+                                <fa:IconBlock Icon="UserCheck" Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Present Today" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding PresentRateTodayDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}">
+                                <Run Text="Late "/><Run Text="{Binding LateRateTodayDisplay, Mode=OneWay}"/>
+                                <Run Text=" · Absent "/><Run Text="{Binding AbsentRateTodayDisplay, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
-                        <fa:IconBlock Icon="Umbrella" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Day Off This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding DayOffThisMonthCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripBlueStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource PrimaryBadgeBrush}">
+                                <fa:IconBlock Icon="Umbrella" Width="18" Height="18" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Day Off This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding DayOffThisMonthCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
-                        <fa:IconBlock Icon="Bolt" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="OT This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding OtThisMonthCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <Border Style="{StaticResource StatCardStyle}" Margin="0,0,16,0">
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripAmberStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource WarningBadgeBrush}">
+                                <fa:IconBlock Icon="Bolt" Width="18" Height="18" Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="OT This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding OtThisMonthCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <Border Style="{StaticResource StatCardStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
-                        <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Team Hours This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
-                        <TextBlock Text="{Binding TeamHoursThisMonthDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                <Border Style="{StaticResource StatCardStyle}">
+                    <Grid>
+                        <Border Style="{StaticResource StatCardAccentStripRedStyle}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Border Style="{StaticResource StatIconBadgeStyle}" Background="{DynamicResource DangerBadgeBrush}">
+                                <fa:IconBlock Icon="Clock" Width="18" Height="18" Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Team Hours This Month" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12"/>
+                                <TextBlock Text="{Binding TeamHoursThisMonthDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-        </UniformGrid>
+            </UniformGrid>
 
-        <!-- Bottom row: employee table (left) + calendar (right) -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <!-- Left fixed width for employee list (slightly smaller) -->
-                <ColumnDefinition Width="340" />
-                <!-- Right takes remaining space (larger) -->
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <!-- Middle row: employee table (left) + calendar (right) -->
+            <Grid Grid.Row="2" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <!-- Left fixed width for employee list (slightly smaller) -->
+                    <ColumnDefinition Width="340" />
+                    <!-- Right takes remaining space (larger) -->
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <!-- Left: Filters + Employee table -->
-            <Border Grid.Column="0" Style="{StaticResource TableCardStyle}" Padding="12" Margin="0,0,10,0">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,8">
-                        
+                <!-- Left: Filters + Employee table. The card no longer grows
+                 with the row count - the DataGrid below is capped with
+                 MaxHeight and scrolls internally (VerticalScrollBarVisibility
+                 ="Auto"), so a long employee list never pushes the
+                 calendar card on the right (or the Open Check-Ins card
+                 below) further down the page. -->
+                <Border Grid.Column="0" Style="{StaticResource TableCardStyle}" Padding="12" Margin="0,0,10,0" VerticalAlignment="Top">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,8">
+
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="Employee:" VerticalAlignment="Center" Width="90" Foreground="{DynamicResource SecondaryTextBrush}" />
-                                    <Border Grid.Column="0"
-                                            Background="{DynamicResource CardBackgroundBrush    }"
-                                            BorderBrush="{DynamicResource BorderBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="14"
-                                            Width="210"
-                                            Height="28"
-                                            HorizontalAlignment="Left">
-                                        <TextBox Text="{Binding EmployeeFilter, UpdateSourceTrigger=PropertyChanged}"
+                                <Border Grid.Column="0"
+                                        Background="{DynamicResource CardBackgroundBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="14"
+                                        Width="210"
+                                        Height="28"
+                                        HorizontalAlignment="Left">
+                                    <TextBox Text="{Binding EmployeeFilter, UpdateSourceTrigger=PropertyChanged}"
                                              BorderThickness="0"
                                              Width="180"
                                              Background="Transparent"
                                              VerticalContentAlignment="Center"
                                              Foreground="{DynamicResource PrimaryTextBrush}"
                                              Tag="Search by name or email..."/>
-                                    </Border>
-                                </StackPanel>
-                        
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="Department:" VerticalAlignment="Center" Width="90" Foreground="{DynamicResource SecondaryTextBrush}" />
-                            <ComboBox Style="{StaticResource ModernComboBox}"
-                                      ItemsSource="{Binding Departments}" 
-                                      SelectedItem="{Binding SelectedDepartment}" 
-                                      DisplayMemberPath="DepartmentName" 
-                                      Width="207"
-                                      Height="24" />
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="Department:" VerticalAlignment="Center" Width="90" Foreground="{DynamicResource SecondaryTextBrush}" />
+                                <ComboBox Style="{StaticResource ModernComboBox}"
+                                          ItemsSource="{Binding Departments}" 
+                                          SelectedItem="{Binding SelectedDepartment}" 
+                                          DisplayMemberPath="DepartmentName" 
+                                          Width="207"
+                                          Height="24" />
+                            </StackPanel>
                         </StackPanel>
+
+                        <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" IsReadOnly="True"
+                                  AlternationCount="2"
+                                  VerticalAlignment="Top" RowHeight="48"
+                                  Height="652"
+                                  GridLinesVisibility="None" HeadersVisibility="Column"
+                                  Background="Transparent"
+                                  RowBackground="Transparent"
+                                  BorderThickness="0"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  ScrollViewer.CanContentScroll="False">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+
+                                <!-- Local, stronger variant of the shared row style so the
+                                 selected employee is unmistakably highlighted, per the
+                                 brief - built on top of (not replacing) the shared
+                                 DataGridRowStyle so other tables aren't affected. The
+                                 inherited AlternationIndex/IsMouseOver triggers from
+                                 DataGridRowStyle still apply underneath this override;
+                                 this only adds an IsSelected trigger on top. -->
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            <Setter Property="BorderThickness" Value="2,0,0,0"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+
+                                <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Employee" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="30" Height="30" CornerRadius="15" Background="{DynamicResource PrimaryTintBrush}">
+                                                    <TextBlock Text="{Binding Initials}"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="{DynamicResource PrimaryBrush}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding EmployeeName}"
+                                                           Margin="10,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="13"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn Header="In" Binding="{Binding CheckInTodayDisplay}" Width="60"
+                                     ElementStyle="{StaticResource TableCellTextStyle}"/>
+                                <DataGridTextColumn Header="Out" Binding="{Binding CheckOutTodayDisplay}" Width="60"
+                                     ElementStyle="{StaticResource TableCellTextStyle}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+
+                <!-- Right: Attendance calendar for the selected employee (bottom
+                 legend now comes from AttendanceCalendarView itself). The old
+                 inline Days worked/On-time/Late/Absent summary strip that used
+                 to sit above the calendar has been removed per the brief. -->
+                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="12,0,0,0"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        Visibility="{Binding IsEmployeeSelected, Converter={StaticResource BoolToVisibility}}">
+
+                    <controls:AttendanceCalendarView DataContext="{Binding ChildAttendanceViewModel}" />
+
+                </Border>
+            </Grid>
+
+            <!-- Bottom: Open Check-Ins card - manual weekday check-ins with no
+                 check-out yet. Always visible (shows its own empty state when
+                 there's nothing to review) rather than collapsing, so HR/
+                 managers have a stable place to check regardless of current
+                 count. Scoped the same way as the employee table above: driven
+                 by SelectedDepartment, with Manager role forced to their own
+                 department at the service layer regardless of the dropdown.
+                 The grid below is capped with MaxHeight and scrolls
+                 internally, so a long open check-ins list stays contained in
+                 its own card instead of stretching the page - the outer page
+                 ScrollViewer is then only needed for genuinely tall content. -->
+            <Border Grid.Row="3" Style="{StaticResource TableCardStyle}" Padding="16">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <fa:IconBlock Icon="TriangleExclamation" Width="16" Height="16"
+                                      Foreground="{DynamicResource WarningBrush}"
+                                      VerticalAlignment="Center"/>
+                        <TextBlock Text="Open Check-Ins" FontSize="18" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryTextBrush}"
+                                   Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Checked in with no check-out recorded"
+                                   FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}"
+                                   Margin="10,2,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <DataGrid ItemsSource="{Binding Employees}" AutoGenerateColumns="False" CanUserAddRows="False"
-                              SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}" IsReadOnly="True"
-                              VerticalAlignment="Top" RowHeight="48"
+                    <DataGrid ItemsSource="{Binding OpenCheckIns}" AutoGenerateColumns="False" CanUserAddRows="False"
+                              IsReadOnly="True" RowHeight="52"
                               GridLinesVisibility="None" HeadersVisibility="Column"
                               Background="Transparent"
                               RowBackground="Transparent"
                               BorderThickness="0"
-                              VerticalScrollBarVisibility="Hidden"
-                              HorizontalScrollBarVisibility="Disabled">
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.CanContentScroll="False"
+                              MaxHeight="300">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
-
-                            <!-- Local, stronger variant of the shared row style so the
-                                 selected employee is unmistakably highlighted, per the
-                                 brief - built on top of (not replacing) the shared
-                                 DataGridRowStyle so other tables aren't affected. -->
-                            <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}">
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
-                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                        <Setter Property="BorderThickness" Value="2,0,0,0"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-
+                            <Style TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
                             <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}"/>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="Employee" Width="*">
+                            <DataGridTemplateColumn Header="Employee" Width="2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
@@ -171,27 +289,58 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="In" Binding="{Binding CheckInTodayDisplay}" Width="60"
+                            <DataGridTextColumn Header="Date" Binding="{Binding DateDisplay}" Width="1*"
                                                  ElementStyle="{StaticResource TableCellTextStyle}"/>
-                            <DataGridTextColumn Header="Out" Binding="{Binding CheckOutTodayDisplay}" Width="60"
+                            <DataGridTextColumn Header="Check In" Binding="{Binding CheckInTimeDisplay}" Width="90"
                                                  ElementStyle="{StaticResource TableCellTextStyle}"/>
+
+                            <DataGridTemplateColumn Header="Status" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource StatusPillStyle}">
+                                            <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Actions" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Approve"
+                                                    Width="70"
+                                                    Style="{StaticResource ApproveRowButtonStyle}"
+                                                    Command="{Binding DataContext.ApproveOpenCheckInCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Margin="0,0,8,0"/>
+                                            <Button Content="Deny"
+                                                    Width="70"
+                                                    Style="{StaticResource DenyRowButtonStyle}"
+                                                    Command="{Binding DataContext.DenyOpenCheckInCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
+
+                        <!-- Empty-state row, shown via ItemsControl's default
+                             "no rows" appearance is just a blank card body -
+                             adding an explicit message instead so an empty
+                             grid doesn't read as "broken/loading" per
+                             TableStyles.xaml's TableEmptyStateStyle pattern
+                             used elsewhere (Requests/Manage Requests). -->
                     </DataGrid>
-                </DockPanel>
-            </Border>
 
-            <!-- Right: Attendance calendar for the selected employee (bottom
-                 legend now comes from AttendanceCalendarView itself). The old
-                 inline Days worked/On-time/Late/Absent summary strip that used
-                 to sit above the calendar has been removed per the brief. -->
-            <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16" Margin="12,0,0,0"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                    Visibility="{Binding IsEmployeeSelected, Converter={StaticResource BoolToVisibility}}">
-
-                <controls:AttendanceCalendarView DataContext="{Binding ChildAttendanceViewModel}" />
-
+                    <TextBlock Text="No open check-ins right now."
+                               Style="{StaticResource TableEmptyStateStyle}"
+                               Margin="0,12,0,4"
+                               Visibility="{Binding OpenCheckIns.Count, Converter={StaticResource ZeroToVisibleConverter}}"/>
+                </StackPanel>
             </Border>
         </Grid>
-    </Grid>
+    </ScrollViewer>
 
 </UserControl>
